@@ -3,7 +3,16 @@
   padding: 0;
   box-sizing: border-box;
 }
+.logo-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
+.logo {
+  height: 50px;
+  width: auto;
+}
 body {
   font-family: Arial, sans-serif;
   background-color: #f2f2f2;
