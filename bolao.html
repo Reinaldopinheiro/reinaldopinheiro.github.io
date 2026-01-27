@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Conferidor de Bolão - Mega Sena</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background-color: #f4f4f4; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .resultado-input { background: #fff176; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        input[type="number"] { width: 50px; padding: 8px; margin: 2px; text-align: center; border: 1px solid #ccc; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background-color: #f8f8f8; }
+        .acerto { background-color: #4CAF50; color: white; font-weight: bold; border-radius: 50%; }
+        .pontos-col { font-weight: bold; color: #d32f2f; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>CONFERIDOR DE BOLÃO - MEGA SENA</h2>
+    <p>Concurso 2965 - 27/01/2026</p>
+
+    <div class="resultado-input">
+        <strong>INSIRA O RESULTADO:</strong><br><br>
+        <input type="number" class="res-num" min="1" max="60">
+        <input type="number" class="res-num" min="1" max="60">
+        <input type="number" class="res-num" min="1" max="60">
+        <input type="number" class="res-num" min="1" max="60">
+        <input type="number" class="res-num" min="1" max="60">
+        <input type="number" class="res-num" min="1" max="60">
+        <br><br>
+        <button onclick="conferir()">CONFERIR ACERTOS</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Jogo</th>
+                <th colspan="6">Números Apostados</th>
+                <th>Acertos</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-corpo">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    const apostas = [
+        { nome: "Rosana", jogo: "Jogo 4", num: [6, 9, 17, 26, 43, 60] },
+        { nome: "Ruth", jogo: "Jogo 5", num: [3, 5, 7, 8, 10, 26] },
+        { nome: "Ricardo", jogo: "Jogo 6", num: [23, 32, 40, 46, 51, 54] },
+        { nome: "Katia", jogo: "Jogo 7", num: [1, 12, 23, 41, 47, 56] },
+        { nome: "Margarete", jogo: "Jogo 8", num: [7, 13, 29, 33, 45, 56] },
+        { nome: "Raquel", jogo: "Jogo 9", num: [7, 13, 14, 20, 44, 52] },
+        { nome: "Edgar", jogo: "Jogo 10", num: [5, 20, 22, 26, 43, 51] },
+        { nome: "Mario", jogo: "Jogo 11", num: [3, 9, 29, 17, 33, 42] },
+        { nome: "Nilza", jogo: "Jogo 12", num: [1, 23, 26, 31, 33, 49] },
+        { nome: "Marinete", jogo: "Jogo 13", num: [6, 8, 24, 32, 49, 56] },
+        { nome: "Valeria", jogo: "Jogo 14", num: [1, 3, 34, 55, 56, 60] }
+    ];
+
+    function renderizarTabela() {
+        const corpo = document.getElementById('tabela-corpo');
+        corpo.innerHTML = '';
+        
+        apostas.forEach(aposta => {
+            let linha = `<tr>
+                <td>${aposta.nome}</td>
+                <td>${aposta.jogo}</td>
+                ${aposta.num.map(n => `<td class="num-${n}">${n}</td>`).join('')}
+                <td class="pontos-col" id="pontos-${aposta.nome}">0</td>
+            </tr>`;
+            corpo.innerHTML += linha;
+        });
+    }
+
+    function conferir() {
+        const inputs = document.querySelectorAll('.res-num');
+        const resultado = Array.from(inputs).map(i => parseInt(i.value)).filter(n => !isNaN(n));
+
+        // Limpar destaques anteriores
+        document.querySelectorAll('td').forEach(td => td.classList.remove('acerto'));
+
+        apostas.forEach(aposta => {
+            let acertos = 0;
+            aposta.num.forEach(n => {
+                if (resultado.includes(n)) {
+                    acertos++;
+                    // Destacar a célula do número acertado
+                    const celulas = document.querySelectorAll(`.num-${n}`);
+                    celulas.forEach(c => {
+                        if(c.innerText == n) c.classList.add('acerto');
+                    });
+                }
+            });
+            document.getElementById(`pontos-${aposta.nome}`).innerText = acertos;
+        });
+    }
+
+    renderizarTabela();
+</script>
+
+</body>
+</html>
