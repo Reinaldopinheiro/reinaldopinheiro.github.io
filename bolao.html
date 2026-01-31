@@ -17,6 +17,7 @@
 </head>
 <body>
 
+
 <div class="container">
     <h2>CONFERIDOR DE BOLÃO - MEGA SENA</h2>
     <p>Concurso 2966 - 29/01/2026<br>
@@ -33,6 +34,7 @@
         <button onclick="conferir()">CONFERIR ACERTOS</button>
     </div>
 
+
     <table>
         <thead>
             <tr>
@@ -46,6 +48,7 @@
             </tbody>
     </table>
 </div>
+
 
 <script>
     const apostas = [
@@ -62,8 +65,10 @@
         { nome: "Mario", jogo: "Jogo 11", num: [3, 9, 29, 17, 33, 42] },
         { nome: "Nilza", jogo: "Jogo 12", num: [1, 23, 26, 31, 33, 49] },
         { nome: "Marinete", jogo: "Jogo 13", num: [6, 8, 24, 32, 49, 56] },
-        { nome: "Valeria", jogo: "Jogo 14", num: [1, 3, 34, 55, 56, 60] }
+        { nome: "Valeria", jogo: "Jogo 14", num: [1, 3, 34, 55, 56, 60] },
+		{ nome: "Camila", jogo: "Jogo 15", num: [3, 9, 28, 44, 49, 52] }
     ];
+
 
     function renderizarTabela() {
         const corpo = document.getElementById('tabela-corpo');
@@ -80,12 +85,15 @@
         });
     }
 
+
     function conferir() {
         const inputs = document.querySelectorAll('.res-num');
         const resultado = Array.from(inputs).map(i => parseInt(i.value)).filter(n => !isNaN(n));
 
+
         // Limpar destaques anteriores
         document.querySelectorAll('td').forEach(td => td.classList.remove('acerto'));
+
 
         apostas.forEach(aposta => {
             let acertos = 0;
@@ -103,8 +111,12 @@
         });
     }
 
+
     renderizarTabela();
 </script>
 
+
 </body>
+
+
 </html>
