@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LocalTimer - Reinaldo Pinheiro</title>
+    <title>AlarmeLocal - Reinaldo Pinheiro</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
@@ -29,8 +29,7 @@
         .btn-desligar { background: #ff5252; color: white; }
         button:disabled { background: #bdbdbd; }
 
-        /* Estilo da área de Doação */
-        .pix-area { background: #fff9c4; border: 1px dashed #fbc02d; padding: 12px; border-radius: 10px; font-size: 12px; color: #5d4037; margin-bottom: 10px; }
+        .pix-area { background: #fff9c4; border: 1px dashed #fbc02d; padding: 12px; border-radius: 10px; font-size: 12px; color: #5d4037; margin-bottom: 10px; text-align: center; }
         .pix-email { font-weight: bold; color: #d32f2f; font-size: 13px; }
 
         footer { font-size: 11px; padding: 10px; color: #546e7a; background: white; text-align: center; border-top: 1px solid #eee; }
@@ -39,7 +38,7 @@
 <body>
 
 <header>
-    <strong>LOCALTIMER</strong>
+    <strong>ALARMELOCAL</strong>
 </header>
 
 <div id="map"></div>
@@ -83,7 +82,6 @@
     let watchID = null;
     const som = document.getElementById('somAlarme');
 
-    // Preenche a data de hoje automaticamente (Hoje é 13/02/2026)
     function configurarDataHoje() {
         const hoje = new Date();
         const dataFormatada = hoje.toISOString().split('T')[0];
@@ -100,7 +98,7 @@
             if (marcador) map.removeLayer(marcador);
             localDestino = e.latlng;
             marcador = L.marker([localDestino.lat, localDestino.lng]).addTo(map);
-            document.getElementById('statusTxt').innerText = "Local definido! Clique em LIGAR.";
+            document.getElementById('statusTxt').innerText = "Local marcado! Clique em LIGAR.";
         });
     }
 
@@ -109,6 +107,7 @@
             alert("⚠️ Selecione um ponto no mapa primeiro!");
             return;
         }
+        // Pré-carrega o som
         som.play().then(() => { som.pause(); som.currentTime = 0; }).catch(() => {});
 
         alarmeAtivo = true;
@@ -127,7 +126,8 @@
     function verificarChegada(position) {
         if (!alarmeAtivo) return;
         const agora = new Date();
-        const dataProg = new Date(document.getElementById('dataAlerta').value + "T00:00:00");
+        const dataProgStr = document.getElementById('dataAlerta').value;
+        const dataProg = new Date(dataProgStr + "T00:00:00");
         const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
         
         const distancia = calcularDistancia(
@@ -135,6 +135,7 @@
             localDestino.lat, localDestino.lng
         );
 
+        // Se hoje for a data ou depois, e distância menor que 200m
         if (hoje.getTime() >= dataProg.getTime() && distancia < 0.2) {
             dispararAlarme();
         }
@@ -151,10 +152,15 @@
     }
 
     function dispararAlarme() {
-        if (!alarmeAtivo) return;
+        // Toca o som e vibra
         som.play();
-        navigator.vibrate([1000, 500, 1000, 500, 1000]);
-        alert("🚨 LOCALTIMER: VOCÊ CHEGOU!");
+        if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
+        
+        // Exibe a mensagem. O código "espera" o usuário clicar no OK do alert.
+        alert("🚨 ALARMELOCAL: VOCÊ CHEGOU AO LOCAL!");
+        
+        // Após clicar em OK, ele executa o desligamento automático
+        desativarAlarme();
     }
 
     function desativarAlarme() {
