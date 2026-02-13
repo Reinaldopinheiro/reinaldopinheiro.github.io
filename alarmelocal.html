@@ -14,10 +14,16 @@
         #map { flex-grow: 1; width: 100%; z-index: 1; }
 
         .controles { padding: 20px; background: white; border-radius: 20px 20px 0 0; margin-top: -20px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
-        .input-group { margin-bottom: 15px; text-align: left; }
-        label { font-size: 13px; color: #3949ab; font-weight: bold; display: block; margin-bottom: 5px; }
         
-        input[type="date"] { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; box-sizing: border-box; outline: none; background: #f9f9f9; }
+        .row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .input-group { flex: 1; text-align: left; }
+        
+        label { font-size: 11px; color: #3949ab; font-weight: bold; display: block; margin-bottom: 5px; text-transform: uppercase; }
+        
+        input[type="date"], .file-input-wrapper { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; box-sizing: border-box; outline: none; background: #f9f9f9; height: 45px; }
+        
+        /* Estilização do input de arquivo para caber na linha */
+        input[type="file"] { font-size: 11px; width: 100%; }
 
         .status-box { background: #f5f5f5; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border-left: 5px solid #ccc; }
         .ativo { border-left-color: #4CAF50; color: #2e7d32; background: #e8f5e9; }
@@ -29,14 +35,7 @@
         .btn-desligar { background: #ff5252; color: white; }
         button:disabled { background: #bdbdbd; }
 
-        /* Estilo do Botão de Instalação */
-        #btnInstalar {
-            display: none; /* Só aparece se o navegador permitir instalação */
-            background: #ff9800;
-            color: white;
-            margin-bottom: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+        #btnInstalar { display: none; background: #ff9800; color: white; margin-bottom: 10px; width: 100%; }
 
         .pix-area { background: #fff9c4; border: 1px dashed #fbc02d; padding: 12px; border-radius: 10px; font-size: 12px; color: #5d4037; margin-bottom: 10px; text-align: center; }
         .pix-email { font-weight: bold; color: #d32f2f; font-size: 13px; }
@@ -55,9 +54,15 @@
 <div class="controles">
     <button id="btnInstalar">📲 INSTALAR NA TELA INICIAL</button>
 
-    <div class="input-group">
-        <label>DATA PARA O ALERTA:</label>
-        <input type="date" id="dataAlerta">
+    <div class="row">
+        <div class="input-group">
+            <label>Data do Alerta:</label>
+            <input type="date" id="dataAlerta">
+        </div>
+        <div class="input-group">
+            <label>Som personalizado (.wav):</label>
+            <input type="file" id="inputSom" accept="audio/wav, audio/mpeg" class="file-input-wrapper">
+        </div>
     </div>
 
     <div class="status-box" id="statusBox">
@@ -80,7 +85,7 @@
 </footer>
 
 <audio id="somAlarme" loop>
-    <source src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" type="audio/mpeg">
+    <source id="audioSource" src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" type="audio/mpeg">
 </audio>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -93,8 +98,19 @@
     let watchID = null;
     let deferredPrompt; 
     const som = document.getElementById('somAlarme');
+    const inputSom = document.getElementById('inputSom');
 
-    // Lógica para o botão de "Instalar na tela inicial"
+    // Trocar o som quando o usuário escolher um arquivo
+    inputSom.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            som.src = url;
+            som.load();
+            alert("Som personalizado carregado com sucesso!");
+        }
+    });
+
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -105,9 +121,7 @@
         if (deferredPrompt) {
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                document.getElementById('btnInstalar').style.display = 'none';
-            }
+            if (outcome === 'accepted') document.getElementById('btnInstalar').style.display = 'none';
             deferredPrompt = null;
         }
     });
@@ -147,6 +161,7 @@
             alert("⚠️ Selecione um ponto no mapa primeiro!");
             return;
         }
+        // Teste silencioso para garantir permissão de áudio
         som.play().then(() => { som.pause(); som.currentTime = 0; }).catch(() => {});
 
         alarmeAtivo = true;
@@ -192,7 +207,7 @@
     function dispararAlarme() {
         som.play();
         if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
-        alert("🚨 ALARMELOCAL: VOCÊ CHEGOU AO LOCAL!");
+        alert("🚨 ALARMELOCAL: VOCÊ CHEGOU AO DESTINO!");
         desativarAlarme();
     }
 
