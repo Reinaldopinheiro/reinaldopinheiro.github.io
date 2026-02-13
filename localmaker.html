@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalTimer - Reinaldo Pinheiro</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: #eceff1; }
+        header { background: #1a237e; color: white; padding: 18px; text-align: center; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; }
+        
+        #map { flex-grow: 1; width: 100%; z-index: 1; }
+
+        .controles { padding: 20px; background: white; border-radius: 20px 20px 0 0; margin-top: -20px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        label { font-size: 13px; color: #3949ab; font-weight: bold; display: block; margin-bottom: 5px; }
+        
+        input[type="date"] { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; box-sizing: border-box; outline: none; background: #f9f9f9; }
+
+        .status-box { background: #f5f5f5; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border-left: 5px solid #ccc; }
+        .ativo { border-left-color: #4CAF50; color: #2e7d32; background: #e8f5e9; }
+
+        .botoes { display: flex; gap: 10px; margin-bottom: 15px; }
+        button { flex: 1; padding: 16px; border: none; border-radius: 12px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.3s; }
+        
+        .btn-ligar { background: #3949ab; color: white; }
+        .btn-desligar { background: #ff5252; color: white; }
+        button:disabled { background: #bdbdbd; }
+
+        /* Estilo da área de Doação */
+        .pix-area { background: #fff9c4; border: 1px dashed #fbc02d; padding: 12px; border-radius: 10px; font-size: 12px; color: #5d4037; margin-bottom: 10px; }
+        .pix-email { font-weight: bold; color: #d32f2f; font-size: 13px; }
+
+        footer { font-size: 11px; padding: 10px; color: #546e7a; background: white; text-align: center; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+<header>
+    <strong>LOCALTIMER</strong>
+</header>
+
+<div id="map"></div>
+
+<div class="controles">
+    <div class="input-group">
+        <label>DATA PARA O ALERTA:</label>
+        <input type="date" id="dataAlerta">
+    </div>
+
+    <div class="status-box" id="statusBox">
+        Status: <b id="statusTxt">Toque no mapa para marcar o local</b>
+    </div>
+
+    <div class="botoes">
+        <button class="btn-ligar" id="btnAtivar" onclick="ativarAlarme()">LIGAR ALARME</button>
+        <button class="btn-desligar" id="btnDesativar" onclick="desativarAlarme()" disabled>DESLIGAR</button>
+    </div>
+
+    <div class="pix-area">
+        💎 Colabore para mais projetos doando qualquer valor no pix:<br>
+        <span class="pix-email">doe@reinaldopinheiro.com.br</span>
+    </div>
+</div>
+
+<footer>
+    Criador: Reinaldo Pinheiro - jan/2026
+</footer>
+
+<audio id="somAlarme" loop>
+    <source src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" type="audio/mpeg">
+</audio>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    let map;
+    let marcador;
+    let localDestino = null;
+    let alarmeAtivo = false;
+    let watchID = null;
+    const som = document.getElementById('somAlarme');
+
+    // Preenche a data de hoje automaticamente (Hoje é 13/02/2026)
+    function configurarDataHoje() {
+        const hoje = new Date();
+        const dataFormatada = hoje.toISOString().split('T')[0];
+        document.getElementById('dataAlerta').value = dataFormatada;
+    }
+
+    function initMap() {
+        map = L.map('map').setView([-23.5505, -46.6333], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        map.locate({setView: true, maxZoom: 16});
+
+        map.on('click', function(e) {
+            if (alarmeAtivo) return;
+            if (marcador) map.removeLayer(marcador);
+            localDestino = e.latlng;
+            marcador = L.marker([localDestino.lat, localDestino.lng]).addTo(map);
+            document.getElementById('statusTxt').innerText = "Local definido! Clique em LIGAR.";
+        });
+    }
+
+    function ativarAlarme() {
+        if (!localDestino) {
+            alert("⚠️ Selecione um ponto no mapa primeiro!");
+            return;
+        }
+        som.play().then(() => { som.pause(); som.currentTime = 0; }).catch(() => {});
+
+        alarmeAtivo = true;
+        document.getElementById('btnAtivar').disabled = true;
+        document.getElementById('btnDesativar').disabled = false;
+        document.getElementById('statusBox').className = "status-box ativo";
+        document.getElementById('statusTxt').innerText = "Vigilância Ativa...";
+
+        if ("geolocation" in navigator) {
+            watchID = navigator.geolocation.watchPosition(verificarChegada, null, {
+                enableHighAccuracy: true
+            });
+        }
+    }
+
+    function verificarChegada(position) {
+        if (!alarmeAtivo) return;
+        const agora = new Date();
+        const dataProg = new Date(document.getElementById('dataAlerta').value + "T00:00:00");
+        const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+        
+        const distancia = calcularDistancia(
+            position.coords.latitude, position.coords.longitude, 
+            localDestino.lat, localDestino.lng
+        );
+
+        if (hoje.getTime() >= dataProg.getTime() && distancia < 0.2) {
+            dispararAlarme();
+        }
+    }
+
+    function calcularDistancia(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    function dispararAlarme() {
+        if (!alarmeAtivo) return;
+        som.play();
+        navigator.vibrate([1000, 500, 1000, 500, 1000]);
+        alert("🚨 LOCALTIMER: VOCÊ CHEGOU!");
+    }
+
+    function desativarAlarme() {
+        alarmeAtivo = false;
+        som.pause();
+        som.currentTime = 0;
+        if (watchID) navigator.geolocation.clearWatch(watchID);
+        document.getElementById('btnAtivar').disabled = false;
+        document.getElementById('btnDesativar').disabled = true;
+        document.getElementById('statusBox').className = "status-box";
+        document.getElementById('statusTxt').innerText = "Alarme desligado.";
+    }
+
+    window.onload = () => {
+        initMap();
+        configurarDataHoje();
+    };
+</script>
+
+</body>
+</html>
