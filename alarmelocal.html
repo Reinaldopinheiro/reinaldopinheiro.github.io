@@ -50,7 +50,7 @@
     </div>
 
     <div class="status-box" id="statusBox">
-        Status: <b id="statusTxt">Toque no mapa para marcar o local</b>
+        Status: <b id="statusTxt">Detectando sua localização...</b>
     </div>
 
     <div class="botoes">
@@ -89,17 +89,34 @@
     }
 
     function initMap() {
-        map = L.map('map').setView([-23.5505, -46.6333], 13);
+        // Inicia o mapa centralizado no Brasil por padrão
+        map = L.map('map').setView([-15.7801, -47.9292], 4);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        // Tenta obter localização atual e já marcar como destino padrão
         map.locate({setView: true, maxZoom: 16});
 
+        map.on('locationfound', function(e) {
+            marcarNoMapa(e.latlng);
+            document.getElementById('statusTxt').innerText = "Local atual marcado! Clique em LIGAR.";
+        });
+
+        map.on('locationerror', function() {
+            document.getElementById('statusTxt').innerText = "Toque no mapa para escolher o local.";
+        });
+
+        // Permitir trocar o local clicando no mapa
         map.on('click', function(e) {
             if (alarmeAtivo) return;
-            if (marcador) map.removeLayer(marcador);
-            localDestino = e.latlng;
-            marcador = L.marker([localDestino.lat, localDestino.lng]).addTo(map);
-            document.getElementById('statusTxt').innerText = "Local marcado! Clique em LIGAR.";
+            marcarNoMapa(e.latlng);
+            document.getElementById('statusTxt').innerText = "Novo local marcado! Clique em LIGAR.";
         });
+    }
+
+    function marcarNoMapa(latlng) {
+        if (marcador) map.removeLayer(marcador);
+        localDestino = latlng;
+        marcador = L.marker([localDestino.lat, localDestino.lng]).addTo(map);
     }
 
     function ativarAlarme() {
@@ -107,7 +124,6 @@
             alert("⚠️ Selecione um ponto no mapa primeiro!");
             return;
         }
-        // Pré-carrega o som
         som.play().then(() => { som.pause(); som.currentTime = 0; }).catch(() => {});
 
         alarmeAtivo = true;
@@ -135,7 +151,6 @@
             localDestino.lat, localDestino.lng
         );
 
-        // Se hoje for a data ou depois, e distância menor que 200m
         if (hoje.getTime() >= dataProg.getTime() && distancia < 0.2) {
             dispararAlarme();
         }
@@ -152,14 +167,9 @@
     }
 
     function dispararAlarme() {
-        // Toca o som e vibra
         som.play();
         if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
-        
-        // Exibe a mensagem. O código "espera" o usuário clicar no OK do alert.
         alert("🚨 ALARMELOCAL: VOCÊ CHEGOU AO LOCAL!");
-        
-        // Após clicar em OK, ele executa o desligamento automático
         desativarAlarme();
     }
 
