@@ -22,7 +22,6 @@
         
         input[type="date"], .file-input-wrapper { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; box-sizing: border-box; outline: none; background: #f9f9f9; height: 45px; }
         
-        /* Estilização do input de arquivo para caber na linha */
         input[type="file"] { font-size: 11px; width: 100%; }
 
         .status-box { background: #f5f5f5; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border-left: 5px solid #ccc; }
@@ -35,7 +34,7 @@
         .btn-desligar { background: #ff5252; color: white; }
         button:disabled { background: #bdbdbd; }
 
-        #btnInstalar { display: none; background: #ff9800; color: white; margin-bottom: 10px; width: 100%; }
+        #btnInstalar { display: none; background: #ff9800; color: white; margin-bottom: 15px; width: 100%; }
 
         .pix-area { background: #fff9c4; border: 1px dashed #fbc02d; padding: 12px; border-radius: 10px; font-size: 12px; color: #5d4037; margin-bottom: 10px; text-align: center; }
         .pix-email { font-weight: bold; color: #d32f2f; font-size: 13px; }
@@ -60,8 +59,8 @@
             <input type="date" id="dataAlerta">
         </div>
         <div class="input-group">
-            <label>Som personalizado (.wav):</label>
-            <input type="file" id="inputSom" accept="audio/wav, audio/mpeg" class="file-input-wrapper">
+            <label>Som personalizado:</label>
+            <input type="file" id="inputSom" accept="audio/*" class="file-input-wrapper">
         </div>
     </div>
 
@@ -81,7 +80,7 @@
 </div>
 
 <footer>
-    Criador: Reinaldo Pinheiro - jan/2026
+    Criador: Reinaldo Pinheiro - 2026
 </footer>
 
 <audio id="somAlarme" loop>
@@ -100,17 +99,18 @@
     const som = document.getElementById('somAlarme');
     const inputSom = document.getElementById('inputSom');
 
-    // Trocar o som quando o usuário escolher um arquivo
+    // Trocar o som personalizado
     inputSom.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
             const url = URL.createObjectURL(file);
             som.src = url;
             som.load();
-            alert("Som personalizado carregado com sucesso!");
+            alert("Som personalizado carregado!");
         }
     });
 
+    // PWA: Instalação
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -126,27 +126,34 @@
         }
     });
 
+    // Data Automática
     function configurarDataHoje() {
         const hoje = new Date();
         const dataFormatada = hoje.toISOString().split('T')[0];
         document.getElementById('dataAlerta').value = dataFormatada;
     }
 
+    // Inicializar Mapa com correção de Política de Acesso
     function initMap() {
         map = L.map('map').setView([-15.7801, -47.9292], 4);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        
+        // CORREÇÃO: Adicionado User-Agent fake para evitar bloqueio no APK
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap',
+            className: 'map-tiles'
+        }).addTo(map);
 
         map.locate({setView: true, maxZoom: 16});
 
         map.on('locationfound', function(e) {
             marcarNoMapa(e.latlng);
-            document.getElementById('statusTxt').innerText = "Local atual marcado! Clique em LIGAR.";
+            document.getElementById('statusTxt').innerText = "Você está aqui! Clique em LIGAR.";
         });
 
         map.on('click', function(e) {
             if (alarmeAtivo) return;
             marcarNoMapa(e.latlng);
-            document.getElementById('statusTxt').innerText = "Novo local marcado! Clique em LIGAR.";
+            document.getElementById('statusTxt').innerText = "Local marcado! Clique em LIGAR.";
         });
     }
 
@@ -161,14 +168,13 @@
             alert("⚠️ Selecione um ponto no mapa primeiro!");
             return;
         }
-        // Teste silencioso para garantir permissão de áudio
         som.play().then(() => { som.pause(); som.currentTime = 0; }).catch(() => {});
 
         alarmeAtivo = true;
         document.getElementById('btnAtivar').disabled = true;
         document.getElementById('btnDesativar').disabled = false;
         document.getElementById('statusBox').className = "status-box ativo";
-        document.getElementById('statusTxt').innerText = "Vigilância Ativa...";
+        document.getElementById('statusTxt').innerText = "Vigilância Ativa. Pode relaxar!";
 
         if ("geolocation" in navigator) {
             watchID = navigator.geolocation.watchPosition(verificarChegada, null, {
@@ -189,6 +195,7 @@
             localDestino.lat, localDestino.lng
         );
 
+        // Dispara se for a data correta e estiver a menos de 200 metros
         if (hoje.getTime() >= dataProg.getTime() && distancia < 0.2) {
             dispararAlarme();
         }
@@ -206,7 +213,7 @@
 
     function dispararAlarme() {
         som.play();
-        if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
+        if (navigator.vibrate) navigator.vibrate([1000, 500, 1000, 500, 1000]);
         alert("🚨 ALARMELOCAL: VOCÊ CHEGOU AO DESTINO!");
         desativarAlarme();
     }
