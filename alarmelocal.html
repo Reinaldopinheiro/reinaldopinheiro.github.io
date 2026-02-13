@@ -29,6 +29,15 @@
         .btn-desligar { background: #ff5252; color: white; }
         button:disabled { background: #bdbdbd; }
 
+        /* Estilo do Botão de Instalação */
+        #btnInstalar {
+            display: none; /* Só aparece se o navegador permitir instalação */
+            background: #ff9800;
+            color: white;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
         .pix-area { background: #fff9c4; border: 1px dashed #fbc02d; padding: 12px; border-radius: 10px; font-size: 12px; color: #5d4037; margin-bottom: 10px; text-align: center; }
         .pix-email { font-weight: bold; color: #d32f2f; font-size: 13px; }
 
@@ -44,6 +53,8 @@
 <div id="map"></div>
 
 <div class="controles">
+    <button id="btnInstalar">📲 INSTALAR NA TELA INICIAL</button>
+
     <div class="input-group">
         <label>DATA PARA O ALERTA:</label>
         <input type="date" id="dataAlerta">
@@ -80,7 +91,26 @@
     let localDestino = null;
     let alarmeAtivo = false;
     let watchID = null;
+    let deferredPrompt; 
     const som = document.getElementById('somAlarme');
+
+    // Lógica para o botão de "Instalar na tela inicial"
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('btnInstalar').style.display = 'block';
+    });
+
+    document.getElementById('btnInstalar').addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                document.getElementById('btnInstalar').style.display = 'none';
+            }
+            deferredPrompt = null;
+        }
+    });
 
     function configurarDataHoje() {
         const hoje = new Date();
@@ -89,11 +119,9 @@
     }
 
     function initMap() {
-        // Inicia o mapa centralizado no Brasil por padrão
         map = L.map('map').setView([-15.7801, -47.9292], 4);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        // Tenta obter localização atual e já marcar como destino padrão
         map.locate({setView: true, maxZoom: 16});
 
         map.on('locationfound', function(e) {
@@ -101,11 +129,6 @@
             document.getElementById('statusTxt').innerText = "Local atual marcado! Clique em LIGAR.";
         });
 
-        map.on('locationerror', function() {
-            document.getElementById('statusTxt').innerText = "Toque no mapa para escolher o local.";
-        });
-
-        // Permitir trocar o local clicando no mapa
         map.on('click', function(e) {
             if (alarmeAtivo) return;
             marcarNoMapa(e.latlng);
