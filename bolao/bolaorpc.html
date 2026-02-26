@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestor de Bolão v3.1 - Reinaldo Pinheiro</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+        
+        /* Cabeçalho */
+        .header-meta { font-size: 0.8em; color: #7f8c8d; text-align: right; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 15px; }
+        h2 { color: #2c3e50; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Painel de Controle */
+        .panel { background: #f8fbff; border: 1px solid #d1d9e6; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .form-group { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
+        
+        input { padding: 10px; border: 1px solid #bdc3c7; border-radius: 5px; outline: none; }
+        input:focus { border-color: #3498db; }
+
+        /* Botões Estilizados */
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 0.85em; }
+        .btn-add { background: #27ae60; color: white; }
+        .btn-save { background: #2980b9; color: white; }
+        .btn-backup { background: #8e44ad; color: white; }
+        .btn-del { background: #e74c3c; color: white; padding: 5px 10px; }
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+        /* Tabela */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #34495e; color: white; padding: 12px; }
+        td { border-bottom: 1px solid #eee; padding: 12px; text-align: center; }
+        .nome-jogador { text-align: left; font-weight: 500; cursor: pointer; }
+        .nome-jogador:hover { background: #fffde7; }
+
+        .acerto { background: #27ae60 !important; color: white !important; font-weight: bold; border-radius: 4px; }
+        #info-res { font-weight: bold; color: #2c3e50; margin-top: 10px; padding: 10px; background: #fffde7; border-radius: 5px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-meta">Versão 3.1 | Build: 20260226 | Reinaldo Pinheiro Consultoria</div>
+    <h2>Gestor de Base de Dados - Bolão</h2>
+    <p style="color: #95a5a6; margin-bottom: 25px;">Módulo de edição, reclassificação e salvamento local.</p>
+
+    <div class="panel">
+        <div class="form-group">
+            <input type="text" id="novoNome" placeholder="Nome do Jogador" style="width: 250px;">
+            <input type="text" id="novosNums" placeholder="Ex: 01, 02, 03, 04, 05, 06" style="width: 250px;">
+            <button class="btn btn-add" onclick="adicionarAposta()">+ Incluir Aposta</button>
+        </div>
+
+        <div style="border-top: 1px solid #d1d9e6; padding-top: 15px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+            <input type="file" id="inputRpc" accept=".rpc" style="display:none" onchange="importarArquivo(this)">
+            <button class="btn" style="background:#bdc3c7" onclick="document.getElementById('inputRpc').click()">📂 Carregar apostas.rpc</button>
+            <button class="btn btn-save" onclick="exportarArquivo('apostas.rpc')">💾 Salvar Principal (apostas.rpc)</button>
+            <button class="btn btn-backup" onclick="salvarBackup()">📥 Salvar Cópia (apostaXXXX.rpc)</button>
+        </div>
+    </div>
+
+    <div class="panel" style="background: #fff;">
+        <input type="number" id="cID" placeholder="Nº Concurso" style="width: 120px;">
+        <button class="btn" style="background:#34495e; color:white;" onclick="buscarResultado()">Conferir Resultado</button>
+        <div id="info-res"></div>
+    </div>
+
+    <table id="tabelaMaster">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Participante (Clique p/ editar)</th>
+                <th colspan="6">Números Escolhidos</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody id="corpoTabela">
+            <tr><td colspan="9" style="color:#bdc3c7; padding:30px;">Base de dados vazia. Carregue o arquivo ou adicione jogadores.</td></tr>
+        </tbody>
+    </table>
+
+    <footer style="margin-top:30px; font-size:0.8em; color:#bdc3c7;">
+        &copy; 2026 Reinaldo Pinheiro Consultoria. O arquivo deve ser mantido como "apostas.rpc" para compatibilidade.
+    </footer>
+</div>
+
+<script>
+    let db_apostas = [];
+    let sorteioAtual = [];
+
+    // 1. IMPORTAÇÃO
+    function importarArquivo(input) {
+        const file = input.files[0];
+        if (file.name !== "apostas.rpc") {
+            alert("Atenção: O sistema de gestão exige que o arquivo principal se chame 'apostas.rpc'.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const linhas = e.target.result.split('\n');
+            db_apostas = [];
+            
+            linhas.forEach((linha, idx) => {
+                if(idx === 0 || !linha.includes(':')) return; // Pula cabeçalho
+                const [info, nums] = linha.split(':');
+                const nome = info.split('-')[1] ? info.split('-')[1].trim() : info.trim();
+                const dezenas = nums.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+                db_apostas.push({ nome, dezenas });
+            });
+            renderizar();
+        };
+        reader.readAsText(file);
+    }
+
+    // 2. INCLUSÃO E RECLASSIFICAÇÃO
+    function adicionarAposta() {
+        const nome = document.getElementById('novoNome').value.trim();
+        const numsRaw = document.getElementById('novosNums').value;
+        const dezenas = numsRaw.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+
+        if(nome === "" || dezenas.length !== 6) {
+            alert("Erro: Informe o nome e exatamente 6 números separados por vírgula.");
+            return;
+        }
+
+        db_apostas.push({ nome, dezenas });
+        document.getElementById('novoNome').value = "";
+        document.getElementById('novosNums').value = "";
+        renderizar();
+    }
+
+    function excluir(index) {
+        if(confirm("Deseja excluir esta aposta? A numeração será reajustada.")) {
+            db_apostas.splice(index, 1);
+            renderizar();
+        }
+    }
+
+    // 3. ATUALIZAÇÃO DA TABELA
+    function renderizar() {
+        const corpo = document.getElementById('corpoTabela');
+        corpo.innerHTML = "";
+
+        if(db_apostas.length === 0) {
+            corpo.innerHTML = '<tr><td colspan="9" style="color:#bdc3c7; padding:30px;">Base de dados vazia.</td></tr>';
+            return;
+        }
+
+        db_apostas.forEach((item, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="color:#7f8c8d; font-weight:bold;">${idx + 1}</td>
+                <td class="nome-jogador" contenteditable="true" onblur="editarNome(${idx}, this)">${item.nome}</td>
+                ${item.dezenas.map(n => {
+                    const classe = sorteioAtual.includes(n) ? 'acerto' : '';
+                    return `<td class="${classe}">${n < 10 ? '0'+n : n}</td>`;
+                }).join('')}
+                <td><button class="btn btn-del" onclick="excluir(${idx})">🗑️</button></td>
+            `;
+            corpo.appendChild(tr);
+        });
+    }
+
+    function editarNome(index, el) {
+        db_apostas[index].nome = el.innerText.trim();
+    }
+
+    // 4. BUSCA DE RESULTADOS
+    async function buscarResultado() {
+        const conc = document.getElementById('cID').value || 'latest';
+        const info = document.getElementById('info-res');
+        info.style.display = "block";
+        info.innerHTML = "Buscando dados na Caixa...";
+
+        try {
+            const response = await fetch(`https://loteriascaixa-api.herokuapp.com/api/megasena/${conc}`);
+            const data = await response.json();
+            sorteioAtual = data.dezenas.map(n => parseInt(n));
+            info.innerHTML = `✅ Concurso ${data.concurso} (${data.data}): ${data.dezenas.join(' - ')}`;
+            renderizar();
+        } catch (e) {
+            info.innerHTML = "❌ Erro ao conectar. Digite o número do concurso e tente novamente.";
+        }
+    }
+
+    // 5. EXPORTAÇÃO (GRAVAÇÃO LOCAL)
+    function exportarArquivo(nomeFinal) {
+        if(db_apostas.length === 0) return alert("Não há dados para salvar.");
+
+        let txt = `BOLÃO REINALDO PINHEIRO - BASE DE DADOS\n`;
+        db_apostas.forEach((item, idx) => {
+            txt += `${idx + 1} - ${item.nome}: ${item.dezenas.map(n => n < 10 ? '0'+n : n).join(', ')}\n`;
+        });
+
+        const blob = new Blob([txt], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = nomeFinal;
+        link.click();
+    }
+
+    function salvarBackup() {
+        const nConcurso = document.getElementById('cID').value || "GERAL";
+        exportarArquivo(`aposta${nConcurso}.rpc`);
+    }
+</script>
+
+</body>
+</html>
