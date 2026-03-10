@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Bolão v3.6 - Reinaldo Pinheiro</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 5px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; margin-bottom: 10px; }
+        h2 { color: #1a5276; font-size: 1.1em; text-transform: uppercase; margin: 0; }
+        .v-meta { font-size: 0.65em; color: #999; }
+
+        .panel { background: #f8fbff; border: 1px solid #d1d9e6; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
+        .form-group { display: flex; gap: 5px; justify-content: center; margin-bottom: 8px; }
+        
+        input { padding: 6px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 0.85em; }
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.7em; }
+        .btn-add { background: #27ae60; color: white; }
+        .btn-save { background: #2980b9; color: white; }
+        .btn-html { background: #e67e22; color: white; }
+        .btn-del { background: #e74c3c; color: white; padding: 2px 5px; font-size: 0.8em; }
+
+        /* TABELA SUPER COMPACTA */
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th { background: #34495e; color: white; padding: 5px 2px; font-size: 0.75em; }
+        td { border-bottom: 1px solid #eee; padding: 4px 0px; text-align: center; font-size: 0.85em; }
+        
+        /* Ajuste Fino de Colunas */
+        .col-id { width: 25px; color: #999; }
+        .col-nome { width: 180px; text-align: left; padding-left: 5px; font-weight: 500; cursor: pointer; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .col-num { width: 30px; } /* Coluna de número bem estreita */
+        .col-acao { width: 35px; }
+
+        .acerto { background: #27ae60 !important; color: white !important; font-weight: bold; border-radius: 2px; }
+        #info-res { font-weight: bold; color: #2c3e50; padding: 5px; background: #fffde7; border-radius: 4px; display: none; font-size: 0.8em; margin-bottom: 10px; }
+
+        footer { margin-top: 20px; font-size: 0.6em; text-align: center; color: #aaa; }
+    </style>
+</head>
+<body onload="checkAutoLoad()">
+
+<div class="container">
+    <div class="header">
+        <h2>Gestor de Bolão</h2>
+        <span class="v-meta">v3.6 | Build 2026 | RP Consultoria</span>
+    </div>
+
+    <div id="info-res"></div>
+
+    <div class="panel">
+        <div class="form-group">
+            <input type="text" id="novoNome" placeholder="Nome (Máx 40)" maxlength="40" style="width: 180px;">
+            <input type="text" id="novosNums" placeholder="01,02,03,04,05,06" style="width: 140px;">
+            <button class="btn btn-add" onclick="adicionarAposta()">+ Incluir</button>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 5px;">
+            <input type="file" id="inputRpc" accept=".rpc" style="display:none" onchange="importarArquivo(this)">
+            <button class="btn" style="background:#bdc3c7" onclick="document.getElementById('inputRpc').click()">📂 Abrir .RPC</button>
+            <button class="btn btn-save" onclick="exportarArquivo('apostas.rpc')">💾 Salvar .RPC</button>
+            <button class="btn btn-html" onclick="gerarRelatorioHTML()">📄 Gerar HTML</button>
+            <input type="number" id="cID" placeholder="Concurso" style="width: 70px; padding: 4px;">
+            <button class="btn" style="background:#34495e; color:white;" onclick="buscarResultado()">Conferir</button>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="col-id">ID</th>
+                <th class="col-nome">Participante</th>
+                <th class="col-num">1</th><th class="col-num">2</th><th class="col-num">3</th>
+                <th class="col-num">4</th><th class="col-num">5</th><th class="col-num">6</th>
+                <th class="col-acao"></th>
+            </tr>
+        </thead>
+        <tbody id="corpoTabela"></tbody>
+    </table>
+
+    <footer>
+        &copy; 2026 Reinaldo Pinheiro Consultoria | Pix: doe@reinaldopinheiro.com.br
+    </footer>
+</div>
+
+<script>
+    let db_apostas = [];
+    let sorteioAtual = [];
+    let concursoInfo = "";
+
+    function checkAutoLoad() {
+        const saved = localStorage.getItem('bolao_data_rp');
+        if (saved) {
+            db_apostas = JSON.parse(saved);
+            renderizar();
+        }
+    }
+
+    function importarArquivo(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const linhas = e.target.result.split('\n');
+            db_apostas = [];
+            linhas.forEach((linha) => {
+                if(!linha.includes(':')) return;
+                const [info, nums] = linha.split(':');
+                const nomeParte = info.includes('-') ? info.split('-')[1] : info;
+                let nome = (nomeParte || "Sem Nome").trim().substring(0, 40);
+                const dezenas = nums.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+                if(dezenas.length > 0) db_apostas.push({ nome, dezenas });
+            });
+            saveAndRender();
+        };
+        reader.readAsText(file);
+    }
+
+    function adicionarAposta() {
+        const nome = document.getElementById('novoNome').value.trim().substring(0, 40);
+        const numsRaw = document.getElementById('novosNums').value;
+        const dezenas = numsRaw.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+        if(nome === "" || dezenas.length !== 6) return alert("Preencha Nome e 6 números.");
+        db_apostas.push({ nome, dezenas });
+        document.getElementById('novoNome').value = "";
+        document.getElementById('novosNums').value = "";
+        saveAndRender();
+    }
+
+    function saveAndRender() {
+        localStorage.setItem('bolao_data_rp', JSON.stringify(db_apostas));
+        renderizar();
+    }
+
+    function renderizar() {
+        const corpo = document.getElementById('corpoTabela');
+        corpo.innerHTML = "";
+        db_apostas.forEach((item, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="col-id">${idx + 1}</td>
+                <td class="col-nome" contenteditable="true" onblur="editarNome(${idx}, this)">${item.nome}</td>
+                ${item.dezenas.map(n => {
+                    const cl = sorteioAtual.includes(n) ? 'acerto' : '';
+                    return `<td class="col-num ${cl}">${n < 10 ? '0'+n : n}</td>`;
+                }).join('')}
+                <td class="col-acao"><button class="btn btn-del" onclick="excluir(${idx})">×</button></td>
+            `;
+            corpo.appendChild(tr);
+        });
+    }
+
+    function editarNome(idx, el) {
+        db_apostas[idx].nome = el.innerText.trim().substring(0, 40);
+        saveAndRender();
+    }
+
+    function excluir(idx) {
+        if(confirm("Excluir?")) { db_apostas.splice(idx, 1); saveAndRender(); }
+    }
+
+    async function buscarResultado() {
+        const conc = document.getElementById('cID').value || 'latest';
+        const info = document.getElementById('info-res');
+        info.style.display = "block"; info.innerHTML = "Buscando...";
+        try {
+            const response = await fetch(`https://loteriascaixa-api.herokuapp.com/api/megasena/${conc}`);
+            const data = await response.json();
+            sorteioAtual = data.dezenas.map(n => parseInt(n));
+            concursoInfo = `Conc. ${data.concurso} (${data.data})`;
+            info.innerHTML = `✅ ${concursoInfo}: ${data.dezenas.join(' - ')}`;
+            renderizar();
+        } catch (e) { info.innerHTML = "❌ Erro na consulta."; }
+    }
+
+    function exportarArquivo(nomeFinal) {
+        if(!db_apostas.length) return;
+        let txt = `BOLÃO REINALDO PINHEIRO\n`;
+        db_apostas.forEach((item, idx) => {
+            txt += `${idx + 1} - ${item.nome.padEnd(40, ' ')}: ${item.dezenas.map(n => n < 10 ? '0'+n : n).join(', ')}\n`;
+        });
+        const blob = new Blob([txt], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = nomeFinal;
+        link.click();
+    }
+
+    function gerarRelatorioHTML() {
+        if(!db_apostas.length) return;
+        const dataF = new Date().toLocaleDateString('pt-BR').replace(/\//g, '_');
+        let html = `<html><head><meta charset="UTF-8"><style>
+            body { font-family: sans-serif; font-size: 11px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #000; padding: 2px; text-align: center; }
+            .acerto { background: #cfc; font-weight: bold; }
+            .n { text-align: left; width: 200px; padding-left: 5px; }
+        </style></head><body>
+        <h3>Relatório Bolão - ${concursoInfo}</h3>
+        <table><tr><th>Nº</th><th>Participante</th><th colspan="6">Jogos</th></tr>`;
+        db_apostas.forEach((item, idx) => {
+            html += `<tr><td>${idx+1}</td><td class="n">${item.nome}</td>
+            ${item.dezenas.map(n => `<td class="${sorteioAtual.includes(n)?'acerto':''}">${n<10?'0'+n:n}</td>`).join('')}</tr>`;
+        });
+        html += `</table><p>Gerado em: ${new Date().toLocaleString()}</p></body></html>`;
+        const blob = new Blob([html], { type: 'text/html' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Bolao_${dataF}.html`;
+        link.click();
+    }
+</script>
+</body>
+</html>
