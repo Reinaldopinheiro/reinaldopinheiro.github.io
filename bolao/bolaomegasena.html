@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conferidor de Bolão - Mega Sena</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; min-height: 400px; }
+        
+        h2 { color: #1a73e8; margin-top: 0; }
+        .resultado-input { background: #fffde7; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #fff59d; }
+        
+        input[type="number"] { width: 55px; padding: 10px; margin: 3px; text-align: center; border: 2px solid #ddd; border-radius: 6px; font-weight: bold; }
+        button { background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #1557b0; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { border: 1px solid #eee; padding: 12px; text-align: center; }
+        th { background-color: #f8f9fa; color: #555; }
+        
+        .acerto { background-color: #2ecc71 !important; color: white; font-weight: bold; border-radius: 4px; }
+        .pontos-col { font-weight: bold; color: #e74c3c; font-size: 1.1em; }
+        
+        /* Estilo do Copyright */
+        .footer-copy { 
+            position: absolute; 
+            bottom: 10px; 
+            right: 20px; 
+            font-size: 10px; 
+            color: #999; 
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>CONFERIDOR DE BOLÃO - MEGA SENA</h2>
+    
+    <div class="resultado-input">
+        <strong>RESULTADO OFICIAL:</strong><br><br>
+        <input type="number" class="res-num" placeholder="00" min="1" max="60">
+        <input type="number" class="res-num" placeholder="00" min="1" max="60">
+        <input type="number" class="res-num" placeholder="00" min="1" max="60">
+        <input type="number" class="res-num" placeholder="00" min="1" max="60">
+        <input type="number" class="res-num" placeholder="00" min="1" max="60">
+        <input type="number" class="res-num" placeholder="00" min="1" max="60">
+        <br><br>
+        <button onclick="conferir()">CONFERIR JOGOS</button>
+    </div>
+
+    <table id="tabela-bolao">
+        <thead>
+            <tr>
+                <th>Participante</th>
+                <th colspan="6">Números</th>
+                <th>Acertos</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-corpo">
+            <tr><td colspan="8">Carregando dados do servidor...</td></tr>
+        </tbody>
+    </table>
+
+    <div class="footer-copy">by Reinaldo Pinheiro - 2026</div>
+</div>
+
+<script>
+    let apostas = [];
+
+    // Busca os dados do seu GitHub
+    async function carregarJogos() {
+        // AJUSTE O LINK ABAIXO PARA O SEU REPOSITÓRIO REAL
+        const url = "https://raw.githubusercontent.com/reinaldopinheiro/SEU_REPO/main/jogos.txt";
+        
+        try {
+            const resposta = await fetch(url);
+            if (!resposta.ok) throw new Error('Erro ao ler arquivo');
+            const texto = await resposta.text();
+            
+            const linhas = texto.trim().split("\n");
+            apostas = linhas.map((linha) => {
+                const partes = linha.split(";");
+                return {
+                    nome: partes[0].trim(),
+                    num: partes[1].split(",").map(n => parseInt(n.trim()))
+                };
+            });
+            renderizarTabela();
+        } catch (erro) {
+            document.getElementById('tabela-corpo').innerHTML = '<tr><td colspan="8" style="color:red">Erro ao carregar dados. Verifique o arquivo no GitHub.</td></tr>';
+        }
+    }
+
+    function renderizarTabela() {
+        const corpo = document.getElementById('tabela-corpo');
+        corpo.innerHTML = '';
+        
+        apostas.forEach(aposta => {
+            let linha = `<tr>
+                <td style="text-align:left; font-weight:bold;">${aposta.nome}</td>
+                ${aposta.num.map(n => `<td class="num-celula">${n}</td>`).join('')}
+                <td class="pontos-col">0</td>
+            </tr>`;
+            corpo.innerHTML += linha;
+        });
+    }
+
+    function conferir() {
+        const inputs = document.querySelectorAll('.res-num');
+        const resultado = Array.from(inputs).map(i => parseInt(i.value)).filter(n => !isNaN(n));
+
+        if (resultado.length < 6) {
+            alert("Por favor, preencha os 6 números do resultado.");
+            return;
+        }
+
+        const linhas = document.querySelectorAll('#tabela-corpo tr');
+
+        linhas.forEach((linha, index) => {
+            let acertos = 0;
+            const celulasNumeros = linha.querySelectorAll('.num-celula');
+            const celulaPontos = linha.querySelector('.pontos-col');
+
+            celulasNumeros.forEach(celula => {
+                const num = parseInt(celula.innerText);
+                if (resultado.includes(num)) {
+                    celula.classList.add('acerto');
+                    acertos++;
+                } else {
+                    celula.classList.remove('acerto');
+                }
+            });
+
+            celulaPontos.innerText = acertos;
+            
+            // Destaque para prêmios
+            if (acertos === 4) celulaPontos.style.color = "blue";
+            if (acertos === 5) celulaPontos.style.color = "orange";
+            if (acertos >= 6) celulaPontos.style.color = "green";
+        });
+    }
+
+    // Inicia o carregamento
+    carregarJogos();
+</script>
+
+</body>
+</html>
