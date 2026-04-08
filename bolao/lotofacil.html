@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Lotofacil v1.0 - Reinaldo Pinheiro</title>
+    <title>Lotofacil v1.1 - Reinaldo Pinheiro</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 5px; }
         .container { max-width: 1050px; margin: auto; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -11,6 +11,7 @@
         .v-meta { font-size: 0.65em; color: #999; }
 
         .panel { background: #f8fbff; border: 1px solid #d1d9e6; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
+        .manual-panel { background: #fff5f5; border: 1px solid #fab1a0; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; justify-content: center; }
         .form-group { display: flex; gap: 5px; justify-content: center; margin-bottom: 8px; }
         
         input { padding: 6px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 0.85em; }
@@ -19,22 +20,21 @@
         .btn-save { background: #2980b9; color: white; }
         .btn-html { background: #e67e22; color: white; }
         .btn-del { background: #e74c3c; color: white; padding: 2px 5px; font-size: 0.8em; }
+        .btn-manual { background: #d63031; color: white; }
 
-        /* Alterado para auto para que as colunas se ajustem ao conteúdo */
         table { width: 100%; border-collapse: collapse; table-layout: auto; }
         th { background: #34495e; color: white; padding: 5px 1px; font-size: 0.7em; }
         td { border-bottom: 1px solid #eee; padding: 4px 0px; text-align: center; font-size: 0.85em; }
         
         .col-id { width: 25px; color: #999; }
 
-        /* AJUSTE SOLICITADO: Espaço de 10 caracteres entre nome e números */
         .col-nome { 
             text-align: left; 
             padding-left: 5px; 
-            padding-right: 10ch; /* Cria o vácuo de exatamente 10 caracteres */
+            padding-right: 10ch; 
             font-weight: 500; 
             white-space: nowrap; 
-            width: 1%; /* Força a coluna a ocupar o mínimo possível antes do padding */
+            width: 1%; 
         }
 
         .col-num { width: 25px; }
@@ -70,8 +70,14 @@
             <button class="btn btn-save" onclick="exportarArquivo('apostas_lotofacil.rpc')">💾 Salvar .RPC</button>
             <button class="btn btn-html" onclick="gerarRelatorioHTML()">📄 Gerar HTML</button>
             <input type="number" id="cID" placeholder="Concurso" style="width: 80px; padding: 4px;">
-            <button class="btn" style="background:#34495e; color:white;" onclick="buscarResultado()">Conferir</button>
+            <button class="btn" style="background:#34495e; color:white;" onclick="buscarResultado()">Conferir API</button>
         </div>
+    </div>
+
+    <div class="manual-panel">
+        <strong style="font-size: 0.75em; color: #d63031;">CONFERÊNCIA MANUAL:</strong>
+        <input type="text" id="manualNums" placeholder="Insira as 15 dezenas do resultado aqui..." style="width: 350px; border-color: #fab1a0;">
+        <button class="btn btn-manual" onclick="conferirManual()">Conferir Manualmente</button>
     </div>
 
     <table>
@@ -135,6 +141,25 @@
                     .sort((a, b) => a - b);
     }
 
+    // Função para conferência manual
+    function conferirManual() {
+        const raw = document.getElementById('manualNums').value;
+        const dezenasSorteadas = processarNumeros(raw);
+
+        if (dezenasSorteadas.length !== 15) {
+            return alert("Por favor, insira exatamente 15 dezenas válidas para conferir.");
+        }
+
+        sorteioAtual = dezenasSorteadas;
+        concursoInfo = "Conferência Manual (Resultado Digitado)";
+        
+        const info = document.getElementById('info-res');
+        info.style.display = "block";
+        info.innerHTML = `⚠️ <strong>${concursoInfo}:</strong> ${sorteioAtual.map(n => n < 10 ? '0'+n : n).join(' - ')}`;
+        
+        renderizar();
+    }
+
     function renderizar() {
         const corpo = document.getElementById('corpoTabela');
         corpo.innerHTML = "";
@@ -172,7 +197,7 @@
             info.innerHTML = `✅ ${concursoInfo}: ${data.dezenas.join(' - ')}`;
             renderizar();
         } catch (e) { 
-            info.innerHTML = "❌ Erro ao buscar resultado. Tente novamente."; 
+            info.innerHTML = "❌ Erro ao buscar resultado. Verifique se o concurso já saiu ou tente a conferência manual."; 
         }
     }
 
