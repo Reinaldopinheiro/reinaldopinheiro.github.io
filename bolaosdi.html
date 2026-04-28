@@ -11,10 +11,24 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
         th { background-color: #f8f8f8; }
-        .acerto { background-color: #4CAF50 !important; color: white !important; font-weight: bold; border-radius: 50%; }
+        
+        /* Ajuste para o círculo de acerto ficar perfeito */
+        .acerto { 
+            background-color: #4CAF50 !important; 
+            color: white !important; 
+            font-weight: bold; 
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border-radius: 50%;
+        }
+        
         .pontos-col { font-weight: bold; color: #d32f2f; }
         #info-concurso { font-weight: bold; color: #1976d2; margin-bottom: 10px; }
         tr:hover { background-color: #f9f9f9; }
+        button { padding: 10px 20px; cursor: pointer; background: #1976d2; color: white; border: none; border-radius: 5px; font-weight: bold; }
+        button:hover { background: #1565c0; }
     </style>
 </head>
 <body>
@@ -52,35 +66,35 @@
 </div>
 
 <script>
+    // Padronizado para "num" minúsculo para evitar erros de referência
     const apostas = [
-		{ nome: "Ademir",Num: [7,8,14,36,48,60] },
-		{ nome: "Ademir2",Num: [1,9,10,23,44,55] },
-		{ nome: "Alessandra",Num: [1,7,10,22,27,28] },
-		{ nome: "Andrea",Num: [9,13,21,32,33,59] },
-		{ nome: "Andrea2",Num: [1,3,11,27,42,49] },
-		{ nome: "Andre",Num: [1,9,19,22,23,46] },
-		{ nome: "Andre2",Num: [2,7,17,32,34,54] },
-		{ nome: "Eliana",Num: [8,9,15,22,26,60] },
+        { nome: "Ademir", num: [7,8,14,36,48,60] },
+        { nome: "Ademir2", num: [1,9,10,23,44,55] },
+        { nome: "Alessandra", num: [1,7,10,22,27,28] },
+        { nome: "Andrea", num: [9,13,21,32,33,59] },
+        { nome: "Andrea2", num: [1,3,11,27,42,49] },
+        { nome: "Andre", num: [1,9,19,22,23,46] },
+        { nome: "Andre2", num: [2,7,17,32,34,54] },
+        { nome: "Eliana", num: [8,9,15,22,26,60] },
         { nome: "Flavio", num: [6,13,22,46,53,57] },
-		{ nome: "Flavio2", num: [04,21,29,34,43,55] },
-		{ nome: "Flavio3", num: [04,21,29,34,43,56] },
-		{ nome: "Katia",Num: [1,4,10,23,45,58] },
-		{ nome: "Larissa",Num: [7,23,26,34,35,37] },
-		{ nome: "Larissa2",Num: [3,6,19,21,33,48] },
-		{ nome: "Lucia",Num: [6,9,13,23,28,37] },
-		{ nome: "Lucia2",Num: [2,10,14,24,35,42] },
-        { nome: "Margarete",Num: [7,16,24,36,41,58] },
-		{ nome: "Margarete2",Num: [2,13,21,30,49,57] },
-		{ nome: "Reinaldo",Num: [1,6,10,23,32,52] },
-		{ nome: "Reinaldo2",Num: [7,13,22,36,49,60] }
-		{ nome: "Rodrigo",Num: [7,14,23,36,45,52] },
-		{ nome: "Rodrigo2",Num: [14,17,19,33,49,51] },
-		{ nome: "Selma",Num: [4,21,29,34,43,55] },
-		{ nome: "Selma2",Num: [6,13,22,46,53,57] },
-		{ nome: "Soraya",Num: [6,20,28,35,44,52] },
-		{ nome: "Valquiria",Num: [2,24,29,47,51,60] },
-		{ nome: "Valquiria2",Num: [3,18,22,35,52,59] }
-
+        { nome: "Flavio2", num: [4,21,29,34,43,55] },
+        { nome: "Flavio3", num: [4,21,29,34,43,56] },
+        { nome: "Katia", num: [1,4,10,23,45,58] },
+        { nome: "Larissa", num: [7,23,26,34,35,37] },
+        { nome: "Larissa2", num: [3,6,19,21,33,48] },
+        { nome: "Lucia", num: [6,9,13,23,28,37] },
+        { nome: "Lucia2", num: [2,10,14,24,35,42] },
+        { nome: "Margarete", num: [7,16,24,36,41,58] },
+        { nome: "Margarete2", num: [2,13,21,30,49,57] },
+        { nome: "Reinaldo", num: [1,6,10,23,32,52] },
+        { nome: "Reinaldo2", num: [7,13,22,36,49,60] },
+        { nome: "Rodrigo", num: [7,14,23,36,45,52] },
+        { nome: "Rodrigo2", num: [14,17,19,33,49,51] },
+        { nome: "Selma", num: [4,21,29,34,43,55] },
+        { nome: "Selma2", num: [6,13,22,46,53,57] },
+        { nome: "Soraya", num: [6,20,28,35,44,52] },
+        { nome: "Valquiria", num: [2,24,29,47,51,60] },
+        { nome: "Valquiria2", num: [3,18,22,35,52,59] }
     ];
 
     async function buscarUltimoResultado() {
@@ -106,10 +120,13 @@
         corpo.innerHTML = '';
         
         apostas.forEach((aposta, index) => {
+            // Criamos as células dos números primeiro
+            const celulasNumeros = aposta.num.map(n => `<td><span class="celula-num">${n}</span></td>`).join('');
+            
             let linha = `<tr>
                 <td>${aposta.nome}</td>
                 <td>Jogo ${index + 1}</td>
-                ${aposta.num.map(n => `<td class="celula-num">${n}</td>`).join('')}
+                ${celulasNumeros}
                 <td class="pontos-col" id="pontos-${index}">0</td>
             </tr>`;
             corpo.innerHTML += linha;
@@ -120,17 +137,18 @@
         const inputs = document.querySelectorAll('.res-num');
         const resultado = Array.from(inputs).map(i => parseInt(i.value)).filter(n => !isNaN(n));
 
-        document.querySelectorAll('.celula-num').forEach(td => td.classList.remove('acerto'));
+        // Limpa destaques anteriores
+        document.querySelectorAll('.celula-num').forEach(span => span.classList.remove('acerto'));
 
         apostas.forEach((aposta, index) => {
             let acertos = 0;
             const linhaAtual = document.getElementById(`pontos-${index}`).parentElement;
-            const celulasDaLinha = linhaAtual.querySelectorAll('.celula-num');
+            const spansDaLinha = linhaAtual.querySelectorAll('.celula-num');
 
-            celulasDaLinha.forEach(celula => {
-                const numCel = parseInt(celula.innerText);
+            spansDaLinha.forEach(span => {
+                const numCel = parseInt(span.innerText);
                 if (resultado.includes(numCel)) {
-                    celula.classList.add('acerto');
+                    span.classList.add('acerto');
                     acertos++;
                 }
             });
@@ -139,6 +157,7 @@
         });
     }
 
+    // Inicialização
     renderizarTabela();
     buscarUltimoResultado();
 </script>
