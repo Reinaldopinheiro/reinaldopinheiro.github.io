@@ -87,10 +87,16 @@
 
         <div id="mata-mata" class="tab-content">
             <div class="subtabs-container">
-                <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos (16 jogos)</button>
+                <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos (16j)</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-16', event)">Oitavas de Final (8j)</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-8', event)">Quartas de Final (4j)</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-4', event)">Semifinais (2j)</button>
                 <button class="subtab-btn" onclick="switchSubTab('fase-final', event)">Final 🏆</button>
             </div>
             <div id="fase-32" class="subtab-content active"><div class="table-wrapper"><table><thead><tr><th class="center">Jogo</th><th class="center">Data/Hora</th><th class="right">Equipe 1</th><th class="center">Placar</th><th>Equipe 2</th><th>Cidade</th></tr></thead><tbody id="fase32-tbody"></tbody></table></div></div>
+            <div id="fase-16" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Jogo</th><th class="center">Data/Hora</th><th class="right">Equipe 1</th><th class="center">Placar</th><th>Equipe 2</th><th>Cidade</th></tr></thead><tbody id="fase16-tbody"></tbody></table></div></div>
+            <div id="fase-8" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Jogo</th><th class="center">Data/Hora</th><th class="right">Equipe 1</th><th class="center">Placar</th><th>Equipe 2</th><th>Cidade</th></tr></thead><tbody id="fase8-tbody"></tbody></table></div></div>
+            <div id="fase-4" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Jogo</th><th class="center">Data/Hora</th><th class="right">Equipe 1</th><th class="center">Placar</th><th>Equipe 2</th><th>Cidade</th></tr></thead><tbody id="fase4-tbody"></tbody></table></div></div>
             <div id="fase-final" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Fase</th><th class="center">Data/Hora</th><th class="right">Equipe 1</th><th class="center">Placar</th><th>Equipe 2</th><th>Cidade</th></tr></thead><tbody id="final-tbody"></tbody></table></div></div>
         </div>
     </div>
@@ -98,7 +104,7 @@
     <footer>Oferecimento: RPC - Reinaldo Pinheiro Consultoria</footer>
 
     <script>
-        // 1. BLOQUEIO CONTRA CÓPIAS PARA WEB ESTÁTICA
+        // Bloqueio contra cópia (Botão direito e atalhos F12, Ctrl+U, Ctrl+Shift+I)
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('keydown', e => {
             if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key.toUpperCase() === 'U')) {
@@ -162,7 +168,25 @@
             return jogos;
         }
 
+        function preencherFaseMataMata(tbodyId, qtdJogos, nomeFase) {
+            const tbody = document.getElementById(tbodyId);
+            tbody.innerHTML = '';
+            for(let i = 1; i <= qtdJogos; i++) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="center" style="font-weight:bold; color:#0d9488;">${nomeFase} [J${i}]</td>
+                    <td class="center">A definir</td>
+                    <td class="right"><span style="font-size:14px; margin:0 4px;">🏳️</span> Classificado ${2*i-1}</td>
+                    <td class="center"><div class="placar-wrapper"><div class="score"></div> x <div class="score"></div></div></td>
+                    <td><span style="font-size:14px; margin:0 4px;">🏳️</span> Classificado ${2*i}</td>
+                    <td>Arena FIFA</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
         function renderizarAplicativo() {
+            // Grupos e Classificação
             const containerGrupos = document.getElementById('groups-container');
             containerGrupos.innerHTML = '';
             Object.keys(timesPorGrupo).forEach(grupo => {
@@ -179,6 +203,7 @@
                 containerGrupos.appendChild(div);
             });
 
+            // Rodadas
             [1, 2, 3].forEach(numRodada => {
                 const tbody = document.getElementById(`rodada${numRodada}-tbody`);
                 tbody.innerHTML = '';
@@ -200,14 +225,13 @@
                 });
             });
 
-            const tbody32 = document.getElementById('fase32-tbody');
-            tbody32.innerHTML = '';
-            for(let i=1; i<=16; i++) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td class="center" style="font-weight:bold; color:#0d9488;">Dezesseis-avos [J${i}]</td><td class="center">A definir</td><td class="right">Classificado ${2*i-1}</td><td class="center"><div class="placar-wrapper"><div class="score"></div> x <div class="score"></div></div></td><td>Classificado ${2*i}</td><td>Arena FIFA</td>`;
-                tbody32.appendChild(tr);
-            }
+            // REPARADO: Preenchimento automático de todas as fases eliminatórias dinâmicas
+            preencherFaseMataMata('fase32-tbody', 16, 'Dezesseis-avos');
+            preencherFaseMataMata('fase16-tbody', 8, 'Oitavas');
+            preencherFaseMataMata('fase8-tbody', 4, 'Quartas');
+            preencherFaseMataMata('fase4-tbody', 2, 'Semifinal');
             
+            // Grande Final Fixada
             const tbodyFinal = document.getElementById('final-tbody');
             tbodyFinal.innerHTML = `<tr><td class="center" style="font-weight:bold; color:#1e3a8a; background-color:#e0f2fe;">Grande Final 🏆</td><td class="center" style="background-color:#e0f2fe; font-weight:bold;">19/07 - 17h</td><td class="right" style="background-color:#e0f2fe; font-weight:bold;"><span class="brasil-text">BRASIL</span> <span class="flag fi fi-br"></span></td><td class="center" style="background-color:#e0f2fe;"><div class="placar-wrapper"><div class="score" style="border-color:#1e3a8a;"></div> x <div class="score" style="border-color:#1e3a8a;"></div></div></td><td style="background-color:#e0f2fe; font-weight:bold;">Vencedor Semifinal 2</td><td style="background-color:#e0f2fe; font-weight:bold;">Nova York / NJ</td></tr>`;
         }
