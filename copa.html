@@ -130,18 +130,23 @@
         }
 
         const timesPorGrupo = {
-            "A": [ {"n":"México", "f":"mx"}, {"n":"África do Sul", "f":"za"}, {"n":"Coreia do Sul", "f":"kr"}, {"n":"Tchéquia", "f":"cz"} ],
-            "B": [ {"n":"Canadá", "f":"ca"}, {"n":"Bósnia", "f":"ba"}, {"n":"Catar", "f":"qa"}, {"n":"Suíça", "f":"ch"} ],
-            "C": [ {"n":"BRASIL", "f":"br", "b":true}, {"n":"Marrocos", "f":"ma"}, {"n":"Haiti", "f":"ht"}, {"n":"Escócia", "f":"gb-sct"} ],
-            "D": [ {"n":"Estados Unidos", "f":"us"}, {"n":"Paraguai", "f":"py"}, {"n":"Austrália", "f":"au"}, {"n":"Turquia", "f":"tr"} ],
-            "E": [ {"n":"Alemanha", "f":"de"}, {"n":"Curaçao", "f":"cw"}, {"n":"Costa do Marfim", "f":"ci"}, {"n":"Equador", "f":"ec"} ],
-            "F": [ {"n":"Países Baixos", "f":"nl"}, {"n":"Japão", "f":"jp"}, {"n":"Suécia", "f":"se"}, {"n":"Tunísia", "f":"tn"} ],
-            "G": [ {"n":"Bélgica", "f":"be"}, {"n":"Egito", "f":"eg"}, {"n":"Irã", "f":"ir"}, {"n":"Nova Zelândia", "f":"nz"} ],
-            "H": [ {"n":"Espanha", "f":"es"}, {"n":"Cabo Verde", "f":"cv"}, {"n":"Arábia Saudita", "f":"sa"}, {"n":"Uruguai", "f":"uy"} ],
-            "I": [ {"n":"França", "f":"fr"}, {"n":"Senegal", "f":"sn"}, {"n":"Iraque", "f":"iq"}, {"n":"Noruega", "f":"no"} ],
-            "J": [ {"n":"Argentina", "f":"ar"}, {"n":"Argélia", "f":"dz"}, {"n":"Áustria", "f":"at"}, {"n":"Jordânia", "f":"jo"} ],
-            "K": [ {"n":"Portugal", "f":"pt"}, {"n":"RD Congo", "f":"cd"}, {"n":"Uzbequistão", "f":"uz"}, {"n":"Colômbia", "f":"co"} ],
-            "L": [ {"n":"Inglaterra", "f":"gb-eng"}, {"n":"Croácia", "f":"hr"}, {"n":"Gana", "f":"gh"}, {"n":"Panamá", "f":"pa"} ]
+            "A": [ 
+                {"n":"México", "f":"mx", "p":3, "j":1, "sg":2}, 
+                {"n":"África do Sul", "f":"za", "p":0, "j":1, "sg":-2}, 
+                {"n":"Coreia do Sul", "f":"kr", "p":0, "j":0, "sg":0}, 
+                {"n":"Tchéquia", "f":"cz", "p":0, "j":0, "sg":0} 
+            ],
+            "B": [ {"n":"Canadá", "f":"ca", "p":0, "j":0, "sg":0}, {"n":"Bósnia", "f":"ba", "p":0, "j":0, "sg":0}, {"n":"Catar", "f":"qa", "p":0, "j":0, "sg":0}, {"n":"Suíça", "f":"ch", "p":0, "j":0, "sg":0} ],
+            "C": [ {"n":"BRASIL", "f":"br", "b":true, "p":0, "j":0, "sg":0}, {"n":"Marrocos", "f":"ma", "p":0, "j":0, "sg":0}, {"n":"Haiti", "f":"ht", "p":0, "j":0, "sg":0}, {"n":"Escócia", "f":"gb-sct", "p":0, "j":0, "sg":0} ],
+            "D": [ {"n":"Estados Unidos", "f":"us", "p":0, "j":0, "sg":0}, {"n":"Paraguai", "f":"py", "p":0, "j":0, "sg":0}, {"n":"Austrália", "f":"au", "p":0, "j":0, "sg":0}, {"n":"Turquia", "f":"tr", "p":0, "j":0, "sg":0} ],
+            "E": [ {"n":"Alemanha", "f":"de", "p":0, "j":0, "sg":0}, {"n":"Curaçao", "f":"cw", "p":0, "j":0, "sg":0}, {"n":"Costa do Marfim", "f":"ci", "p":0, "j":0, "sg":0}, {"n":"Equador", "f":"ec", "p":0, "j":0, "sg":0} ],
+            "F": [ {"n":"Países Baixos", "f":"nl", "p":0, "j":0, "sg":0}, {"n":"Japão", "f":"jp", "p":0, "j":0, "sg":0}, {"n":"Suécia", "f":"se", "p":0, "j":0, "sg":0}, {"n":"Tunísia", "f":"tn", "p":0, "j":0, "sg":0} ],
+            "G": [ {"n":"Bélgica", "f":"be", "p":0, "j":0, "sg":0}, {"n":"Egito", "f":"eg", "p":0, "j":0, "sg":0}, {"n":"Irã", "f":"ir", "p":0, "j":0, "sg":0}, {"n":"Nova Zelândia", "f":"nz", "p":0, "j":0, "sg":0} ],
+            "H": [ {"n":"Espanha", "f":"es", "p":0, "j":0, "sg":0}, {"n":"Cabo Verde", "f":"cv", "p":0, "j":0, "sg":0}, {"n":"Arábia Saudita", "f":"sa", "p":0, "j":0, "sg":0}, {"n":"Uruguai", "f":"uy", "p":0, "j":0, "sg":0} ],
+            "I": [ {"n":"França", "f":"fr", "p":0, "j":0, "sg":0}, {"n":"Senegal", "f":"sn", "p":0, "j":0, "sg":0}, {"n":"Iraque", "f":"iq", "p":0, "j":0, "sg":0}, {"n":"Noruega", "f":"no", "p":0, "j":0, "sg":0} ],
+            "J": [ {"n":"Argentina", "f":"ar", "p":0, "j":0, "sg":0}, {"n":"Argélia", "f":"dz", "p":0, "j":0, "sg":0}, {"n":"Áustria", "f":"at", "p":0, "j":0, "sg":0}, {"n":"Jordânia", "f":"jo", "p":0, "j":0, "sg":0} ],
+            "K": [ {"n":"Portugal", "f":"pt", "p":0, "j":0, "sg":0}, {"n":"RD Congo", "f":"cd", "p":0, "j":0, "sg":0}, {"n":"Uzbequistão", "f":"uz", "p":0, "j":0, "sg":0}, {"n":"Colômbia", "f":"co", "p":0, "j":0, "sg":0} ],
+            "L": [ {"n":"Inglaterra", "f":"gb-eng", "p":0, "j":0, "sg":0}, {"n":"Croácia", "f":"hr", "p":0, "j":0, "sg":0}, {"n":"Gana", "f":"gh", "p":0, "j":0, "sg":0}, {"n":"Panamá", "f":"pa", "p":0, "j":0, "sg":0} ]
         };
 
         function gerarJogosRodada(rodada) {
@@ -155,14 +160,19 @@
                 let hora = (14 + (idx % 3) * 3) + "h";
                 
                 if (rodada === 1) {
-                    jogos.push({ data: dataDia + "/06", hora: hora, grupo: g, t1: t[0].n, f1: t[0].f, t2: t[1].n, f2: t[1].f, est: estadios[idxEstadio%12], isBrasil: t[0].b || t[1].b }); idxEstadio++;
-                    jogos.push({ data: dataDia + "/06", hora: hora, grupo: g, t1: t[2].n, f1: t[2].f, t2: t[3].n, f2: t[3].f, est: estadios[idxEstadio%12], isBrasil: t[2].b || t[3].b }); idxEstadio++;
+                    // Primeiro jogo do Grupo A modificado estaticamente conforme regras solicitadas
+                    if(g === "A") {
+                        jogos.push({ data: dataDia + "/06", hora: hora, grupo: g, t1: t[0].n, f1: t[0].f, t2: t[1].n, f2: t[1].f, est: "Asteca", isBrasil: t[0].b || t[1].b, s1: 2, s2: 0 }); idxEstadio++;
+                    } else {
+                        jogos.push({ data: dataDia + "/06", hora: hora, group: g, t1: t[0].n, f1: t[0].f, t2: t[1].n, f2: t[1].f, est: estadios[idxEstadio%12], isBrasil: t[0].b || t[1].b, s1: "", s2: "" }); idxEstadio++;
+                    }
+                    jogos.push({ data: dataDia + "/06", hora: hora, grupo: g, t1: t[2].n, f1: t[2].f, t2: t[3].n, f2: t[3].f, est: estadios[idxEstadio%12], isBrasil: t[2].b || t[3].b, s1: "", s2: "" }); idxEstadio++;
                 } else if (rodada === 2) {
-                    jogos.push({ data: (dataDia+5) + "/06", hora: hora, grupo: g, t1: t[0].n, f1: t[0].f, t2: t[2].n, f2: t[2].f, est: estadios[idxEstadio%12], isBrasil: t[0].b || t[2].b }); idxEstadio++;
-                    jogos.push({ data: (dataDia+5) + "/06", hora: hora, grupo: g, t1: t[1].n, f1: t[1].f, t2: t[3].n, f2: t[3].f, est: estadios[idxEstadio%12], isBrasil: t[1].b || t[3].b }); idxEstadio++;
+                    jogos.push({ data: (dataDia+5) + "/06", hora: hora, grupo: g, t1: t[0].n, f1: t[0].f, t2: t[2].n, f2: t[2].f, est: estadios[idxEstadio%12], isBrasil: t[0].b || t[2].b, s1: "", s2: "" }); idxEstadio++;
+                    jogos.push({ data: (dataDia+5) + "/06", hora: hora, grupo: g, t1: t[1].n, f1: t[1].f, t2: t[3].n, f2: t[3].f, est: estadios[idxEstadio%12], isBrasil: t[1].b || t[3].b, s1: "", s2: "" }); idxEstadio++;
                 } else if (rodada === 3) {
-                    jogos.push({ data: (dataDia+10) + "/06", hora: "16h", grupo: g, t1: t[3].n, f1: t[3].f, t2: t[0].n, f2: t[0].f, est: estadios[idxEstadio%12], isBrasil: t[3].b || t[0].b }); idxEstadio++;
-                    jogos.push({ data: (dataDia+10) + "/06", hora: "16h", grupo: g, t1: t[1].n, f1: t[1].f, t2: t[2].n, f2: t[2].f, est: estadios[idxEstadio%12], isBrasil: t[1].b || t[2].b }); idxEstadio++;
+                    jogos.push({ data: (dataDia+10) + "/06", hora: "16h", grupo: g, t1: t[3].n, f1: t[3].f, t2: t[0].n, f2: t[0].f, est: estadios[idxEstadio%12], isBrasil: t[3].b || t[0].b, s1: "", s2: "" }); idxEstadio++;
+                    jogos.push({ data: (dataDia+10) + "/06", hora: "16h", grupo: g, t1: t[1].n, f1: t[1].f, t2: t[2].n, f2: t[2].f, est: estadios[idxEstadio%12], isBrasil: t[1].b || t[2].b, s1: "", s2: "" }); idxEstadio++;
                 }
             });
             return jogos;
@@ -196,7 +206,7 @@
                 timesPorGrupo[grupo].forEach(sel => {
                     let estiloRow = sel.b ? "class='brasil-row'" : "";
                     let classeTexto = sel.b ? "class='brasil-text'" : "";
-                    tabelaHTML += `<tr ${estiloRow}><td><span class="flag fi fi-${sel.f}"></span> <span ${classeTexto}>${sel.n}</span></td><td class="center c-p">0</td><td class="center">0</td><td class="center">0</td></tr>`;
+                    tabelaHTML += `<tr ${estiloRow}><td><span class="flag fi fi-${sel.f}"></span> <span ${classeTexto}>${sel.n}</span></td><td class="center c-p">${sel.p}</td><td class="center">${sel.j}</td><td class="center">${sel.sg}</td></tr>`;
                 });
                 tabelaHTML += `</tbody></table>`;
                 div.innerHTML = tabelaHTML;
@@ -217,7 +227,7 @@
                         <td class="center date-col">${j.data}<br><span style="font-size:11px; font-weight:normal; color:#64748b;">${j.hora}</span></td>
                         <td class="center"><span class="group-badge">${j.grupo}</span></td>
                         <td class="right"><span ${bClassT1}>${j.t1}</span> <span class="flag fi fi-${j.f1}"></span></td>
-                        <td class="center"><div class="placar-wrapper"><div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div></div></td>
+                        <td class="center"><div class="placar-wrapper"><div class="score">${j.s1}</div><span style="color:#94a3b8;">x</span><div class="score">${j.s2}</div></div></td>
                         <td><span class="flag fi fi-${j.f2}"></span> <span ${bClassT2}>${j.t2}</span></td>
                         <td style="color:#64748b; font-size:12px;">${j.est}</td>
                     `;
