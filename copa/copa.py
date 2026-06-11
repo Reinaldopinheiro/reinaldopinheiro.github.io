@@ -4,10 +4,13 @@ from datetime import datetime
 import requests  # Biblioteca para buscar os dados na internet
 from git import Repo
 
+# Desativa os avisos visuais no terminal por estar ignorando o certificado SSL
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 # ==========================================
 # CONFIGURAÇÕES DA API REAL (CHAVE EM CONTA)
 # ==========================================
-# Sua chave oficial ativa do painel api-football
 API_KEY_FUTEBOL = "60a92317a4d108039cf95eb34f443302" 
 
 # ID Oficial da Copa do Mundo da FIFA na API (Geralmente ID 1)
@@ -16,14 +19,13 @@ ID_CAMPEONATO_COPA = 1
 # ==========================================
 # CONFIGURAÇÕES DO GITHUB
 # ==========================================
-# Mantendo o padrão para rodar direto na pasta do repositório
 CAMINHO_REPOSITORIO_LOCAL = "./"  
 BRANCH_GITHUB = "main"
 
 # ==========================================
 # METADADOS E INFORMAÇÕES DO APLICATIVO
 # ==========================================
-VERSAO = "v3.2.1 (Live API RPC Header - Fixed)"
+VERSAO = "v3.2.2 (SSL Bypass & Error Handling)"
 DATA_VERSAO = "11/06/2026"
 COPYRIGHT = "© 2026 RPC - Reinaldo Pinheiro Consultoria. Todos os direitos reservados."
 
@@ -90,7 +92,8 @@ def buscar_dados_reais_api():
     }
     jogos_rodadas = {1: [], 2: [], 3: []}
     try:
-        response = requests.get(url, headers=headers, timeout=15)
+        # verify=False adicionado para contornar o bloqueio de certificado SSL corporativo
+        response = requests.get(url, headers=headers, timeout=15, verify=False)
         dados_api = response.json()
         if "response" not in dados_api or len(dados_api["response"]) == 0:
             return None
@@ -126,7 +129,7 @@ def buscar_dados_reais_api():
             })
         return jogos_rodadas
     except Exception as e:
-        print(f"❌ Falha ao acessar a API: {e}")
+        print(f"❌ Falha ao acessar a API (Problema de Conexão/SSL): {e}")
         return None
 
 def atualizar_classificacao(jogos_rodadas):
@@ -155,6 +158,10 @@ def atualizar_classificacao(jogos_rodadas):
     return classificacao_limpa
 
 def compilar_html(classificacao, jogos_rodadas):
+    # Proteção caso a api tenha retornado falha (None)
+    if jogos_rodadas is None:
+        jogos_rodadas = {1: [], 2: [], 3: []}
+
     html = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -419,9 +426,14 @@ if __name__ == "__main__":
     
     while True:
         dados_reais = buscar_dados_reais_api()
-        tabela_calculada = atualizar_classificacao(dados_reais)
-        compilar_html(tabela_calculada, dados_reais)
-        fazer_upload_github()
+        
+        # Só compila e atualiza se os dados forem baixados com sucesso
+        if dados_reais is not None:
+            tabela_calculada = atualizar_classificacao(dados_reais)
+            compilar_html(tabela_calculada, dados_reais)
+            fazer_upload_github()
+        else:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ Pulando esta rodada devido a problemas temporários de conexão com a API.")
             
         print(f"[{datetime.now().strftime('%H:%M:%S')}] Dormindo por 60 segundos...")
         time.sleep(60)
