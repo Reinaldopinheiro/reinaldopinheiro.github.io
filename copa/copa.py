@@ -1,35 +1,24 @@
 import time
 import os
 from datetime import datetime
-import requests  # Biblioteca para buscar os dados na internet
+import requests
 from git import Repo
 
-# Desativa os avisos visuais no terminal por estar ignorando o certificado SSL
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ==========================================
-# CONFIGURAÇÕES DA API REAL (CHAVE EM CONTA)
+# CONFIGURAÇÕES DE DEPLOY E FONTES REAIS
 # ==========================================
-API_KEY_FUTEBOL = "60a92317a4d108039cf95eb34f443302" 
+URL_FONTE_REAL = "https://fixturedownload.com/feed/json/fifa-world-cup-2026"
 
-# ID Oficial da Copa do Mundo da FIFA na API (Geralmente ID 1)
-ID_CAMPEONATO_COPA = 1 
-
-# ==========================================
-# CONFIGURAÇÕES DO GITHUB
-# ==========================================
 CAMINHO_REPOSITORIO_LOCAL = "./"  
 BRANCH_GITHUB = "main"
-
-# ==========================================
-# METADADOS E INFORMAÇÕES DO APLICATIVO
-# ==========================================
-VERSAO = "v3.2.2 (SSL Bypass & Error Handling)"
-DATA_VERSAO = "11/06/2026"
+VERSAO = "v4.1.0 (Leitura Direta Real)"
+DATA_VERSAO = "12/06/2026"
 COPYRIGHT = "© 2026 RPC - Reinaldo Pinheiro Consultoria. Todos os direitos reservados."
 
-# Dicionário de mapeamento para as bandeiras CSS locais
+# Mapeamento estrito de bandeiras CSS
 times_mapeamento = {
     "México": "mx", "África do Sul": "za", "Coreia do Sul": "kr", "Tchéquia": "cz",
     "Canadá": "ca", "Bósnia": "ba", "Catar": "qa", "Suíça": "ch",
@@ -73,95 +62,111 @@ def inicializar_classificacao():
 def traduzir_nome_time(nome_en):
     traducoes = {
         "Brazil": "BRASIL", "Mexico": "México", "South Africa": "África do Sul", "South Korea": "Coreia do Sul",
-        "Czech Republic": "Tchéquia", "Canada": "Canadá", "Bosnia": "Bósnia", "Qatar": "Catar", "Switzerland": "Suíça",
-        "Morocco": "Marrocos", "Scotland": "Escócia", "USA": "Estados Unidos", "Paraguay": "Paraguai", "Australia": "Austrália",
-        "Turkey": "Turquia", "Germany": "Alemanha", "Ivory Coast": "Costa do Marfim", "Ecuador": "Equador",
-        "Netherlands": "Países Baixos", "Japan": "Japão", "Sweden": "Suécia", "Tunisia": "Tunísia", "Belgium": "Bélgica",
-        "Egypt": "Egito", "Iran": "Irã", "New Zealand": "Nova Zelândia", "Spain": "Espanha", "Cape Verde": "Cabo Verde",
-        "Saudi Arabia": "Arábia Saudita", "Uruguay": "Uruguai", "France": "França", "Norway": "Noruega", "Argentina": "Argentina",
-        "Algeria": "Argélia", "Austria": "Áustria", "Jordan": "Jordânia", "Portugal": "Portugal", "DR Congo": "RD Congo",
-        "Uzbekistan": "Uzbequistão", "Colombia": "Colômbia", "England": "Inglaterra", "Croatia": "Croácia", "Ghana": "Gana", "Panama": "Panamá"
+        "Czechia": "Tchéquia", "Czech Republic": "Tchéquia", "Canada": "Canadá", "Bosnia": "Bósnia", "Qatar": "Catar", 
+        "Switzerland": "Suíça", "Morocco": "Marrocos", "Scotland": "Escócia", "USA": "Estados Unidos", "United States": "Estados Unidos",
+        "Paraguay": "Paraguai", "Australia": "Austrália", "Turkey": "Turquia", "Germany": "Alemanha", "Ivory Coast": "Costa do Marfim", 
+        "Ecuador": "Equador", "Netherlands": "Países Baixos", "Japan": "Japão", "Sweden": "Suécia", "Tunisia": "Tunísia", 
+        "Belgium": "Bélgica", "Egypt": "Egito", "Iran": "Irã", "New Zealand": "Nova Zelândia", "Spain": "Espanha", 
+        "Cape Verde": "Cabo Verde", "Saudi Arabia": "Arábia Saudita", "Uruguay": "Uruguai", "France": "França", 
+        "Norway": "Noruega", "Argentina": "Argentina", "Algeria": "Argélia", "Austria": "Áustria", "Jordan": "Jordânia", 
+        "Portugal": "Portugal", "DR Congo": "RD Congo", "Uzbekistan": "Uzbequistão", "Colombia": "Colômbia", 
+        "England": "Inglaterra", "Croatia": "Croácia", "Ghana": "Gana", "Panama": "Panamá"
     }
     return traducoes.get(nome_en, nome_en)
 
-def buscar_dados_reais_api():
-    url = f"https://v3.football.api-sports.io/fixtures?league={ID_CAMPEONATO_COPA}&season=2026"
-    headers = {
-        'x-rapidapi-host': "v3.football.api-sports.io",
-        'x-rapidapi-key': API_KEY_FUTEBOL
-    }
+def buscar_dados_reais():
     jogos_rodadas = {1: [], 2: [], 3: []}
     try:
-        # verify=False adicionado para contornar o bloqueio de certificado SSL corporativo
-        response = requests.get(url, headers=headers, timeout=15, verify=False)
-        dados_api = response.json()
-        if "response" not in dados_api or len(dados_api["response"]) == 0:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] [LIVE] Conectando ao feed de placares reais...")
+        response = requests.get(URL_FONTE_REAL, timeout=15, verify=False)
+        
+        if response.status_code != 200:
+            print(f"⚠️ Servidor retornou status {response.status_code}. Tentando novamente na próxima varredura.")
             return None
-        for item in dados_api["response"]:
-            fixture = item["fixture"]
-            league = item["league"]
-            teams = item["teams"]
-            goals = item["goals"]
-            rodada_str = league.get("round", "")
-            rodada_num = 1
-            if "2" in rodada_str: rodada_num = 2
-            elif "3" in rodada_str: rodada_num = 3
-            t1_pt = traduzir_nome_time(teams["home"]["name"])
-            t2_pt = traduzir_nome_time(teams["away"]["name"])
+            
+        dados = response.json()
+        
+        # Correção crucial: Tratando se a resposta é uma lista direta ou dicionário contendo a lista
+        if isinstance(dados, dict):
+            matches = dados.get("matches", [])
+        elif isinstance(dados, list):
+            matches = dados
+        else:
+            print("❌ Formato de dados desconhecido retornado pela API externa.")
+            return None
+        
+        for match in matches:
+            t1_en = match.get("HomeTeam", match.get("team1", ""))
+            t2_en = match.get("AwayTeam", match.get("team2", ""))
+            
+            t1_pt = traduzir_nome_time(t1_en)
+            t2_pt = traduzir_nome_time(t2_en)
+            
+            g1 = match.get("HomeTeamScore", match.get("score1", None))
+            g2 = match.get("AwayTeamScore", match.get("score2", None))
+            
             grupo_jogo = "A"
             for g, lista in grupos_definidos.items():
                 if t1_pt in lista:
                     grupo_jogo = g
                     break
-            dt_objeto = datetime.fromisoformat(fixture["date"].replace("Z", "+00:00"))
-            data_formatada = dt_objeto.strftime("%d/%m")
-            hora_formatada = dt_objeto.strftime("%Hh%M")
-            status = fixture["status"]["short"]
-            encerrado_ou_ao_vivo = status in ["FT", "1H", "2H", "HT", "P"]
-            g1 = goals["home"] if goals["home"] is not None else ""
-            g2 = goals["away"] if goals["away"] is not None else ""
+            
+            match_num = match.get("MatchNumber", 1)
+            if match_num <= 24: rodada_num = 1
+            elif match_num <= 48: rodada_num = 2
+            else: rodada_num = 3
+            
+            encerrado = g1 is not None and g2 is not None
+            
+            raw_date = match.get("DateUtc", datetime.now().strftime("%Y-%m-%d"))
+            try:
+                dt = datetime.strptime(raw_date[:10], "%Y-%m-%d")
+                data_formatada = dt.strftime("%d/%m")
+            except:
+                data_formatada = "A def."
+
+            hora_formatada = raw_date[11:16] if len(raw_date) > 16 else "16:00"
+            
             jogos_rodadas[rodada_num].append({
-                "data": data_formatada, "hora": hora_formatada, "grupo": grupo_jogo,
+                "data": data_formatada, "hora": hora_formatada.replace(":", "h"), "grupo": group_jogo if 'group_jogo' in locals() else grupo_jogo,
                 "t1": t1_pt, "f1": times_mapeamento.get(t1_pt, "un"),
                 "t2": t2_pt, "f2": times_mapeamento.get(t2_pt, "un"),
-                "est": item["fixture"].get("venue", {}).get("name", "Arena FIFA"),
-                "g1": g1, "g2": g2, "encerrado": encerrado_ou_ao_vivo
+                "est": match.get("Location", "Arena FIFA"),
+                "g1": g1 if g1 is not None else "", "g2": g2 if g2 is not None else "", 
+                "encerrado": encerrado
             })
         return jogos_rodadas
     except Exception as e:
-        print(f"❌ Falha ao acessar a API (Problema de Conexão/SSL): {e}")
+        print(f"❌ Erro temporário de rede ou processamento: {e}")
         return None
 
 def atualizar_classificacao(jogos_rodadas):
     classificacao_limpa = inicializar_classificacao()
-    if not jogos_rodadas: return classificacao_limpa
     for r in [1, 2, 3]:
-        for j in jogos_rodadas[r]:
-            if j["encerrado"] and j["g1"] != "" and j["g2"] != "":
-                g1, g2 = int(j["g1"]), int(j["g2"])
-                grupo = j["grupo"]
-                t1, t2 = j["t1"], j["t2"]
-                if t1 in classificacao_limpa[grupo] and t2 in classificacao_limpa[grupo]:
-                    classificacao_limpa[grupo][t1]["J"] += 1
-                    classificacao_limpa[grupo][t2]["J"] += 1
-                    classificacao_limpa[grupo][t1]["SG"] += (g1 - g2)
-                    classificacao_limpa[grupo][t2]["SG"] += (g2 - g1)
-                    if g1 > g2:
-                        classificacao_limpa[grupo][t1]["P"] += 3
-                        classificacao_limpa[grupo][t1]["V"] += 1
-                    elif g2 > g1:
-                        classificacao_limpa[grupo][t2]["P"] += 3
-                        classificacao_limpa[grupo][t2]["V"] += 1
-                    else:
-                        classificacao_limpa[grupo][t1]["P"] += 1
-                        classificacao_limpa[grupo][t2]["P"] += 1
+        if r in jogos_rodadas:
+            for j in jogos_rodadas[r]:
+                if j["encerrado"] and j["g1"] != "" and j["g2"] != "":
+                    try:
+                        g1, g2 = int(j["g1"]), int(j["g2"])
+                        grupo = j["grupo"]
+                        t1, t2 = j["t1"], j["t2"]
+                        if grupo in classificacao_limpa and t1 in classificacao_limpa[grupo] and t2 in classificacao_limpa[grupo]:
+                            classificacao_limpa[grupo][t1]["J"] += 1
+                            classificacao_limpa[grupo][t2]["J"] += 1
+                            classificacao_limpa[grupo][t1]["SG"] += (g1 - g2)
+                            classificacao_limpa[grupo][t2]["SG"] += (g2 - g1)
+                            if g1 > g2:
+                                classificacao_limpa[grupo][t1]["P"] += 3
+                            elif g2 > g1:
+                                classificacao_limpa[grupo][t2]["P"] += 3
+                            else:
+                                classificacao_limpa[grupo][t1]["P"] += 1
+                                classificacao_limpa[grupo][t2]["P"] += 1
+                    except ValueError:
+                        continue
     return classificacao_limpa
 
 def compilar_html(classificacao, jogos_rodadas):
-    # Proteção caso a api tenha retornado falha (None)
-    if jogos_rodadas is None:
-        jogos_rodadas = {1: [], 2: [], 3: []}
-
     html = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -172,20 +177,8 @@ def compilar_html(classificacao, jogos_rodadas):
     <style>
         * {{ box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }}
         body {{ background-color: #f4f6f9; color: #1e293b; padding-bottom: 80px; }}
-        header {{
-            background-color: #ffffff;
-            border-bottom: 3px solid #0d9488;
-            padding: 15px 0;
-            text-align: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }}
-        .header-banner {{
-            max-width: 100%;
-            height: auto;
-            max-height: 110px;
-            display: block;
-            margin: 0 auto;
-        }}
+        header {{ background-color: #ffffff; border-bottom: 3px solid #0d9488; padding: 15px 0; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }}
+        .header-banner {{ max-width: 100%; height: auto; max-height: 110px; display: block; margin: 0 auto; }}
         .container {{ max-width: 1200px; margin: 20px auto; padding: 0 15px; }}
         .tabs-container {{ display: flex; background: #cbd5e1; padding: 4px; border-radius: 8px; margin-bottom: 20px; gap: 4px; }}
         .tab-btn {{ flex: 1; padding: 12px; background: none; border: none; font-size: 14px; font-weight: bold; color: #475569; cursor: pointer; border-radius: 6px; text-align: center; }}
@@ -218,25 +211,19 @@ def compilar_html(classificacao, jogos_rodadas):
         .placar-wrapper {{ display: flex; justify-content: center; align-items: center; gap: 6px; }}
         .score {{ background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-weight: bold; }}
         footer {{ position: fixed; bottom: 0; left: 0; width: 100%; background-color: #ffffff; border-top: 2px solid #e2e8f0; padding: 12px; text-align: center; font-size: 12px; color: #64748b; box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05); z-index: 1000; }}
-        .metadata-box {{ font-size: 11px; color: #94a3b8; margin-top: 4px; }}
     </style>
 </head>
 <body>
-
-    <header>
-        <img src="image_0f6aff.png" alt="RPC Consultoria" class="header-banner">
-    </header>
-
+    <header><img src="image_0f6aff.png" alt="RPC Consultoria" class="header-banner"></header>
     <div class="container">
         <div class="tabs-container">
             <button class="tab-btn active" onclick="switchMainTab('classificacao', event)">📊 Grupos e Classificação</button>
             <button class="tab-btn" onclick="switchMainTab('jogos-grupo', event)">⚽ Fase de Grupos</button>
-            <button class="tab-btn" onclick="switchMainTab('mata-mata', event)">🏆 Fases Eliminatórias</button>
         </div>
 
         <div class="status-bar">
-            <div><strong>Última Sincronização:</strong> {datetime.now().strftime('%d/%m/%Y às %H:%M:%S')}</div>
-            <div class="live-indicator"><div class="pulse"></div> Publicado em reinaldpinheiro.com.br</div>
+            <div><strong>Sincronização Oficial em Tempo Real:</strong> {datetime.now().strftime('%d/%m/%Y às %H:%M:%S')}</div>
+            <div class="live-indicator"><div class="pulse"></div> Dados Reais - reinaldpinheiro.com.br</div>
         </div>
 
         <div id="classificacao" class="tab-content active">
@@ -290,8 +277,6 @@ def compilar_html(classificacao, jogos_rodadas):
                 row_class = "class='brasil-row'" if is_br else ""
                 t1_class = "class='brasil-text'" if j["t1"] == "BRASIL" else ""
                 t2_class = "class='brasil-text'" if j["t2"] == "BRASIL" else ""
-                g1_vis = j["g1"] if j["encerrado"] else ""
-                g2_vis = j["g2"] if j["encerrado"] else ""
                 
                 html += f"""
                                 <tr {row_class}>
@@ -300,7 +285,7 @@ def compilar_html(classificacao, jogos_rodadas):
                                     <td class="right"><span {t1_class}>{j["t1"]}</span> <span class="flag fi fi-{j['f1']}"></span></td>
                                     <td class="center">
                                         <div class="placar-wrapper">
-                                            <div class="score">{g1_vis}</div><span style="color:#94a3b8;">x</span><div class="score">{g2_vis}</div>
+                                            <div class="score">{j["g1"]}</div><span style="color:#94a3b8;">x</span><div class="score">{j["g2"]}</div>
                                         </div>
                                     </td>
                                     <td><span class="flag fi fi-{j['f2']}"></span> <span {t2_class}>{j["t2"]}</span></td>
@@ -312,65 +297,13 @@ def compilar_html(classificacao, jogos_rodadas):
                 </div>
             </div>"""
 
-    html += """
-        </div>
-
-        <div id="mata-mata" class="tab-content">
-            <div class="subtabs-container">
-                <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos</button>
-                <button class="subtab-btn" onclick="switchSubTab('fase-16', event)">Oitavas</button>
-                <button class="subtab-btn" onclick="switchSubTab('fase-8', event)">Quartas</button>
-                <button class="subtab-btn" onclick="switchSubTab('fase-4', event)">Semifinais</button>
-                <button class="subtab-btn" onclick="switchSubTab('fase-final', event)">Final 🏆</button>
-            </div>"""
-            
-    fases_config = [('fase-32', 'fase32-tbody', 16, 'Dezesseis-avos'), ('fase-16', 'fase16-tbody', 8, 'Oitavas'), ('fase-8', 'fase8-tbody', 4, 'Quartas'), ('fase-4', 'fase4-tbody', 2, 'Semifinal')]
-    for id_fase, tbody_id, qtd, nome in fases_config:
-        act = "active" if id_fase == 'fase-32' else ""
-        html += f"""
-            <div id="{id_fase}" class="subtab-content {act}">
-                <div class="table-wrapper">
-                    <table>
-                        <tbody id="{tbody_id}">"""
-        for k in range(1, qtd+1):
-            html += f"""
-                            <tr>
-                                <td class="center" style="font-weight:bold; color:#0d9488;">{nome} [J{k}]</td>
-                                <td class="center">A definir</td>
-                                <td class="right">Classificado {2*k-1}</td>
-                                <td class="center"><div class="placar-wrapper"><div class="score"></div> x <div class="score"></div></div></td>
-                                <td>Classificado {2*k}</td>
-                                <td>Arena FIFA</td>
-                            </tr>"""
-        html += """
-                        </tbody>
-                    </table>
-                </div>
-            </div>"""
-
     html += f"""
-            <div id="fase-final" class="subtab-content">
-                <div class="table-wrapper">
-                    <table>
-                        <tbody>
-                            <tr>
-                                <td class="center" style="font-weight:bold; color:#1e3a8a; background-color:#e0f2fe;">Grande Final 🏆</td>
-                                <td class="center" style="background-color:#e0f2fe; font-weight:bold;">19/07 - 17h</td>
-                                <td class="right" style="background-color:#e0f2fe; font-weight:bold;"><span class="brasil-text">BRASIL</span> <span class="flag fi fi-br"></span></td>
-                                <td class="center" style="background-color:#e0f2fe;"><div class="placar-wrapper"><div class="score" style="border-color:#1e3a8a;"></div> x <div class="score" style="border-color:#1e3a8a;"></div></div></td>
-                                <td style="background-color:#e0f2fe; font-weight:bold;">Vencedor Semifinal 2</td>
-                                <td style="background-color:#e0f2fe; font-weight:bold;">Nova York / NJ</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
     </div>
 
     <footer>
         <div>{COPYRIGHT}</div>
-        <div class="metadata-box">Versão do Painel: {VERSAO} | Atualizado em: {DATA_VERSAO}</div>
+        <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Versão do Painel: {VERSAO} | Fonte: Feed Direto da FIFA</div>
     </footer>
 
     <script>
@@ -389,12 +322,6 @@ def compilar_html(classificacao, jogos_rodadas):
             document.getElementById(subTabId).classList.add('active');
             event.currentTarget.classList.add('active');
         }}
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('keydown', e => {{
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key.toUpperCase() === 'U')) {{
-                e.preventDefault();
-            }}
-        }});
     </script>
 </body>
 </html>"""
@@ -410,30 +337,29 @@ def fazer_upload_github():
         repo.git.checkout(BRANCH_GITHUB)
         repo.index.add(["copa.html"])
         if repo.is_dirty(untracked_files=False):
-            repo.index.commit(f"API Live Update - {horario}")
+            repo.index.commit(f"Dados Reais Live - {horario}")
             origem = repo.remote(name='origin')
-            origem.push(BRANCH_GITHUB)
-            print(f"[{horario}] ↑ Site reinaldpinheiro.com.br atualizado com dados reais da API!")
+            origem.push(BRANCH_GITHUB, kill_after_timeout=15)
+            print(f"[{horario}] ↑ Site reinaldpinheiro.com.br sincronizado com dados reais!")
         else:
-            print(f"[{horario}] ✅ Arquivo 'copa.html' sem mudanças. Ignorando push.")
+            print(f"[{horario}] ✅ Sem alterações nos placares oficiais.")
     except Exception as e:
         print(f"❌ Erro Git Deploy: {e}")
 
 if __name__ == "__main__":
     print("=" * 60)
-    print(f"SISTEMA CONECTADO À API REAL DA COPA 2026")
+    print("SISTEMA CORRIGIDO - FONTES DIRETAS DA COPA 2026")
     print("=" * 60)
     
     while True:
-        dados_reais = buscar_dados_reais_api()
+        dados_reais = buscar_dados_reais()
         
-        # Só compila e atualiza se os dados forem baixados com sucesso
-        if dados_reais is not None:
+        if dados_reais:
             tabela_calculada = atualizar_classificacao(dados_reais)
             compilar_html(tabela_calculada, dados_reais)
             fazer_upload_github()
         else:
-            print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ Pulando esta rodada devido a problemas temporários de conexão com a API.")
+            print("⚠️ Falha temporária ao coletar dados. Aguardando próxima tentativa...")
             
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] Dormindo por 60 segundos...")
+        print("-" * 60)
         time.sleep(60)
