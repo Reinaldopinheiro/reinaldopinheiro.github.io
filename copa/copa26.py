@@ -1,9 +1,6 @@
 import os
 
 def buscar_dados_copa():
-    """
-    Estrutura original com os resultados da primeira rodada.
-    """
     dados = {
         "A": [["México", "mx", 3, 1, 2], ["Coreia do Sul", "kr", 3, 1, 1], ["Tchéquia", "cz", 0, 1, -1], ["África do Sul", "za", 0, 1, -2]],
         "B": [["Canadá", "ca", 1, 1, 0], ["Bósnia", "ba", 1, 1, 0], ["Catar", "qa", 1, 1, 0], ["Suíça", "ch", 1, 1, 0]],
@@ -14,7 +11,6 @@ def buscar_dados_copa():
 def gerar_html():
     dados = buscar_dados_copa()
     
-    # HTML Base tratado puramente como Texto (sem misturar f-strings com chaves de JS/CSS)
     html_inicio = """<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -67,7 +63,6 @@ def gerar_html():
     <script>
         const timesPorGrupo = """
 
-    # Injetamos dinamicamente as variáveis de dados transformadas em strings Javascript seguras
     js_dados = f"""{{
             "A": [
                 {{"n": "{dados['A'][0][0]}", "f": "{dados['A'][0][1]}", "p": {dados['A'][0][2]}, "j": {dados['A'][0][3]}, "sg": {dados['A'][0][4]}}},
@@ -79,7 +74,6 @@ def gerar_html():
             ]
         }};"""
 
-    # Parte final do script de renderização sem f-string
     html_fim = """
         function renderizar() {
             const container = document.getElementById('groups-container');
@@ -101,7 +95,6 @@ def gerar_html():
 </body>
 </html>"""
 
-    # Une todas as partes sem gerar nenhum erro de compilação
     html_final = html_inicio + js_dados + html_fim
 
     with open("copa.html", "w", encoding="utf-8") as f:
