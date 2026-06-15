@@ -2,38 +2,53 @@ name: Atualizar Painel da Copa 2026
 
 on:
   schedule:
+    # Executa automaticamente de 1 em 1 hora (no minuto 0)
     - cron: '0 * * * *'
-  workflow_dispatch:
+  workflow_dispatch: # Mantém o botão ativo para você testar manualmente quando quiser
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Clonar o Repositório
+    - name: 1. Clonar o Repositório
       uses: actions/checkout@v4
+      with:
+        persist-credentials: false # Desativa as credenciais padrão para usarmos o token corrigido abaixo
 
-    - name: Configurar o Python no Servidor
+    - name: 2. Configurar o Python no Servidor
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
-    - name: Instalar Dependências de Raspagem
+    - name: 3. Instalar Dependências de Raspagem
       run: |
         python -m pip install --upgrade pip
         pip install requests beautifulsoup4
 
-    # Ajustado: adicionado o working-directory para entrar na pasta 'copa'
-    - name: Executar o Script de Atualização
+    - name: 4. Executar o Script de Atualização
       working-directory: copa
       run: python copa26.py
 
-    # Ajustado: adicionado o working-directory para commitar a partir de 'copa'
-    - name: Enviar alterações e dar o Push de volta para o GitHub Pages
+    - name: 5. Enviar alterações e dar o Push de volta para o GitHub Pages
       working-directory: copa
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        # Configura as credenciais do robô do GitHub
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "actions@github.com"
+        
+        # Corrige a URL remota injetando o token de escrita que você liberou nas configurações
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Reinaldopinheiro/reinaldopinheiro.github.io.git
+        
+        # Adiciona o arquivo atualizado que está dentro da pasta 'copa'
         git add copa.html
-        git diff-index --quiet HEAD || git commit -m "🤖 [Bot] Placares da Copa Atualizados via Python"
-        git push
+        
+        # Verifica se o arquivo mudou antes de tentar enviar (evita erros se não houver novos placares)
+        if ! git diff-index --quiet HEAD; then
+          git commit -m "🤖 [Bot] Placares da Copa Atualizados via Python"
+          git push origin main
+        else
+          echo "Nenhum resultado novo encontrado. O arquivo já está atualizado."
+        fi
