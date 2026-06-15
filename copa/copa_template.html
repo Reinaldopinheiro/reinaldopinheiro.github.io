@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central da Copa do Mundo 2026 - RPC Consultoria</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; color: #1e293b; padding-bottom: 80px; }
+        header {
+            background: linear-gradient(135deg, #1e3a8a 25%, #0d9488 75%);
+            color: white; padding: 35px 10px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .header-content-wrapper { max-width: 600px; margin: 0 auto; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); }
+        h1 { font-size: 26px; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; margin-bottom: 6px; }
+        .subtitle { font-size: 14px; opacity: 0.95; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .tabs-container { display: flex; background: #cbd5e1; padding: 4px; border-radius: 8px; margin-bottom: 20px; gap: 4px; }
+        .tab-btn { flex: 1; padding: 12px; background: none; border: none; font-size: 14px; font-weight: bold; color: #475569; cursor: pointer; border-radius: 6px; transition: all 0.3s ease; text-align: center; }
+        .tab-btn.active { background: #1e3a8a; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .subtabs-container { display: flex; background: #e2e8f0; padding: 4px; border-radius: 6px; margin-bottom: 15px; gap: 4px; overflow-x: auto; }
+        .subtab-btn { padding: 8px 16px; background: none; border: none; font-size: 12px; font-weight: bold; color: #475569; cursor: pointer; border-radius: 4px; white-space: nowrap; transition: all 0.2s ease; }
+        .subtab-btn.active { background: #0d9488; color: white; }
+        .tab-content, .subtab-content { display: none; }
+        .tab-content.active, .subtab-content.active { display: block; }
+        .status-bar { background-color: #ffffff; border-left: 4px solid #0d9488; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #475569; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .live-indicator { display: flex; align-items: center; gap: 6px; font-weight: bold; color: #0d9488; }
+        .pulse { width: 8px; height: 8px; background-color: #0d9488; border-radius: 50%; animation: pulse-animation 1.5s infinite; }
+        @keyframes pulse-animation { 0% { transform: scale(0.9); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.5; } 100% { transform: scale(0.9); opacity: 1; } }
+        .groups-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .group-card { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border-top: 4px solid #0d9488; }
+        .group-title { font-size: 15px; font-weight: bold; color: #1e3a8a; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        .table-wrapper { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th { background-color: #1e3a8a; color: white; font-weight: 700; padding: 10px; text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        tr:nth-child(even) td { background-color: #f8fafc; }
+        .center { text-align: center; } .right { text-align: right; }
+        .c-p { font-weight: bold; color: #1e3a8a; }
+        tr.brasil-row td { background-color: #f0fdf4 !important; }
+        .date-col { font-weight: bold; color: #1e3a8a; }
+        .group-badge { background-color: #e2e8f0; color: #334155; font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+        tr.brasil-row .group-badge { background-color: #bbf7d0; color: #166534; }
+        .flag { display: inline-block; width: 20px; height: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border-radius: 2px; vertical-align: middle; margin: 0 4px; }
+        .brasil-text { font-weight: bold; color: #047857; }
+        .placar-wrapper { display: flex; justify-content: center; align-items: center; gap: 6px; }
+        .score { background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+        footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #ffffff; border-top: 2px solid #e2e8f0; padding: 15px; text-align: center; font-size: 14px; font-weight: bold; color: #1e3a8a; box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05); z-index: 1000; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content-wrapper">
+            <h1>Central da Copa do Mundo 2026 🏆</h1>
+            <div class="subtitle">Tabela Completa de Grupos & Rodadas com o Brasil <span class="fi fi-br" style="width:22px; height:16px;"></span></div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchMainTab('classificacao', event)">📊 Grupos e Classificação</button>
+            <button class="tab-btn" onclick="switchMainTab('jogos-grupo', event)">⚽ Fase de Grupos (Rodadas 1 a 3)</button>
+            <button class="tab-btn" onclick="switchMainTab('mata-mata', event)">🏆 Fases Eliminatórias</button>
+        </div>
+
+        <div class="status-bar">
+            <div id="api-status">__STATUS_BAR_PLACEHOLDER__</div>
+            <div class="live-indicator"><div class="pulse" style="background-color: #0d9488;"></div> Sincronizado</div>
+        </div>
+
+        <div id="classificacao" class="tab-content active">
+            <div class="groups-grid" id="groups-container"></div>
+        </div>
+
+        <div id="jogos-grupo" class="tab-content">
+            <div class="subtabs-container">
+                <button class="subtab-btn active" onclick="switchSubTab('rodada1', event)">1ª Rodada (Resultados Reais)</button>
+                <button class="subtab-btn" onclick="switchSubTab('rodada2', event)">2ª Rodada</button>
+                <button class="subtab-btn" onclick="switchSubTab('rodada3', event)">3ª Rodada</button>
+            </div>
+            <div id="rodada1" class="subtab-content active"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Grupo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio Oficial</th></tr></thead><tbody id="rodada1-tbody"></tbody></table></div></div>
+            <div id="rodada2" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Grupo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio Oficial</th></tr></thead><tbody id="rodada2-tbody"></tbody></table></div></div>
+            <div id="rodada3" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Grupo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio Oficial</th></tr></thead><tbody id="rodada3-tbody"></tbody></table></div></div>
+        </div>
+
+        <div id="mata-mata" class="tab-content">
+            <div class="subtabs-container">
+                <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos (16j)</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-16', event)">Oitavas de Final (8j)</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-8', event)">Quartas de Final (4j)</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-4', event)">Semifinais (2j)</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-final', event)">Final 🏆</button>
+            </div>
+            <div id="fase-32" class="subtab-content active"><div class="table-wrapper"><table><thead><tr><th class="center">Jogo</th><th class="center">Data/Hora</th><th class="right">Equipe 1</th><th class="center">Placar</th><th>Equipe 2</th><th>Cidade</th></tr></thead><tbody id="fase32-tbody"></tbody></table></div></div>
+            <div id="fase-16" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Jogo</th><th class="center">Data/Hora</th><th class="right">Equipe 1</th><th class="center">Placar</th><th>Equipe 2</th><th>Cidade</th></tr></thead><tbody id="fase16-tbody"></tbody></table></div></div>
+            <div id="fase-8" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Jogo</th><th class="center">Data/Hora</th><th class="right">Equipe 1</th><th class="center">Placar</th><th>Equipe 2</th><th>Cidade</th></tr></thead><tbody id="fase8-tbody"></tbody></table></div></div>
+            <div id="fase-4" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Jogo</th><th class="center">Data/Hora</th><th class="right">Equipe 1</th><th class="center">Placar</th><th>Equipe 2</th><th>Cidade</th></tr></thead><tbody id="fase4-tbody"></tbody></table></div></div>
+            <div id="fase-final" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Fase</th><th class="center">Data/Hora</th><th class="right">Equipe 1</th><th class="center">Placar</th><th>Equipe 2</th><th>Cidade</th></tr></thead><tbody id="final-tbody"></tbody></table></div></div>
+        </div>
+    </div>
+
+    <footer>Oferecimento: RPC - Reinaldo Pinheiro Consultoria</footer>
+
+    <script>
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key.toUpperCase() === 'U')) {
+                e.preventDefault();
+            }
+        });
+
+        function switchMainTab(tabId, event) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            const primeiraSubAba = document.getElementById(tabId).querySelector('.subtab-btn');
+            if (primeiraSubAba) { primeiraSubAba.click(); }
+        }
+
+        function switchSubTab(subTabId, event) {
+            const pai = document.getElementById(subTabId).parentElement;
+            pai.querySelectorAll('.subtab-content').forEach(el => el.classList.remove('active'));
+            pai.querySelectorAll('.subtab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(subTabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        const timesPorGrupo = {
+            "A": [ 
+                {"n":"México", "f":"mx", "p":3, "j":1, "sg":2}, 
+                {"n":"Coreia do Sul", "f":"kr", "p":3, "j":1, "sg":1}, 
+                {"n":"Tchéquia", "f":"cz", "p":0, "j":1, "sg":-1}, 
+                {"n":"África do Sul", "f":"za", "p":0, "j":1, "sg":-2}
+            ],
+            "B": [ 
+                {"n":"Canadá", "f":"ca", "p":1, "j":1, "sg":0}, 
+                {"n":"Bósnia", "f":"ba", "p":1, "j":1, "sg":0}, 
+                {"n":"Catar", "f":"qa", "p":1, "j":1, "sg":0}, 
+                {"n":"Suíça", "f":"ch", "p":1, "j":1, "sg":0} 
+            ],
+            "C": [ 
+                {"n":"Escócia", "f":"gb-sct", "p":3, "j":1, "sg":1},
+                {"n":"BRASIL", "f":"br", "b":true, "p":1, "j":1, "sg":0}, 
+                {"n":"Marrocos", "f":"ma", "p":1, "j":1, "sg":0}, 
+                {"n":"Haiti", "f":"ht", "p":0, "j":1, "sg":-1}
+            ],
+            "D": [ 
+                {"n":"Estados Unidos", "f":"us", "p":3, "j":1, "sg":3}, 
+                {"n":"Austrália", "f":"au", "p":3, "j":1, "sg":2}, 
+                {"n":"Turquia", "f":"tr", "p":0, "j":1, "sg":-2},
+                {"n":"Paraguai", "f":"py", "p":0, "j":1, "sg":-3}
+            ],
+            "E": [ 
+                {"n":"Alemanha", "f":"de", "p":3, "j":1, "sg":6}, 
+                {"n":"Costa do Marfim", "f":"ci", "p":3, "j":1, "sg":1}, 
+                {"n":"Equador", "f":"ec", "p":0, "j":1, "sg":-1},
+                {"n":"Curaçao", "f":"cw", "p":0, "j":1, "sg":-6}
+            ],
+            "F": [ 
+                {"n":"Suécia", "f":"se", "p":3, "j":1, "sg":4}, 
+                {"n":"Países Baixos", "f":"nl", "p":1, "j":1, "sg":0}, 
+                {"n":"Japão", "f":"jp", "p":1, "j":1, "sg":0}, 
+                {"n":"Tunísia", "f":"tn", "p":0, "j":1, "sg":-4}
+            ],
+            "G": [ {"n":"Bélgica", "f":"be", "p":0, "j":0, "sg":0}, {"n":"Egito", "f":"eg", "p":0, "j":0, "sg":0}, {"n":"Irã", "f":"ir", "p":0, "j":0, "sg":0}, {"n":"Nova Zelândia", "f":"nz", "p":0, "j":0, "sg":0} ],
+            "H": [ {"n":"Espanha", "f":"es", "p":0, "j":0, "sg":0}, {"n":"Cabo Verde", "f":"cv", "p":0, "j":0, "sg":0}, {"n":"Arábia Saudita", "f":"sa", "p":0, "j":0, "sg":0}, {"n":"Uruguai", "f":"uy", "p":0, "j":0, "sg":0} ],
+            "I": [ {"n":"França", "f":"fr", "p":0, "j":0, "sg":0}, {"n":"Senegal", "f":"sn", "p":0, "j":0, "sg":0}, {"n":"Iraque", "f":"iq", "p":0, "j":0, "sg":0}, {"n":"Noruega", "f":"no", "p":0, "j":0, "sg":0} ],
+            "J": [ {"n":"Argentina", "f":"ar", "p":0, "j":0, "sg":0}, {"n":"Argélia", "f":"dz", "p":0, "j":0, "sg":0}, {"n":"Áustria", "f":"at", "p":0, "j":0, "sg":0}, {"n":"Jordânia", "f":"jo", "p":0, "j":0, "sg":0} ],
+            "K": [ {"n":"Portugal", "f":"pt", "p":0, "j":0, "sg":0}, {"n":"RD Congo", "f":"cd", "p":0, "j":0, "sg":0}, {"n":"Uzbequistão", "f":"uz", "p":0, "j":0, "sg":0}, {"n":"Colômbia", "f":"co", "p":0, "j":0, "sg":0} ],
+            "L": [ {"n":"Inglaterra", "f":"gb-eng", "p":0, "j":0, "sg":0}, {"n":"Croácia", "f":"hr", "p":0, "j":0, "sg":0}, {"n":"Gana", "f":"gh", "p":0, "j":0, "sg":0}, {"n":"Panamá", "f":"pa", "p":0, "j":0, "sg":0} ]
+        };
+
+        function obterJogosRodada1() {
+            return [
+                { data: "11/06", hora: "16h00", grupo: "A", t1: "México", f1: "mx", s1: 2, s2: 0, t2: "África do Sul", f2: "za", est: "Mexico City Stadium (Azteca)" },
+                { data: "11/06", hora: "23h00", grupo: "A", t1: "Coreia do Sul", f1: "kr", s1: 2, s2: 1, t2: "Tchéquia", f2: "cz", est: "Estadio Guadalajara (Akron)" },
+                { data: "12/06", hora: "16h00", grupo: "B", t1: "Canadá", f1: "ca", s1: 1, s2: 1, t2: "Bósnia", f2: "ba", est: "Toronto Stadium (BMO Field)" },
+                { data: "13/06", hora: "16h00", grupo: "B", t1: "Catar", f1: "qa", s1: 1, s2: 1, t2: "Suíça", f2: "ch", est: "San Francisco Bay Area Stadium (Levi's)" },
+                { data: "13/06", hora: "19h00", grupo: "C", t1: "BRASIL", f1: "br", s1: 1, s2: 1, t2: "Marrocos", f2: "ma", est: "New York New Jersey Stadium (MetLife)", isBrasil: true },
+                { data: "13/06", hora: "22h00", grupo: "C", t1: "Haiti", f1: "ht", s1: 0, s2: 1, t2: "Escócia", f2: "gb-sct", est: "Boston Stadium (Gillette Stadium)" },
+                { data: "12/06", hora: "23h00", grupo: "D", t1: "Estados Unidos", f1: "us", s1: 4, s2: 1, t2: "Paraguai", f2: "py", est: "Los Angeles Stadium (SoFi)" },
+                { data: "14/06", hora: "04h00", grupo: "D", t1: "Austrália", f1: "au", s1: 2, s2: 0, t2: "Turquia", f2: "tr", est: "BC Place de Vancouver" },
+                { data: "14/06", hora: "17h00", grupo: "E", t1: "Alemanha", f1: "de", s1: 7, s2: 1, t2: "Curaçao", f2: "cw", est: "Houston Stadium (NRG)" },
+                { data: "14/06", hora: "23h00", grupo: "E", t1: "Costa do Marfim", f1: "ci", s1: 1, s2: 0, t2: "Equador", f2: "ec", est: "Philadelphia Stadium (Lincoln Financial)" },
+                { data: "14/06", hora: "20h00", group: "F", t1: "Países Baixos", f1: "nl", s1: 2, s2: 2, t2: "Japão", f2: "jp", est: "Dallas Stadium (AT&T Stadium)" },
+                { data: "15/06", hora: "02h00", grupo: "F", t1: "Suécia", f1: "se", s1: 5, s2: 1, t2: "Tunísia", f2: "tn", est: "Estadio Monterrey (BBVA)" },
+                { data: "15/06", hora: "16h00", grupo: "G", t1: "Bélgica", f1: "be", s1: "", s2: "", t2: "Egito", f2: "eg", est: "Seattle Stadium (Lumen Field)" },
+                { data: "15/06", hora: "22h00", grupo: "G", t1: "Irã", f1: "ir", s1: "", s2: "", t2: "Nova Zelândia", f2: "nz", est: "Los Angeles Stadium (SoFi)" },
+                { data: "15/06", hora: "13h00", grupo: "H", t1: "Espanha", f1: "es", s1: 0, s2: 0, t2: "Cabo Verde", f2: "cv", est: "Atlanta Stadium (Mercedes-Benz)" },
+                { data: "15/06", hora: "19h00", grupo: "H", t1: "Arábia Saudita", f1: "sa", s1: "", s2: "", t2: "Uruguai", f2: "uy", est: "Miami Stadium (Hard Rock)" }
+            ];
+        }
+
+        function gerarJogosEstruturais(rodada) {
+            if (rodada === 1) return obterJogosRodada1();
+            
+            let jogos = [];
+            Object.keys(timesPorGrupo).forEach((g) => {
+                let t = timesPorGrupo[g];
+                if (rodada === 2) {
+                    jogos.push({ data: "18-23/06", hora: "A definir", grupo: g, t1: t[0].n, f1: t[0].f, s1: "", s2: "", t2: t[2].n, f2: t[2].f, est: "Estádio FIFA" });
+                    jogos.push({ data: "18-23/06", hora: "A definir", grupo: g, t1: t[1].n, f1: t[1].f, s1: "", s2: "", t2: t[3].n, f2: t[3].f, est: "Estádio FIFA" });
+                } else if (rodada === 3) {
+                    jogos.push({ data: "24-27/06", hora: "A definir", grupo: g, t1: t[3].n, f1: t[3].f, s1: "", s2: "", t2: t[0].n, f2: t[0].f, est: "Estádio FIFA" });
+                    jogos.push({ data: "24-27/06", hora: "A definir", grupo: g, t1: t[1].n, f1: t[1].f, s1: "", s2: "", t2: t[2].n, f2: t[2].f, est: "Estádio FIFA" });
+                }
+            });
+            return jogos;
+        }
+
+        function preencherFaseMataMata(tbodyId, qtdJogos, nomeFase) {
+            const tbody = document.getElementById(tbodyId);
+            tbody.innerHTML = '';
+            for(let i = 1; i <= qtdJogos; i++) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="center" style="font-weight:bold; color:#0d9488;">` + nomeFase + ` [J` + i + `]</td>
+                    <td class="center">Julho/2026</td>
+                    <td class="right">Classificado ` + (2*i-1) + `</td>
+                    <td class="center"><div class="placar-wrapper"><div class="score"></div> x <div class="score"></div></div></td>
+                    <td>Classificado ` + (2*i) + `</td>
+                    <td>Arena FIFA</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        function renderizarAplicativo() {
+            const containerGrupos = document.getElementById('groups-container');
+            containerGrupos.innerHTML = '';
+            Object.keys(timesPorGrupo).forEach(grupo => {
+                const div = document.createElement('div');
+                div.className = 'group-card';
+                let tabelaHTML = `<div class="group-title">Grupo ` + grupo + `</div><table><thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead><tbody>`;
+                
+                const timesOrdenados = [...timesPorGrupo[grupo]].sort((a, b) => b.p - a.p || b.sg - a.sg);
+                
+                timesOrdenados.forEach(sel => {
+                    let estiloRow = sel.b ? "class='brasil-row'" : "";
+                    let classeTexto = sel.b ? "class='brasil-text'" : "";
+                    tabelaHTML += `<tr ` + estiloRow + `><td><span class="flag fi fi-` + sel.f + `"></span> <span ` + classeTexto + `>` + sel.n + `</span></td><td class="center c-p">` + sel.p + `</td><td class="center">` + sel.j + `</td><td class="center">` + sel.sg + `</td></tr>`;
+                });
+                tabelaHTML += `</tbody></table>`;
+                div.innerHTML = tabelaHTML;
+                containerGrupos.appendChild(div);
+            });
+
+            [1, 2, 3].forEach(numRodada => {
+                const tbody = document.getElementById(`rodada` + numRodada + `-tbody`);
+                tbody.innerHTML = '';
+                const jogos = gerarJogosEstruturais(numRodada);
+                jogos.forEach(j => {
+                    const tr = document.createElement('tr');
+                    if(j.isBrasil || j.t1 === "BRASIL" || j.t2 === "BRASIL") tr.className = 'brasil-row';
+                    let bClassT1 = j.t1 === "BRASIL" ? "class='brasil-text'" : "";
+                    let bClassT2 = j.t2 === "BRASIL" ? "class='brasil-text'" : "";
+                    tr.innerHTML = `
+                        <td class="center date-col">` + j.data + `<br><span style="font-size:11px; font-weight:normal; color:#64748b;">` + j.hora + `</span></td>
+                        <td class="center"><span class="group-badge">` + j.grupo + `</span></td>
+                        <td class="right"><span ` + bClassT1 + `>` + j.t1 + `</span> <span class="flag fi fi-` + j.f1 + `"></span></td>
+                        <td class="center"><div class="placar-wrapper"><div class="score">` + j.s1 + `</div><span style="color:#94a3b8;">x</span><div class="score">` + j.s2 + `</div></div></td>
+                        <td><span class="flag fi fi-` + j.f2 + `"></span> <span ` + bClassT2 + `>` + j.t2 + `</span></td>
+                        <td style="color:#64748b; font-size:12px;">` + j.est + `</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+
+            preencherFaseMataMata('fase32-tbody', 16, 'Dezesseis-avos');
+            preencherFaseMataMata('fase16-tbody', 8, 'Oitavas');
+            preencherFaseMataMata('fase8-tbody', 4, 'Quartas');
+            preencherFaseMataMata('fase4-tbody', 2, 'Semifinal');
+            
+            const tbodyFinal = document.getElementById('final-tbody');
+            tbodyFinal.innerHTML = `<tr><td class="center" style="font-weight:bold; color:#1e3a8a; background-color:#e0f2fe;">Grande Final 🏆</td><td class="center" style="background-color:#e0f2fe; font-weight:bold;">19/07</td><td class="right" style="background-color:#e0f2fe; font-weight:bold;">Finalista 1</td><td class="center" style="background-color:#e0f2fe;"><div class="placar-wrapper"><div class="score" style="border-color:#1e3a8a;"></div> x <div class="score" style="border-color:#1e3a8a;"></div></div></td><td style="background-color:#e0f2fe; font-weight:bold;">Finalista 2</td><td style="background-color:#e0f2fe; font-weight:bold;">MetLife (New York)</td></tr>`;
+        }
+
+        document.addEventListener('DOMContentLoaded', renderizarAplicativo);
+    </script>
+</body>
+</html>
