@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f4f6f9; color: #1e293b; padding-bottom: 80px; }
+        body { background-color: #f4f6f9; color: #1e293b; padding-bottom: 120px; }
         header {
             background: linear-gradient(135deg, #1e3a8a 25%, #0d9488 75%);
             color: white; padding: 35px 10px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -66,7 +66,7 @@
         </div>
 
         <div class="status-bar">
-            <div id="api-status"><strong>Status:</strong> Dados Oficiais Sincronizados. Última atualização: 15/06/2026 às 17:55h.</div>
+            <div id="api-status"><strong>Status:</strong> Dados Oficiais Sincronizados. Última atualização: 15/06/2026 às 19:53h.</div>
             <div class="live-indicator"><div class="pulse" style="background-color: #0d9488;"></div> Sincronizado</div>
         </div>
 
@@ -104,7 +104,7 @@
     <footer>
         <div style="margin-bottom: 8px;">Oferecimento: RPC - Reinaldo Pinheiro Consultoria</div>
         <div style="background-color: #f1f5f9; display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 12px; color: #334155; border: 1px dashed #cbd5e1;">
-            ⚡ Apoie mais projetos como este PIX: <strong style="color: #0d9488;">doe@reinaldopinheiro.com.br</strong>
+            ⚡ Apoie este projeto via PIX: <strong style="color: #0d9488;">seu-pix-aqui@email.com</strong>
         </div>
     </footer>
 
@@ -180,22 +180,42 @@
 
         function obterJogosRodada1() {
             return [
+                // GRUPO A
                 { data: "11/06", hora: "16h00", grupo: "A", t1: "México", f1: "mx", s1: 2, s2: 0, t2: "África do Sul", f2: "za", est: "Mexico City Stadium (Azteca)" },
                 { data: "11/06", hora: "23h00", grupo: "A", t1: "Coreia do Sul", f1: "kr", s1: 2, s2: 1, t2: "Tchéquia", f2: "cz", est: "Estadio Guadalajara (Akron)" },
+                // GRUPO B
                 { data: "12/06", hora: "16h00", grupo: "B", t1: "Canadá", f1: "ca", s1: 1, s2: 1, t2: "Bósnia", f2: "ba", est: "Toronto Stadium (BMO Field)" },
                 { data: "13/06", hora: "16h00", grupo: "B", t1: "Catar", f1: "qa", s1: 1, s2: 1, t2: "Suíça", f2: "ch", est: "San Francisco Bay Area Stadium (Levi's)" },
+                // GRUPO C
                 { data: "13/06", hora: "19h00", grupo: "C", t1: "BRASIL", f1: "br", s1: 1, s2: 1, t2: "Marrocos", f2: "ma", est: "New York New Jersey Stadium (MetLife)", isBrasil: true },
                 { data: "13/06", hora: "22h00", grupo: "C", t1: "Haiti", f1: "ht", s1: 0, s2: 1, t2: "Escócia", f2: "gb-sct", est: "Boston Stadium (Gillette Stadium)" },
+                // GRUPO D
                 { data: "12/06", hora: "23h00", grupo: "D", t1: "Estados Unidos", f1: "us", s1: 4, s2: 1, t2: "Paraguai", f2: "py", est: "Los Angeles Stadium (SoFi)" },
                 { data: "14/06", hora: "04h00", grupo: "D", t1: "Austrália", f1: "au", s1: 2, s2: 0, t2: "Turquia", f2: "tr", est: "BC Place de Vancouver" },
+                // GRUPO E
                 { data: "14/06", hora: "17h00", grupo: "E", t1: "Alemanha", f1: "de", s1: 7, s2: 1, t2: "Curaçao", f2: "cw", est: "Houston Stadium (NRG)" },
                 { data: "14/06", hora: "23h00", grupo: "E", t1: "Costa do Marfim", f1: "ci", s1: 1, s2: 0, t2: "Equador", f2: "ec", est: "Philadelphia Stadium (Lincoln Financial)" },
-                { data: "14/06", hora: "20h00", group: "F", t1: "Países Baixos", f1: "nl", s1: 2, s2: 2, t2: "Japão", f2: "jp", est: "Dallas Stadium (AT&T Stadium)" },
+                // GRUPO F
+                { data: "14/06", hora: "20h00", grupo: "F", t1: "Países Baixos", f1: "nl", s1: 2, s2: 2, t2: "Japão", f2: "jp", est: "Dallas Stadium (AT&T Stadium)" },
                 { data: "15/06", hora: "02h00", grupo: "F", t1: "Suécia", f1: "se", s1: 5, s2: 1, t2: "Tunísia", f2: "tn", est: "Estadio Monterrey (BBVA)" },
+                // GRUPO G
                 { data: "15/06", hora: "16h00", grupo: "G", t1: "Bélgica", f1: "be", s1: "", s2: "", t2: "Egito", f2: "eg", est: "Seattle Stadium (Lumen Field)" },
                 { data: "15/06", hora: "22h00", grupo: "G", t1: "Irã", f1: "ir", s1: "", s2: "", t2: "Nova Zelândia", f2: "nz", est: "Los Angeles Stadium (SoFi)" },
+                // GRUPO H
                 { data: "15/06", hora: "13h00", grupo: "H", t1: "Espanha", f1: "es", s1: 0, s2: 0, t2: "Cabo Verde", f2: "cv", est: "Atlanta Stadium (Mercedes-Benz)" },
-                { data: "15/06", hora: "19h00", grupo: "H", t1: "Arábia Saudita", f1: "sa", s1: "", s2: "", t2: "Uruguai", f2: "uy", est: "Miami Stadium (Hard Rock)" }
+                { data: "15/06", hora: "19h00", grupo: "H", t1: "Arábia Saudita", f1: "sa", s1: "", s2: "", t2: "Uruguai", f2: "uy", est: "Miami Stadium (Hard Rock)" },
+                // GRUPO I
+                { data: "16/06", hora: "16h00", grupo: "I", t1: "França", f1: "fr", s1: "", s2: "", t2: "Senegal", f2: "sn", est: "Boston Stadium (Gillette Stadium)" },
+                { data: "16/06", hora: "22h00", grupo: "I", t1: "Iraque", f1: "iq", s1: "", s2: "", t2: "Noruega", f2: "no", est: "New York New Jersey Stadium (MetLife)" },
+                // GRUPO J
+                { data: "16/06", hora: "19h00", grupo: "J", t1: "Argentina", f1: "ar", s1: "", s2: "", t2: "Argélia", f2: "dz", est: "Dallas Stadium (AT&T Stadium)" },
+                { data: "17/06", hora: "01h00", grupo: "J", t1: "Áustria", f1: "at", s1: "", s2: "", t2: "Jordânia", f2: "jo", est: "Seattle Stadium (Lumen Field)" },
+                // GRUPO K
+                { data: "17/06", hora: "16h00", grupo: "K", t1: "Portugal", f1: "pt", s1: "", s2: "", t2: "RD Congo", f2: "cd", est: "Atlanta Stadium (Mercedes-Benz)" },
+                { data: "17/06", hora: "22h00", grupo: "K", t1: "Uzbequistão", f1: "uz", s1: "", s2: "", t2: "Colômbia", f2: "co", est: "Houston Stadium (NRG)" },
+                // GRUPO L
+                { data: "17/06", hora: "19h00", grupo: "L", t1: "Inglaterra", f1: "gb-eng", s1: "", s2: "", t2: "Croácia", f2: "hr", est: "Miami Stadium (Hard Rock)" },
+                { data: "18/06", hora: "01h00", grupo: "L", t1: "Gana", f1: "gh", s1: "", s2: "", t2: "Panamá", f2: "pa", est: "San Francisco Bay Area Stadium" }
             ];
         }
 
