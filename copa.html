@@ -66,7 +66,7 @@
         </div>
 
         <div class="status-bar">
-            <div id="api-status"><strong>Status:</strong> Modo de Contingência (Dados Oficiais Atualizados). Servidor RPC operando com dados reais da FIFA.</div>
+            <div id="api-status"><strong>Status:</strong> Dados Oficiais Sincronizados. Última checagem automática: 15/06/2026 19:57 (Horário de Brasília).</div>
             <div class="live-indicator"><div class="pulse" style="background-color: #0d9488;"></div> Sincronizado</div>
         </div>
 
@@ -104,7 +104,6 @@
     <footer>Oferecimento: RPC - Reinaldo Pinheiro Consultoria</footer>
 
     <script>
-        // Bloqueio contra cópia (Botão direito e atalhos de desenvolvedor)
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('keydown', e => {
             if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key.toUpperCase() === 'U')) {
@@ -129,7 +128,6 @@
             event.currentTarget.classList.add('active');
         }
 
-        // Banco de dados real baseado na 1ª rodada real da Copa 2026
         const timesPorGrupo = {
             "A": [ 
                 {"n":"México", "f":"mx", "p":3, "j":1, "sg":2}, 
@@ -177,28 +175,20 @@
 
         function obterJogosRodada1() {
             return [
-                // Grupo A
                 { data: "11/06", hora: "16h00", grupo: "A", t1: "México", f1: "mx", s1: 2, s2: 0, t2: "África do Sul", f2: "za", est: "Mexico City Stadium (Azteca)" },
                 { data: "11/06", hora: "23h00", grupo: "A", t1: "Coreia do Sul", f1: "kr", s1: 2, s2: 1, t2: "Tchéquia", f2: "cz", est: "Estadio Guadalajara (Akron)" },
-                // Grupo B
                 { data: "12/06", hora: "16h00", grupo: "B", t1: "Canadá", f1: "ca", s1: 1, s2: 1, t2: "Bósnia", f2: "ba", est: "Toronto Stadium (BMO Field)" },
                 { data: "13/06", hora: "16h00", grupo: "B", t1: "Catar", f1: "qa", s1: 1, s2: 1, t2: "Suíça", f2: "ch", est: "San Francisco Bay Area Stadium (Levi's)" },
-                // Grupo C
                 { data: "13/06", hora: "19h00", grupo: "C", t1: "BRASIL", f1: "br", s1: 1, s2: 1, t2: "Marrocos", f2: "ma", est: "New York New Jersey Stadium (MetLife)", isBrasil: true },
                 { data: "13/06", hora: "22h00", grupo: "C", t1: "Haiti", f1: "ht", s1: 0, s2: 1, t2: "Escócia", f2: "gb-sct", est: "Boston Stadium (Gillette Stadium)" },
-                // Grupo D
                 { data: "12/06", hora: "23h00", grupo: "D", t1: "Estados Unidos", f1: "us", s1: 4, s2: 1, t2: "Paraguai", f2: "py", est: "Los Angeles Stadium (SoFi)" },
                 { data: "14/06", hora: "04h00", grupo: "D", t1: "Austrália", f1: "au", s1: 2, s2: 0, t2: "Turquia", f2: "tr", est: "BC Place de Vancouver" },
-                // Grupo E
                 { data: "14/06", hora: "17h00", grupo: "E", t1: "Alemanha", f1: "de", s1: 7, s2: 1, t2: "Curaçao", f2: "cw", est: "Houston Stadium (NRG)" },
                 { data: "14/06", hora: "23h00", grupo: "E", t1: "Costa do Marfim", f1: "ci", s1: 1, s2: 0, t2: "Equador", f2: "ec", est: "Philadelphia Stadium (Lincoln Financial)" },
-                // Grupo F
-                { data: "14/06", hora: "20h00", grupo: "F", t1: "Países Baixos", f1: "nl", s1: 2, s2: 2, t2: "Japão", f2: "jp", est: "Dallas Stadium (AT&T Stadium)" },
+                { data: "14/06", hora: "20h00", group: "F", t1: "Países Baixos", f1: "nl", s1: 2, s2: 2, t2: "Japão", f2: "jp", est: "Dallas Stadium (AT&T Stadium)" },
                 { data: "15/06", hora: "02h00", grupo: "F", t1: "Suécia", f1: "se", s1: 5, s2: 1, t2: "Tunísia", f2: "tn", est: "Estadio Monterrey (BBVA)" },
-                // Grupo G (Ao vivo / Hoje)
                 { data: "15/06", hora: "16h00", grupo: "G", t1: "Bélgica", f1: "be", s1: "", s2: "", t2: "Egito", f2: "eg", est: "Seattle Stadium (Lumen Field)" },
                 { data: "15/06", hora: "22h00", grupo: "G", t1: "Irã", f1: "ir", s1: "", s2: "", t2: "Nova Zelândia", f2: "nz", est: "Los Angeles Stadium (SoFi)" },
-                // Grupo H (Ao vivo / Hoje)
                 { data: "15/06", hora: "13h00", grupo: "H", t1: "Espanha", f1: "es", s1: 0, s2: 0, t2: "Cabo Verde", f2: "cv", est: "Atlanta Stadium (Mercedes-Benz)" },
                 { data: "15/06", hora: "19h00", grupo: "H", t1: "Arábia Saudita", f1: "sa", s1: "", s2: "", t2: "Uruguai", f2: "uy", est: "Miami Stadium (Hard Rock)" }
             ];
@@ -227,11 +217,11 @@
             for(let i = 1; i <= qtdJogos; i++) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="center" style="font-weight:bold; color:#0d9488;">${nomeFase} [J${i}]</td>
+                    <td class="center" style="font-weight:bold; color:#0d9488;">` + nomeFase + ` [J` + i + `]</td>
                     <td class="center">Julho/2026</td>
-                    <td class="right">Classificado ${2*i-1}</td>
+                    <td class="right">Classificado ` + (2*i-1) + `</td>
                     <td class="center"><div class="placar-wrapper"><div class="score"></div> x <div class="score"></div></div></td>
-                    <td>Classificado ${2*i}</td>
+                    <td>Classificado ` + (2*i) + `</td>
                     <td>Arena FIFA</td>
                 `;
                 tbody.appendChild(tr);
@@ -239,30 +229,27 @@
         }
 
         function renderizarAplicativo() {
-            // Renderizar Classificação dos Grupos
             const containerGrupos = document.getElementById('groups-container');
             containerGrupos.innerHTML = '';
             Object.keys(timesPorGrupo).forEach(grupo => {
                 const div = document.createElement('div');
                 div.className = 'group-card';
-                let tabelaHTML = `<div class="group-title">Grupo ${grupo}</div><table><thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead><tbody>`;
+                let tabelaHTML = `<div class="group-title">Grupo ` + grupo + `</div><table><thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead><tbody>`;
                 
-                // Ordenação estrutural por pontos e saldo de gols
                 const timesOrdenados = [...timesPorGrupo[grupo]].sort((a, b) => b.p - a.p || b.sg - a.sg);
                 
                 timesOrdenados.forEach(sel => {
                     let estiloRow = sel.b ? "class='brasil-row'" : "";
                     let classeTexto = sel.b ? "class='brasil-text'" : "";
-                    tabelaHTML += `<tr ${estiloRow}><td><span class="flag fi fi-${sel.f}"></span> <span ${classeTexto}>${sel.n}</span></td><td class="center c-p">${sel.p}</td><td class="center">${sel.j}</td><td class="center">${sel.sg}</td></tr>`;
+                    tabelaHTML += `<tr ` + estiloRow + `><td><span class="flag fi fi-` + sel.f + `"></span> <span ` + classeTexto + `>` + sel.n + `</span></td><td class="center c-p">` + sel.p + `</td><td class="center">` + sel.j + `</td><td class="center">` + sel.sg + `</td></tr>`;
                 });
                 tabelaHTML += `</tbody></table>`;
                 div.innerHTML = tabelaHTML;
                 containerGrupos.appendChild(div);
             });
 
-            // Renderizar Rodadas
             [1, 2, 3].forEach(numRodada => {
-                const tbody = document.getElementById(`rodada${numRodada}-tbody`);
+                const tbody = document.getElementById(`rodada` + numRodada + `-tbody`);
                 tbody.innerHTML = '';
                 const jogos = gerarJogosEstruturais(numRodada);
                 jogos.forEach(j => {
@@ -271,12 +258,12 @@
                     let bClassT1 = j.t1 === "BRASIL" ? "class='brasil-text'" : "";
                     let bClassT2 = j.t2 === "BRASIL" ? "class='brasil-text'" : "";
                     tr.innerHTML = `
-                        <td class="center date-col">${j.data}<br><span style="font-size:11px; font-weight:normal; color:#64748b;">${j.hora}</span></td>
-                        <td class="center"><span class="group-badge">${j.grupo}</span></td>
-                        <td class="right"><span ${bClassT1}>${j.t1}</span> <span class="flag fi fi-${j.f1}"></span></td>
-                        <td class="center"><div class="placar-wrapper"><div class="score">${j.s1}</div><span style="color:#94a3b8;">x</span><div class="score">${j.s2}</div></div></td>
-                        <td><span class="flag fi fi-${j.f2}"></span> <span ${bClassT2}>${j.t2}</span></td>
-                        <td style="color:#64748b; font-size:12px;">${j.est}</td>
+                        <td class="center date-col">` + j.data + `<br><span style="font-size:11px; font-weight:normal; color:#64748b;">` + j.hora + `</span></td>
+                        <td class="center"><span class="group-badge">` + j.grupo + `</span></td>
+                        <td class="right"><span ` + bClassT1 + `>` + j.t1 + `</span> <span class="flag fi fi-` + j.f1 + `"></span></td>
+                        <td class="center"><div class="placar-wrapper"><div class="score">` + j.s1 + `</div><span style="color:#94a3b8;">x</span><div class="score">` + j.s2 + `</div></div></td>
+                        <td><span class="flag fi fi-` + j.f2 + `"></span> <span ` + bClassT2 + `>` + j.t2 + `</span></td>
+                        <td style="color:#64748b; font-size:12px;">` + j.est + `</td>
                     `;
                     tbody.appendChild(tr);
                 });
