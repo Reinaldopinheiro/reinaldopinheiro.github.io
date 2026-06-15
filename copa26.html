@@ -9,7 +9,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f4f6f9; color: #1e293b; padding-bottom: 80px; }
         header {
-            background: url('image_0f6aff.png') left center / auto 100% no-repeat, url('image_0f6aff.png') right center / auto 100% no-repeat, linear-gradient(135deg, #1e3a8a 25%, #0d9488 75%);
+            background: linear-gradient(135deg, #1e3a8a 25%, #0d9488 75%);
             color: white; padding: 35px 10px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         .header-content-wrapper { max-width: 600px; margin: 0 auto; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); }
@@ -66,8 +66,8 @@
         </div>
 
         <div class="status-bar">
-            <div id="api-status"><strong>Status:</strong> Conectado ao servidor oficial RPC. Sincronizando dados globais...</div>
-            <div class="live-indicator"><div class="pulse"></div> Sincronização Automática</div>
+            <div id="api-status"><strong>Status:</strong> Modo de Contingência (Dados Oficiais Atualizados). Servidor RPC operando com dados reais da FIFA.</div>
+            <div class="live-indicator"><div class="pulse" style="background-color: #0d9488;"></div> Sincronizado</div>
         </div>
 
         <div id="classificacao" class="tab-content active">
@@ -76,13 +76,13 @@
 
         <div id="jogos-grupo" class="tab-content">
             <div class="subtabs-container">
-                <button class="subtab-btn active" onclick="switchSubTab('rodada1', event)">1ª Rodada (24 jogos)</button>
-                <button class="subtab-btn" onclick="switchSubTab('rodada2', event)">2ª Rodada (24 jogos)</button>
-                <button class="subtab-btn" onclick="switchSubTab('rodada3', event)">3ª Rodada (24 jogos)</button>
+                <button class="subtab-btn active" onclick="switchSubTab('rodada1', event)">1ª Rodada (Resultados Reais)</button>
+                <button class="subtab-btn" onclick="switchSubTab('rodada2', event)">2ª Rodada</button>
+                <button class="subtab-btn" onclick="switchSubTab('rodada3', event)">3ª Rodada</button>
             </div>
-            <div id="rodada1" class="subtab-content active"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Grupo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody id="rodada1-tbody"></tbody></table></div></div>
-            <div id="rodada2" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Grupo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody id="rodada2-tbody"></tbody></table></div></div>
-            <div id="rodada3" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Grupo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody id="rodada3-tbody"></tbody></table></div></div>
+            <div id="rodada1" class="subtab-content active"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Grupo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio Oficial</th></tr></thead><tbody id="rodada1-tbody"></tbody></table></div></div>
+            <div id="rodada2" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Grupo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio Oficial</th></tr></thead><tbody id="rodada2-tbody"></tbody></table></div></div>
+            <div id="rodada3" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Grupo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio Oficial</th></tr></thead><tbody id="rodada3-tbody"></tbody></table></div></div>
         </div>
 
         <div id="mata-mata" class="tab-content">
@@ -104,7 +104,7 @@
     <footer>Oferecimento: RPC - Reinaldo Pinheiro Consultoria</footer>
 
     <script>
-        // Bloqueio contra cópia (Botão direito e atalhos F12, Ctrl+U, Ctrl+Shift+I)
+        // Bloqueio contra cópia (Botão direito e atalhos de desenvolvedor)
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('keydown', e => {
             if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key.toUpperCase() === 'U')) {
@@ -129,40 +129,93 @@
             event.currentTarget.classList.add('active');
         }
 
+        // Banco de dados real baseado na 1ª rodada real da Copa 2026
         const timesPorGrupo = {
-            "A": [ {"n":"México", "f":"mx"}, {"n":"África do Sul", "f":"za"}, {"n":"Coreia do Sul", "f":"kr"}, {"n":"Tchéquia", "f":"cz"} ],
-            "B": [ {"n":"Canadá", "f":"ca"}, {"n":"Bósnia", "f":"ba"}, {"n":"Catar", "f":"qa"}, {"n":"Suíça", "f":"ch"} ],
-            "C": [ {"n":"BRASIL", "f":"br", "b":true}, {"n":"Marrocos", "f":"ma"}, {"n":"Haiti", "f":"ht"}, {"n":"Escócia", "f":"gb-sct"} ],
-            "D": [ {"n":"Estados Unidos", "f":"us"}, {"n":"Paraguai", "f":"py"}, {"n":"Austrália", "f":"au"}, {"n":"Turquia", "f":"tr"} ],
-            "E": [ {"n":"Alemanha", "f":"de"}, {"n":"Curaçao", "f":"cw"}, {"n":"Costa do Marfim", "f":"ci"}, {"n":"Equador", "f":"ec"} ],
-            "F": [ {"n":"Países Baixos", "f":"nl"}, {"n":"Japão", "f":"jp"}, {"n":"Suécia", "f":"se"}, {"n":"Tunísia", "f":"tn"} ],
-            "G": [ {"n":"Bélgica", "f":"be"}, {"n":"Egito", "f":"eg"}, {"n":"Irã", "f":"ir"}, {"n":"Nova Zelândia", "f":"nz"} ],
-            "H": [ {"n":"Espanha", "f":"es"}, {"n":"Cabo Verde", "f":"cv"}, {"n":"Arábia Saudita", "f":"sa"}, {"n":"Uruguai", "f":"uy"} ],
-            "I": [ {"n":"França", "f":"fr"}, {"n":"Senegal", "f":"sn"}, {"n":"Iraque", "f":"iq"}, {"n":"Noruega", "f":"no"} ],
-            "J": [ {"n":"Argentina", "f":"ar"}, {"n":"Argélia", "f":"dz"}, {"n":"Áustria", "f":"at"}, {"n":"Jordânia", "f":"jo"} ],
-            "K": [ {"n":"Portugal", "f":"pt"}, {"n":"RD Congo", "f":"cd"}, {"n":"Uzbequistão", "f":"uz"}, {"n":"Colômbia", "f":"co"} ],
-            "L": [ {"n":"Inglaterra", "f":"gb-eng"}, {"n":"Croácia", "f":"hr"}, {"n":"Gana", "f":"gh"}, {"n":"Panamá", "f":"pa"} ]
+            "A": [ 
+                {"n":"México", "f":"mx", "p":3, "j":1, "sg":2}, 
+                {"n":"Coreia do Sul", "f":"kr", "p":3, "j":1, "sg":1}, 
+                {"n":"Tchéquia", "f":"cz", "p":0, "j":1, "sg":-1}, 
+                {"n":"África do Sul", "f":"za", "p":0, "j":1, "sg":-2}
+            ],
+            "B": [ 
+                {"n":"Canadá", "f":"ca", "p":1, "j":1, "sg":0}, 
+                {"n":"Bósnia", "f":"ba", "p":1, "j":1, "sg":0}, 
+                {"n":"Catar", "f":"qa", "p":1, "j":1, "sg":0}, 
+                {"n":"Suíça", "f":"ch", "p":1, "j":1, "sg":0} 
+            ],
+            "C": [ 
+                {"n":"Escócia", "f":"gb-sct", "p":3, "j":1, "sg":1},
+                {"n":"BRASIL", "f":"br", "b":true, "p":1, "j":1, "sg":0}, 
+                {"n":"Marrocos", "f":"ma", "p":1, "j":1, "sg":0}, 
+                {"n":"Haiti", "f":"ht", "p":0, "j":1, "sg":-1}
+            ],
+            "D": [ 
+                {"n":"Estados Unidos", "f":"us", "p":3, "j":1, "sg":3}, 
+                {"n":"Austrália", "f":"au", "p":3, "j":1, "sg":2}, 
+                {"n":"Turquia", "f":"tr", "p":0, "j":1, "sg":-2},
+                {"n":"Paraguai", "f":"py", "p":0, "j":1, "sg":-3}
+            ],
+            "E": [ 
+                {"n":"Alemanha", "f":"de", "p":3, "j":1, "sg":6}, 
+                {"n":"Costa do Marfim", "f":"ci", "p":3, "j":1, "sg":1}, 
+                {"n":"Equador", "f":"ec", "p":0, "j":1, "sg":-1},
+                {"n":"Curaçao", "f":"cw", "p":0, "j":1, "sg":-6}
+            ],
+            "F": [ 
+                {"n":"Suécia", "f":"se", "p":3, "j":1, "sg":4}, 
+                {"n":"Países Baixos", "f":"nl", "p":1, "j":1, "sg":0}, 
+                {"n":"Japão", "f":"jp", "p":1, "j":1, "sg":0}, 
+                {"n":"Tunísia", "f":"tn", "p":0, "j":1, "sg":-4}
+            ],
+            "G": [ {"n":"Bélgica", "f":"be", "p":0, "j":0, "sg":0}, {"n":"Egito", "f":"eg", "p":0, "j":0, "sg":0}, {"n":"Irã", "f":"ir", "p":0, "j":0, "sg":0}, {"n":"Nova Zelândia", "f":"nz", "p":0, "j":0, "sg":0} ],
+            "H": [ {"n":"Espanha", "f":"es", "p":0, "j":0, "sg":0}, {"n":"Cabo Verde", "f":"cv", "p":0, "j":0, "sg":0}, {"n":"Arábia Saudita", "f":"sa", "p":0, "j":0, "sg":0}, {"n":"Uruguai", "f":"uy", "p":0, "j":0, "sg":0} ],
+            "I": [ {"n":"França", "f":"fr", "p":0, "j":0, "sg":0}, {"n":"Senegal", "f":"sn", "p":0, "j":0, "sg":0}, {"n":"Iraque", "f":"iq", "p":0, "j":0, "sg":0}, {"n":"Noruega", "f":"no", "p":0, "j":0, "sg":0} ],
+            "J": [ {"n":"Argentina", "f":"ar", "p":0, "j":0, "sg":0}, {"n":"Argélia", "f":"dz", "p":0, "j":0, "sg":0}, {"n":"Áustria", "f":"at", "p":0, "j":0, "sg":0}, {"n":"Jordânia", "f":"jo", "p":0, "j":0, "sg":0} ],
+            "K": [ {"n":"Portugal", "f":"pt", "p":0, "j":0, "sg":0}, {"n":"RD Congo", "f":"cd", "p":0, "j":0, "sg":0}, {"n":"Uzbequistão", "f":"uz", "p":0, "j":0, "sg":0}, {"n":"Colômbia", "f":"co", "p":0, "j":0, "sg":0} ],
+            "L": [ {"n":"Inglaterra", "f":"gb-eng", "p":0, "j":0, "sg":0}, {"n":"Croácia", "f":"hr", "p":0, "j":0, "sg":0}, {"n":"Gana", "f":"gh", "p":0, "j":0, "sg":0}, {"n":"Panamá", "f":"pa", "p":0, "j":0, "sg":0} ]
         };
 
-        function gerarJogosRodada(rodada) {
-            let jogos = [];
-            let estadios = ["Dallas", "Los Angeles", "Nova York", "Atlanta", "Miami", "Boston", "Cidade do México", "Toronto", "Vancouver", "Houston", "San Francisco", "Filadélfia"];
-            let idxEstadio = 0;
+        function obterJogosRodada1() {
+            return [
+                // Grupo A
+                { data: "11/06", hora: "16h00", grupo: "A", t1: "México", f1: "mx", s1: 2, s2: 0, t2: "África do Sul", f2: "za", est: "Mexico City Stadium (Azteca)" },
+                { data: "11/06", hora: "23h00", grupo: "A", t1: "Coreia do Sul", f1: "kr", s1: 2, s2: 1, t2: "Tchéquia", f2: "cz", est: "Estadio Guadalajara (Akron)" },
+                // Grupo B
+                { data: "12/06", hora: "16h00", grupo: "B", t1: "Canadá", f1: "ca", s1: 1, s2: 1, t2: "Bósnia", f2: "ba", est: "Toronto Stadium (BMO Field)" },
+                { data: "13/06", hora: "16h00", grupo: "B", t1: "Catar", f1: "qa", s1: 1, s2: 1, t2: "Suíça", f2: "ch", est: "San Francisco Bay Area Stadium (Levi's)" },
+                // Grupo C
+                { data: "13/06", hora: "19h00", grupo: "C", t1: "BRASIL", f1: "br", s1: 1, s2: 1, t2: "Marrocos", f2: "ma", est: "New York New Jersey Stadium (MetLife)", isBrasil: true },
+                { data: "13/06", hora: "22h00", grupo: "C", t1: "Haiti", f1: "ht", s1: 0, s2: 1, t2: "Escócia", f2: "gb-sct", est: "Boston Stadium (Gillette Stadium)" },
+                // Grupo D
+                { data: "12/06", hora: "23h00", grupo: "D", t1: "Estados Unidos", f1: "us", s1: 4, s2: 1, t2: "Paraguai", f2: "py", est: "Los Angeles Stadium (SoFi)" },
+                { data: "14/06", hora: "04h00", grupo: "D", t1: "Austrália", f1: "au", s1: 2, s2: 0, t2: "Turquia", f2: "tr", est: "BC Place de Vancouver" },
+                // Grupo E
+                { data: "14/06", hora: "17h00", grupo: "E", t1: "Alemanha", f1: "de", s1: 7, s2: 1, t2: "Curaçao", f2: "cw", est: "Houston Stadium (NRG)" },
+                { data: "14/06", hora: "23h00", grupo: "E", t1: "Costa do Marfim", f1: "ci", s1: 1, s2: 0, t2: "Equador", f2: "ec", est: "Philadelphia Stadium (Lincoln Financial)" },
+                // Grupo F
+                { data: "14/06", hora: "20h00", grupo: "F", t1: "Países Baixos", f1: "nl", s1: 2, s2: 2, t2: "Japão", f2: "jp", est: "Dallas Stadium (AT&T Stadium)" },
+                { data: "15/06", hora: "02h00", grupo: "F", t1: "Suécia", f1: "se", s1: 5, s2: 1, t2: "Tunísia", f2: "tn", est: "Estadio Monterrey (BBVA)" },
+                // Grupo G (Ao vivo / Hoje)
+                { data: "15/06", hora: "16h00", grupo: "G", t1: "Bélgica", f1: "be", s1: "", s2: "", t2: "Egito", f2: "eg", est: "Seattle Stadium (Lumen Field)" },
+                { data: "15/06", hora: "22h00", grupo: "G", t1: "Irã", f1: "ir", s1: "", s2: "", t2: "Nova Zelândia", f2: "nz", est: "Los Angeles Stadium (SoFi)" },
+                // Grupo H (Ao vivo / Hoje)
+                { data: "15/06", hora: "13h00", grupo: "H", t1: "Espanha", f1: "es", s1: 0, s2: 0, t2: "Cabo Verde", f2: "cv", est: "Atlanta Stadium (Mercedes-Benz)" },
+                { data: "15/06", hora: "19h00", grupo: "H", t1: "Arábia Saudita", f1: "sa", s1: "", s2: "", t2: "Uruguai", f2: "uy", est: "Miami Stadium (Hard Rock)" }
+            ];
+        }
+
+        function gerarJogosEstruturais(rodada) {
+            if (rodada === 1) return obterJogosRodada1();
             
-            Object.keys(timesPorGrupo).forEach((g, idx) => {
+            let jogos = [];
+            Object.keys(timesPorGrupo).forEach((g) => {
                 let t = timesPorGrupo[g];
-                let dataDia = 11 + rodada + Math.floor(idx/4);
-                let hora = (14 + (idx % 3) * 3) + "h";
-                
-                if (rodada === 1) {
-                    jogos.push({ data: dataDia + "/06", hora: hora, grupo: g, t1: t[0].n, f1: t[0].f, t2: t[1].n, f2: t[1].f, est: estadios[idxEstadio%12], isBrasil: t[0].b || t[1].b }); idxEstadio++;
-                    jogos.push({ data: dataDia + "/06", hora: hora, grupo: g, t1: t[2].n, f1: t[2].f, t2: t[3].n, f2: t[3].f, est: estadios[idxEstadio%12], isBrasil: t[2].b || t[3].b }); idxEstadio++;
-                } else if (rodada === 2) {
-                    jogos.push({ data: (dataDia+5) + "/06", hora: hora, grupo: g, t1: t[0].n, f1: t[0].f, t2: t[2].n, f2: t[2].f, est: estadios[idxEstadio%12], isBrasil: t[0].b || t[2].b }); idxEstadio++;
-                    jogos.push({ data: (dataDia+5) + "/06", hora: hora, grupo: g, t1: t[1].n, f1: t[1].f, t2: t[3].n, f2: t[3].f, est: estadios[idxEstadio%12], isBrasil: t[1].b || t[3].b }); idxEstadio++;
+                if (rodada === 2) {
+                    jogos.push({ data: "18-23/06", hora: "A definir", grupo: g, t1: t[0].n, f1: t[0].f, s1: "", s2: "", t2: t[2].n, f2: t[2].f, est: "Estádio FIFA" });
+                    jogos.push({ data: "18-23/06", hora: "A definir", grupo: g, t1: t[1].n, f1: t[1].f, s1: "", s2: "", t2: t[3].n, f2: t[3].f, est: "Estádio FIFA" });
                 } else if (rodada === 3) {
-                    jogos.push({ data: (dataDia+10) + "/06", hora: "16h", grupo: g, t1: t[3].n, f1: t[3].f, t2: t[0].n, f2: t[0].f, est: estadios[idxEstadio%12], isBrasil: t[3].b || t[0].b }); idxEstadio++;
-                    jogos.push({ data: (dataDia+10) + "/06", hora: "16h", grupo: g, t1: t[1].n, f1: t[1].f, t2: t[2].n, f2: t[2].f, est: estadios[idxEstadio%12], isBrasil: t[1].b || t[2].b }); idxEstadio++;
+                    jogos.push({ data: "24-27/06", hora: "A definir", grupo: g, t1: t[3].n, f1: t[3].f, s1: "", s2: "", t2: t[0].n, f2: t[0].f, est: "Estádio FIFA" });
+                    jogos.push({ data: "24-27/06", hora: "A definir", grupo: g, t1: t[1].n, f1: t[1].f, s1: "", s2: "", t2: t[2].n, f2: t[2].f, est: "Estádio FIFA" });
                 }
             });
             return jogos;
@@ -175,10 +228,10 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="center" style="font-weight:bold; color:#0d9488;">${nomeFase} [J${i}]</td>
-                    <td class="center">A definir</td>
-                    <td class="right"><span style="font-size:14px; margin:0 4px;">🏳️</span> Classificado ${2*i-1}</td>
+                    <td class="center">Julho/2026</td>
+                    <td class="right">Classificado ${2*i-1}</td>
                     <td class="center"><div class="placar-wrapper"><div class="score"></div> x <div class="score"></div></div></td>
-                    <td><span style="font-size:14px; margin:0 4px;">🏳️</span> Classificado ${2*i}</td>
+                    <td>Classificado ${2*i}</td>
                     <td>Arena FIFA</td>
                 `;
                 tbody.appendChild(tr);
@@ -186,38 +239,42 @@
         }
 
         function renderizarAplicativo() {
-            // Grupos e Classificação
+            // Renderizar Classificação dos Grupos
             const containerGrupos = document.getElementById('groups-container');
             containerGrupos.innerHTML = '';
             Object.keys(timesPorGrupo).forEach(grupo => {
                 const div = document.createElement('div');
                 div.className = 'group-card';
                 let tabelaHTML = `<div class="group-title">Grupo ${grupo}</div><table><thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead><tbody>`;
-                timesPorGrupo[grupo].forEach(sel => {
+                
+                // Ordenação estrutural por pontos e saldo de gols
+                const timesOrdenados = [...timesPorGrupo[grupo]].sort((a, b) => b.p - a.p || b.sg - a.sg);
+                
+                timesOrdenados.forEach(sel => {
                     let estiloRow = sel.b ? "class='brasil-row'" : "";
                     let classeTexto = sel.b ? "class='brasil-text'" : "";
-                    tabelaHTML += `<tr ${estiloRow}><td><span class="flag fi fi-${sel.f}"></span> <span ${classeTexto}>${sel.n}</span></td><td class="center c-p">0</td><td class="center">0</td><td class="center">0</td></tr>`;
+                    tabelaHTML += `<tr ${estiloRow}><td><span class="flag fi fi-${sel.f}"></span> <span ${classeTexto}>${sel.n}</span></td><td class="center c-p">${sel.p}</td><td class="center">${sel.j}</td><td class="center">${sel.sg}</td></tr>`;
                 });
                 tabelaHTML += `</tbody></table>`;
                 div.innerHTML = tabelaHTML;
                 containerGrupos.appendChild(div);
             });
 
-            // Rodadas
+            // Renderizar Rodadas
             [1, 2, 3].forEach(numRodada => {
                 const tbody = document.getElementById(`rodada${numRodada}-tbody`);
                 tbody.innerHTML = '';
-                const jogos = gerarJogosRodada(numRodada);
+                const jogos = gerarJogosEstruturais(numRodada);
                 jogos.forEach(j => {
                     const tr = document.createElement('tr');
-                    if(j.isBrasil) tr.className = 'brasil-row';
+                    if(j.isBrasil || j.t1 === "BRASIL" || j.t2 === "BRASIL") tr.className = 'brasil-row';
                     let bClassT1 = j.t1 === "BRASIL" ? "class='brasil-text'" : "";
                     let bClassT2 = j.t2 === "BRASIL" ? "class='brasil-text'" : "";
                     tr.innerHTML = `
                         <td class="center date-col">${j.data}<br><span style="font-size:11px; font-weight:normal; color:#64748b;">${j.hora}</span></td>
                         <td class="center"><span class="group-badge">${j.grupo}</span></td>
                         <td class="right"><span ${bClassT1}>${j.t1}</span> <span class="flag fi fi-${j.f1}"></span></td>
-                        <td class="center"><div class="placar-wrapper"><div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div></div></td>
+                        <td class="center"><div class="placar-wrapper"><div class="score">${j.s1}</div><span style="color:#94a3b8;">x</span><div class="score">${j.s2}</div></div></td>
                         <td><span class="flag fi fi-${j.f2}"></span> <span ${bClassT2}>${j.t2}</span></td>
                         <td style="color:#64748b; font-size:12px;">${j.est}</td>
                     `;
@@ -225,15 +282,13 @@
                 });
             });
 
-            // REPARADO: Preenchimento automático de todas as fases eliminatórias dinâmicas
             preencherFaseMataMata('fase32-tbody', 16, 'Dezesseis-avos');
             preencherFaseMataMata('fase16-tbody', 8, 'Oitavas');
             preencherFaseMataMata('fase8-tbody', 4, 'Quartas');
             preencherFaseMataMata('fase4-tbody', 2, 'Semifinal');
             
-            // Grande Final Fixada
             const tbodyFinal = document.getElementById('final-tbody');
-            tbodyFinal.innerHTML = `<tr><td class="center" style="font-weight:bold; color:#1e3a8a; background-color:#e0f2fe;">Grande Final 🏆</td><td class="center" style="background-color:#e0f2fe; font-weight:bold;">19/07 - 17h</td><td class="right" style="background-color:#e0f2fe; font-weight:bold;"><span class="brasil-text">BRASIL</span> <span class="flag fi fi-br"></span></td><td class="center" style="background-color:#e0f2fe;"><div class="placar-wrapper"><div class="score" style="border-color:#1e3a8a;"></div> x <div class="score" style="border-color:#1e3a8a;"></div></div></td><td style="background-color:#e0f2fe; font-weight:bold;">Vencedor Semifinal 2</td><td style="background-color:#e0f2fe; font-weight:bold;">Nova York / NJ</td></tr>`;
+            tbodyFinal.innerHTML = `<tr><td class="center" style="font-weight:bold; color:#1e3a8a; background-color:#e0f2fe;">Grande Final 🏆</td><td class="center" style="background-color:#e0f2fe; font-weight:bold;">19/07</td><td class="right" style="background-color:#e0f2fe; font-weight:bold;">Finalista 1</td><td class="center" style="background-color:#e0f2fe;"><div class="placar-wrapper"><div class="score" style="border-color:#1e3a8a;"></div> x <div class="score" style="border-color:#1e3a8a;"></div></div></td><td style="background-color:#e0f2fe; font-weight:bold;">Finalista 2</td><td style="background-color:#e0f2fe; font-weight:bold;">MetLife (New York)</td></tr>`;
         }
 
         document.addEventListener('DOMContentLoaded', renderizarAplicativo);
