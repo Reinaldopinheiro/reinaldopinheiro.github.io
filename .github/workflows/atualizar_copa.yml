@@ -2,9 +2,8 @@ name: Atualizar Painel da Copa 2026
 
 on:
   schedule:
-    # Executa a cada hora cheia de forma cronometrada
     - cron: '0 * * * *'
-  workflow_dispatch: # Permite que você execute manualmente clicando em um botão no GitHub se quiser
+  workflow_dispatch:
 
 jobs:
   build:
@@ -24,14 +23,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install requests beautifulsoup4
 
+    # Ajustado: adicionado o working-directory para entrar na pasta 'copa'
     - name: Executar o Script de Atualização
+      working-directory: copa
       run: python copa26.py
 
+    # Ajustado: adicionado o working-directory para commitar a partir de 'copa'
     - name: Enviar alterações e dar o Push de volta para o GitHub Pages
+      working-directory: copa
       run: |
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "actions@github.com"
         git add copa.html
-        # Só realiza o commit se houver de fato alguma mudança nos placares
         git diff-index --quiet HEAD || git commit -m "🤖 [Bot] Placares da Copa Atualizados via Python"
         git push
