@@ -1,0 +1,37 @@
+name: Atualizar Painel da Copa 2026
+
+on:
+  schedule:
+    # Executa a cada hora cheia de forma cronometrada
+    - cron: '0 * * * *'
+  workflow_dispatch: # Permite que você execute manualmente clicando em um botão no GitHub se quiser
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clonar o Repositório
+      uses: actions/checkout@v4
+
+    - name: Configurar o Python no Servidor
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Instalar Dependências de Raspagem
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4
+
+    - name: Executar o Script de Atualização
+      run: python copa26.py
+
+    - name: Enviar alterações e dar o Push de volta para o GitHub Pages
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
+        git add copa.html
+        # Só realiza o commit se houver de fato alguma mudança nos placares
+        git diff-index --quiet HEAD || git commit -m "🤖 [Bot] Placares da Copa Atualizados via Python"
+        git push
