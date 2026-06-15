@@ -1,18 +1,26 @@
 import os
-from string import Template
+import requests
+from bs4 import BeautifulSoup
 
 def buscar_dados_copa():
-    # Dados limpos e isolados para o Python não se confundir com o JavaScript
+    """
+    Sua estrutura original de dados mapeados.
+    """
     dados = {
-        "A_1_P": 3, "A_2_P": 3, "B_1_P": 1, "C_1_P": 3, "C_2_P": 1
+        "A": [["México", "mx", 3, 1, 2], ["Coreia do Sul", "kr", 3, 1, 1], ["Tchéquia", "cz", 0, 1, -1], ["África do Sul", "za", 0, 1, -2]],
+        "B": [["Canadá", "ca", 1, 1, 0], ["Bósnia", "ba", 1, 1, 0], ["Catar", "qa", 1, 1, 0], ["Suíça", "ch", 1, 1, 0]],
+        "C": [["Escócia", "gb-sct", 3, 1, 1], ["BRASIL", "br", 1, 1, 0], ["Marrocos", "ma", 1, 1, 0], ["Haiti", "ht", 0, 1, -1]],
+        "D": [["Estados Unidos", "us", 3, 1, 3], ["Austrália", "au", 3, 1, 2], ["Turquia", "tr", 0, 1, -2], ["Paraguai", "py", 0, 1, -3]],
+        "E": [["Alemanha", "de", 3, 1, 6], ["Costa do Marfim", "ci", 3, 1, 1], ["Equador", "ec", 0, 1, -1], ["Curaçao", "cw", 0, 1, -6]],
+        "F": [["Suécia", "se", 3, 1, 4], ["Países Baixos", "nl", 1, 1, 0], ["Japão", "jp", 1, 1, 0], ["Tunísia", "tn", 0, 1, -4]]
     }
     return dados
 
 def gerar_html():
     dados = buscar_dados_copa()
     
-    # HTML Base estruturado como Template pura (o Python ignora as chaves do CSS/JS)
-    html_template = Template("""<!DOCTYPE html>
+    # Usamos chaves duplas {{ }} nas partes de CSS/JS para o Python não confundir com variáveis
+    html_template = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -20,59 +28,82 @@ def gerar_html():
     <title>Central da Copa do Mundo 2026 - RPC Consultoria</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f4f6f9; color: #1e293b; padding-bottom: 80px; }
-        header { background: linear-gradient(135deg, #1e3a8a 25%, #0d9488 75%); color: white; padding: 35px 10px; text-align: center; }
-        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
-        .groups-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .group-card { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid #0d9488; }
-        .group-title { font-size: 15px; font-weight: bold; color: #1e3a8a; margin-bottom: 10px; text-transform: uppercase; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background-color: #1e3a8a; color: white; padding: 10px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
-        .flag { display: inline-block; width: 20px; height: 15px; vertical-align: middle; margin-right: 6px; }
-        footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; text-align: center; font-weight: bold; border-top: 2px solid #e2e8f0; }
+        * {{ box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }}
+        body {{ background-color: #f4f6f9; color: #1e293b; padding-bottom: 80px; }}
+        header {{ background: linear-gradient(135deg, #1e3a8a 25%, #0d9488 75%); color: white; padding: 35px 10px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }}
+        .header-content-wrapper {{ max-width: 600px; margin: 0 auto; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); }}
+        h1 {{ font-size: 26px; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; margin-bottom: 6px; }}
+        .subtitle {{ font-size: 14px; opacity: 0.95; }}
+        .container {{ max-width: 1200px; margin: 20px auto; padding: 0 15px; }}
+        .status-bar {{ background-color: #ffffff; border-left: 4px solid #0d9488; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #475569; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }}
+        .live-indicator {{ display: flex; align-items: center; gap: 6px; font-weight: bold; color: #0d9488; }}
+        .pulse {{ width: 8px; height: 8px; background-color: #0d9488; border-radius: 50%; animation: pulse-animation 1.5s infinite; }}
+        @keyframes pulse-animation {{ 0% {{ transform: scale(0.9); opacity: 1; }} 50% {{ transform: scale(1.4); opacity: 0.5; }} 100% {{ transform: scale(0.9); opacity: 1; }} }}
+        .groups-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }}
+        .group-card {{ background: white; border-radius: 8px; padding: 15px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); border-top: 4px solid #0d9488; }}
+        .group-title {{ font-size: 15px; font-weight: bold; color: #1e3a8a; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }}
+        table {{ width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }}
+        th {{ background-color: #1e3a8a; color: white; font-weight: 700; padding: 10px; text-transform: uppercase; }}
+        td {{ padding: 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }}
+        tr:nth-child(even) td {{ background-color: #f8fafc; }}
+        .flag {{ display: inline-block; width: 20px; height: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border-radius: 2px; vertical-align: middle; margin: 0 4px; }}
+        footer {{ position: fixed; bottom: 0; left: 0; width: 100%; background-color: #ffffff; border-top: 2px solid #e2e8f0; padding: 15px; text-align: center; font-size: 14px; font-weight: bold; color: #1e3a8a; z-index: 1000; }}
     </style>
 </head>
 <body>
     <header>
-        <h1>Central da Copa do Mundo 2026 🏆</h1>
-        <p>Tabela Completa de Grupos & Rodadas Atualizada</p>
+        <div class="header-content-wrapper">
+            <h1>Central da Copa do Mundo 2026 🏆</h1>
+            <div class="subtitle">Tabela Completa de Grupos & Rodadas com o Brasil <span class="fi fi-br" style="width:22px; height:16px;"></span></div>
+        </div>
     </header>
 
     <div class="container">
-        <div class="groups-grid">
-            <!-- GRUPO A -->
-            <div class="group-card">
-                <div class="group-title">Grupo A</div>
-                <table>
-                    <tr><th>Seleção</th><th>P</th><th>J</th></tr>
-                    <tr><td><span class="flag fi fi-mx"></span> México</td><td><b>$A_1_P</b></td><td>1</td></tr>
-                    <tr><td><span class="flag fi fi-kr"></span> Coreia do Sul</td><td><b>$A_2_P</b></td><td>1</td></tr>
-                </table>
-            </div>
-
-            <!-- GRUPO C -->
-            <div class="group-card">
-                <div class="group-title">Grupo C</div>
-                <table>
-                    <tr><th>Seleção</th><th>P</th><th>J</th></tr>
-                    <tr><td><span class="flag fi fi-gb-sct"></span> Escócia</td><td><b>$C_1_P</b></td><td>1</td></tr>
-                    <tr><td><span class="flag fi fi-br"></span> BRASIL</td><td><b>$C_2_P</b></td><td>1</td></tr>
-                </table>
-            </div>
+        <div class="status-bar">
+            <div><strong>Status:</strong> Atualizado automaticamente via RPC Automation Pipeline.</div>
+            <div class="live-indicator"><div class="pulse"></div> Sincronizado ao vivo</div>
         </div>
+
+        <div class="groups-grid" id="groups-container"></div>
     </div>
 
     <footer>Oferecimento: RPC - Reinaldo Pinheiro Consultoria</footer>
-</body>
-</html>""")
 
-    # Preenche as variáveis com segurança utilizando o cifrão ($)
-    html_final = html_template.safe_substitute(dados)
+    <script>
+        // CORRIGIDO: Agora o valor booleano está como string "true" para não quebrar o Python
+        const timesPorGrupo = {{
+            "A": [
+                {{"n": "{dados['A'][0][0]}", "f": "{dados['A'][0][1]}", "p": {dados['A'][0][2]}, "j": {dados['A'][0][3]}, "sg": {dados['A'][0][4]}}},
+                {{"n": "{dados['A'][1][0]}", "f": "{dados['A'][1][1]}", "p": {dados['A'][1][2]}, "j": {dados['A'][1][3]}, "sg": {dados['A'][1][4]}}}
+            ],
+            "C": [
+                {{"n": "{dados['C'][0][0]}", "f": "{dados['C'][0][1]}", "p": {dados['C'][0][2]}, "j": {dados['C'][0][3]}, "sg": {dados['C'][0][4]}}},
+                {{"n": "{dados['C'][1][0]}", "f": "{dados['C'][1][1]}", "b": "true", "p": {dados['C'][1][2]}, "j": {dados['C'][1][3]}, "sg": {dados['C'][1][4]}}}
+            ]
+        }};
+
+        function renderizar() {{
+            const container = document.getElementById('groups-container');
+            Object.keys(timesPorGrupo).forEach(g => {{
+                const div = document.createElement('div');
+                div.className = 'group-card';
+                let html = `<div class="group-title">Grupo \${g}</div><table><tr><th>Seleção</th><th>P</th><th>J</th><th>SG</th></tr>`;
+                timesPorGrupo[g].forEach(t => {{
+                    const estiloBrasil = t.b === "true" ? 'style="font-weight:bold; color:#047857;"' : '';
+                    html += `<tr><td \${estiloBrasil}><span class="flag fi fi-\${t.f}"></span> \${t.n}</td><td>\${t.p}</td><td>\${t.j}</td><td>\${t.sg}</td></tr>`;
+                }});
+                html += '</table>';
+                div.innerHTML = html;
+                container.appendChild(div);
+            }});
+        }}
+        document.addEventListener('DOMContentLoaded', renderizar);
+    </script>
+</body>
+</html>"""
 
     with open("copa.html", "w", encoding="utf-8") as f:
-        f.write(html_final)
+        f.write(html_template)
     print("Arquivo copa.html gerado com sucesso!")
 
 if __name__ == "__main__":
