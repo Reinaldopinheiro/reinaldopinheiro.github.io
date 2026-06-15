@@ -10,7 +10,7 @@ def gerar_html():
     
     status_texto = f"<strong>Status:</strong> Dados Oficiais Sincronizados. Última atualização: {agora}."
 
-    # Define o caminho correto para ler o modelo HTML
+    # Define o caminho correto para ler o modelo HTML.
     template_path = "copa_template.html"
     if not os.path.exists(template_path):
         template_path = os.path.join("copa", "copa_template.html")
