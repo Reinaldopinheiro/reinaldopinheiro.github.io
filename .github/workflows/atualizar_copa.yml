@@ -5,7 +5,6 @@ on:
     - cron: '0 * * * *'
   workflow_dispatch:
 
-# FORÇA O GITHUB A ACEITAR A ESCRITA VIA CÓDIGO
 permissions:
   contents: write
 
@@ -16,6 +15,9 @@ jobs:
     steps:
     - name: 1. Clonar o Repositório
       uses: actions/checkout@v4
+      with:
+        # Garante que o repositório seja clonado com permissões ativas para push
+        persist-credentials: true
 
     - name: 2. Configurar o Python no Servidor
       uses: actions/setup-python@v5
@@ -32,19 +34,20 @@ jobs:
       run: python copa26.py
 
     - name: 5. Enviar alterações e dar o Push de volta para o GitHub Pages
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "actions@github.com"
         
-        # Como estamos na raiz, adicionamos apontando o caminho completo da pasta
+        # Resolve o problema do detached HEAD garantindo que estamos na main
+        git checkout main
+        
+        # Adiciona o arquivo modificado apontando o caminho correto
         git add copa/copa.html
         
-        # Verifica alterações de forma segura na raiz
+        # Só realiza o commit e o push se houver de fato alguma mudança nos placares
         if ! git diff-index --quiet HEAD; then
           git commit -m "🤖 [Bot] Placares da Copa Atualizados via Python"
           git push origin main
         else
-          echo "Nenhum resultado novo encontrado. O arquivo já está atualizado."
+          echo "Nenhuma alteração encontrada nos resultados. Pulando o push."
         fi
