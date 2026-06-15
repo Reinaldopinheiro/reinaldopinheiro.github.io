@@ -31,15 +31,19 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
-          
+    
           # Adiciona de forma inteligente tudo o que o Python criou ou alterou
           git add .
-          
+    
           # Realiza o commit se houverem mudanças
           git commit -m "[Bot] Placares da Copa Atualizados via Python" || echo "Sem alterações para commitar"
-          
-          # Sincroniza com o histórico remoto para evitar conflitos de push
-          git pull origin main --rebase
-          
+    
+          # Sincroniza com o histórico remoto, abortando rebase em caso de conflito
+          git pull origin main --rebase || {
+          echo "Rebase falhou devido a conflitos. Abortando rebase e usando estratégia de merge."
+          git rebase --abort
+          git pull origin main --no-rebase
+          }
+    
           # Publica as alterações com sucesso
           git push origin main
