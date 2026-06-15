@@ -8,7 +8,7 @@ def gerar_html():
     # Coleta o horário atual já convertido para o GMT-3
     agora = datetime.now(fuso_brasilia).strftime("%d/%m/%Y às %H:%M")
     
-    status_texto = f"<strong>Status:</strong> Dados Oficiais Sincronizados. Última atualização: {agora}."
+    status_texto = f"<strong>Status:</strong> Dados Oficiais Sincronizados. Última atualização: {agora}h."
 
     # Define o caminho correto para ler o modelo HTML.
     template_path = "copa_template.html"
