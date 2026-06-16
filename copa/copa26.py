@@ -22,25 +22,25 @@ def get_live_scores():
                 home_score = jogo.get('HomeTeamScore')
                 away_score = jogo.get('AwayTeamScore')
                 
+                # Só processa se o jogo já tiver gols/resultados registrados
                 if home_score is not None and away_score is not None:
                     t1_name = str(jogo.get('HomeTeam')).lower().strip()
                     t2_name = str(jogo.get('AwayTeam')).lower().strip()
                     
-                    # Formato esperado pelo JavaScript: "time1vtime2"
+                    # Salva no formato que o JavaScript do seu template espera buscar
                     key = f"{t1_name}v{t2_name}"
                     scores[key] = (str(home_score), str(away_score))
-            print(f"⚽ Sucesso! {len(scores)} placares obtidos da API principal.")
+            print(f"⚽ Sucesso! {len(scores)} placares dinâmicos obtidos da API principal.")
             return scores
     except Exception as e:
-        print(f"Erro na API principal: {e}. Tentando contingência...")
+        print(f"Erro na API principal: {e}. Tentando plano B...")
         
-    # CONTINGÊNCIA: Caso a API principal falhe, busca do repositório openfootball
+    # CONTINGÊNCIA: Caso a API principal apresente instabilidade
     try:
         url_fallback = "https://raw.githubusercontent.com/openfootball/world-cup/master/2026/cup.json"
         res = requests.get(url_fallback, timeout=10)
         if res.status_code == 200:
             data = res.json()
-            # CORREÇÃO DA SINTAXE: 'in' em vez de 'inside'
             for r in data.get('rounds', []):
                 for m in r.get('matches', []):
                     if m.get('score') is not None:
@@ -60,7 +60,7 @@ def gerar_html():
     fuso_brasilia = timezone(timedelta(hours=-3))
     agora = datetime.now(fuso_brasilia).strftime("%d/%m/%Y às %H:%M")
     
-    # 2. Coleta os placares de forma dinâmica (Sem travar nada fixo)
+    # 2. Coleta os placares de forma automatizada e dinâmica
     live_scores = get_live_scores()
         
     # 3. Localiza e lê o seu arquivo de template HTML
@@ -71,23 +71,23 @@ def gerar_html():
     with open(template_path, "r", encoding="utf-8") as f:
         html = f.read()
         
-    # 4. Salva o arquivo placar.json dentro da pasta 'copa'
+    # 4. SALVAMENTO CRUCIAL: Salva o arquivo placar.json obrigatoriamente dentro da pasta 'copa'
     json_path = "copa/placar.json"
     if not os.path.exists("copa"):
         json_path = "placar.json"
         
     with open(json_path, "w", encoding="utf-8") as jf:
         json.dump(live_scores, jf, ensure_ascii=False, indent=4)
-    print(f"✅ Arquivo 'placar.json' salvo em: {json_path}")
+    print(f"✅ Arquivo 'placar.json' atualizado com sucesso em: {json_path}")
     
-    # 5. Injeta a data atual na barra de status
+    # 5. Injeta a data atual na barra de status (Canto superior esquerdo)
     html_final = html.replace("__STATUS_BAR_PLACEHOLDER__", f"Última atualização: {agora}")
     
-    # 6. Grava o HTML final de exibição na pasta correta
+    # 6. Grava o HTML final compilado dentro da pasta correta
     output_html_path = "copa/copa.html"
     with open(output_html_path, "w", encoding="utf-8") as f:
         f.write(html_final)
-    print(f"✅ Site 'copa.html' compilado com sucesso em: {output_html_path}")
+    print(f"✅ Site 'copa.html' renderizado com sucesso em: {output_html_path}")
 
 if __name__ == "__main__":
     gerar_html()
