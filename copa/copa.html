@@ -67,7 +67,7 @@
 
         <div class="status-bar">
             <!-- Esta div preserva exatamente o texto injetado pelo copa26.py -->
-            <div id="api-status">Última atualização: 16/06/2026 às 14:38</div>
+            <div id="api-status">Última atualização: 16/06/2026 às 14:49</div>
             <div class="live-indicator"><div class="pulse"></div> Sincronizado</div>
         </div>
 
@@ -216,7 +216,7 @@
             
             // Tenta buscar o arquivo placar.json gerado pelo Python, se falhar ou não existir ainda, usa objeto vazio com segurança.
             try {
-                const resposta = await fetch('placar.json');
+                const resposta = await fetch('copa/placar.json');
                 if (resposta.ok) {
                     placaresLive = await resposta.json();
                 }
