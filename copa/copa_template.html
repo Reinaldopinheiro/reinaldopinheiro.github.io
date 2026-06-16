@@ -214,18 +214,21 @@
         async function renderizarAplicativo() {
             let placaresLive = {};
             
-            // Tenta buscar o arquivo placar.json gerado pelo Python, se falhar ou não existir ainda, usa objeto vazio com segurança.
+            // Busca o arquivo JSON estritamente dentro da pasta copa/
             try {
                 const resposta = await fetch('copa/placar.json');
                 if (resposta.ok) {
-                    placaresLive = await resposta.json();
+                    placaresLive = await resposta.json(); // Corrigido para 'resposta'
+                    console.log("Placares carregados com sucesso da pasta copa/.");
+                } else {
+                    console.log("Erro: Arquivo copa/placar.json não foi encontrado no servidor.");
                 }
             } catch (e) { 
-                console.log("Aviso: arquivo 'placar.json' não lido ou indisponível. Carregando modo preventivo."); 
+                console.log("Erro crítico ao tentar ler a pasta copa/: ", e); 
             }
 
             const traduzirParaFifa = (nome) => {
-                const mapa = {
+            const mapa = {
                     "bélgica": "belgium", "egito": "egypt", "espanha": "spain", "cabo verde": "cabo verde",
                     "suécia": "sweden", "tunísia": "tunisia", "méxico": "mexico", "áfrica do sul": "south africa",
                     "coreia do sul": "korea republic", "tchéquia": "czechia", "canadá": "canada",
