@@ -22,7 +22,7 @@ def get_live_scores():
                 home_score = jogo.get('HomeTeamScore')
                 away_score = jogo.get('AwayTeamScore')
                 
-                # Só processa se o jogo já tiver gols/resultados registrados
+                # Só processa se o jogo tiver gols/resultados válidos registrados
                 if home_score is not None and away_score is not None:
                     t1_name = str(jogo.get('HomeTeam')).lower().strip()
                     t2_name = str(jogo.get('AwayTeam')).lower().strip()
@@ -33,7 +33,7 @@ def get_live_scores():
             print(f"⚽ Sucesso! {len(scores)} placares dinâmicos obtidos da API principal.")
             return scores
     except Exception as e:
-        print(f"Erro na API principal: {e}. Tentando plano B...")
+        print(f"Erro na API principal: {e}. Tentando plano de contingência...")
         
     # CONTINGÊNCIA: Caso a API principal apresente instabilidade
     try:
@@ -71,7 +71,7 @@ def gerar_html():
     with open(template_path, "r", encoding="utf-8") as f:
         html = f.read()
         
-    # 4. SALVAMENTO CRUCIAL: Salva o arquivo placar.json obrigatoriamente dentro da pasta 'copa'
+    # 4. SALVAMENTO CORRETO: Grava o arquivo placar.json obrigatoriamente dentro da pasta 'copa'
     json_path = "copa/placar.json"
     if not os.path.exists("copa"):
         json_path = "placar.json"
