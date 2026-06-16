@@ -17,7 +17,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # CONFIGURAÇÕES DE DEPLOY E FONTES DE DADOS
 # ==========================================
 URL_FONTE_REAL = "https://raw.githubusercontent.com/openfootball/world-cup/master/2026/cup.json"
-CAMINHO_REPOSITORIO_LOCAL = "./"  
+CAMINHO_REPOSITORIO_LOCAL = "copa"  
 COPYRIGHT = "Oferecimento: RPC - Reinaldo Pinheiro Consultoria - Ajude a ter novos projetos doando no pix: doe@reinaldopinheiro.com.br"
 
 times_mapeamento = {
