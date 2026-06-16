@@ -66,8 +66,9 @@
         </div>
 
         <div class="status-bar">
+            <!-- Esta div preserva exatamente o texto injetado pelo copa26.py -->
             <div id="api-status">__STATUS_BAR_PLACEHOLDER__</div>
-            <div class="live-indicator"><div class="pulse" style="background-color: #0d9488;"></div> Sincronizado</div>
+            <div class="live-indicator"><div class="pulse"></div> Sincronizado</div>
         </div>
 
         <div id="classificacao" class="tab-content active">
@@ -187,7 +188,7 @@
                     jogos.push({ data: "18-23/06", hora: "A definir", grupo: g, t1: t[1].n, f1: t[1].f, s1: "", s2: "", t2: t[3].n, f2: t[3].f, est: "Estádio FIFA" });
                 } else if (rodada === 3) {
                     jogos.push({ data: "24-27/06", hora: "A definir", grupo: g, t1: t[3].n, f1: t[3].f, s1: "", s2: "", t2: t[0].n, f2: t[0].f, est: "Estádio FIFA" });
-                    jogos.push({ data: "24-27/06", hora: "A definir", grupo: g, t1: t[1].n, f1: t[1].f, s1: "", s2: "", t2: t[2].n, f2: t[2].f, est: "Estádio FIFA" });
+                    jogos.push({ data: "24-27/06", hora: "A definir", group: g, t1: t[1].n, f1: t[1].f, s1: "", s2: "", t2: t[2].n, f2: t[2].f, est: "Estádio FIFA" });
                 }
             });
             return jogos;
@@ -212,10 +213,16 @@
 
         async function renderizarAplicativo() {
             let placaresLive = {};
+            
+            // Tenta buscar o arquivo placar.json gerado pelo Python, se falhar ou não existir ainda, usa objeto vazio com segurança.
             try {
                 const resposta = await fetch('placar.json');
-                if (resposta.ok) placaresLive = await resposta.json();
-            } catch (e) { console.log("Lendo arquivo JSON local."); }
+                if (resposta.ok) {
+                    placaresLive = await resposta.json();
+                }
+            } catch (e) { 
+                console.log("Aviso: arquivo 'placar.json' não lido ou indisponível. Carregando modo preventivo."); 
+            }
 
             const traduzirParaFifa = (nome) => {
                 const mapa = {
@@ -235,12 +242,12 @@
                 return mapa[nome.toLowerCase()] || nome.toLowerCase();
             };
 
-            // Zera contadores para recalcular em tempo real
+            // Certifica de zerar os dados de classificação para a matemática rodar limpa
             Object.keys(timesPorGrupo).forEach(g => {
                 timesPorGrupo[g].forEach(t => { t.p = 0; t.j = 0; t.sg = 0; });
             });
 
-            // Motor de cálculo matemático da classificação baseado nos placares injetados
+            // Processador matemático dos pontos por grupo
             [1, 2, 3].forEach(numRodada => {
                 const jogos = gerarJogosEstruturais(numRodada);
                 jogos.forEach(j => {
@@ -251,12 +258,12 @@
                     let p1 = j.s1;
                     let p2 = j.s2;
                     
-                    if (placaresLive[chaveJogo] !== undefined && placaresLive[chaveJogo] !== null) {
+                    if (placaresLive && placaresLive[chaveJogo] !== undefined && placaresLive[chaveJogo] !== null) {
                         p1 = placaresLive[chaveJogo][0];
                         p2 = placaresLive[chaveJogo][1];
                     }
 
-                    if(p1 !== "" && p2 !== "" && !isNaN(p1) && !isNaN(p2)) {
+                    if(p1 !== "" && p2 !== "" && p1 !== null && p2 !== null && !isNaN(p1) && !isNaN(p2)) {
                         let time1 = timesPorGrupo[j.grupo].find(t => t.n.toLowerCase() === j.t1.toLowerCase());
                         let time2 = timesPorGrupo[j.grupo].find(t => t.n.toLowerCase() === j.t2.toLowerCase());
                         
@@ -271,7 +278,7 @@
                 });
             });
 
-            // Renderiza os Cards dos Grupos reorganizados por mérito
+            // Renderiza os painéis visuais de cada grupo
             const containerGrupos = document.getElementById('groups-container');
             containerGrupos.innerHTML = '';
             Object.keys(timesPorGrupo).forEach(grupo => {
@@ -291,9 +298,10 @@
                 containerGrupos.appendChild(div);
             });
 
-            // Renderiza as Tabelas de Jogos Injetando os Resultados Dinâmicos
+            // Monta as linhas das tabelas das rodadas injetando o placar correto ou "-"
             [1, 2, 3].forEach(numRodada => {
                 const tbody = document.getElementById(`rodada` + numRodada + `-tbody`);
+                if(!tbody) return;
                 tbody.innerHTML = '';
                 const jogos = gerarJogosEstruturais(numRodada);
                 jogos.forEach(j => {
@@ -306,10 +314,10 @@
                     let t2Fifa = traduzirParaFifa(j.t2);
                     let chaveJogo = t1Fifa + "v" + t2Fifa;
                     
-                    let placar1 = j.s1;
-                    let placar2 = j.s2;
+                    let placar1 = "-";
+                    let placar2 = "-";
                     
-                    if (placaresLive[chaveJogo] !== undefined && placaresLive[chaveJogo] !== null) {
+                    if (placaresLive && placaresLive[chaveJogo] !== undefined && placaresLive[chaveJogo] !== null) {
                         placar1 = placaresLive[chaveJogo][0];
                         placar2 = placaresLive[chaveJogo][1];
                     }
@@ -318,7 +326,7 @@
                         <td class="center date-col">` + j.data + `<br><span style="font-size:11px; font-weight:normal; color:#64748b;">` + j.hora + `</span></td>
                         <td class="center"><span class="group-badge">` + j.grupo + `</span></td>
                         <td class="right"><span ` + bClassT1 + `>` + j.t1 + `</span> <span class="flag fi fi-` + j.f1 + `"></span></td>
-                        <td class="center"><div class="placar-wrapper"><div class="score">` + (placar1 !== "" ? placar1 : "-") + `</div><span style="color:#94a3b8;">x</span><div class="score">` + (placar2 !== "" ? placar2 : "-") + `</div></div></td>
+                        <td class="center"><div class="placar-wrapper"><div class="score">` + placar1 + `</div><span style="color:#94a3b8;">x</span><div class="score">` + placar2 + `</div></div></td>
                         <td><span class="flag fi fi-` + j.f2 + `"></span> <span ` + bClassT2 + `>` + j.t2 + `</span></td>
                         <td style="color:#64748b; font-size:12px;">` + j.est + `</td>
                     `;
@@ -332,9 +340,12 @@
             preencherFaseMataMata('fase4-tbody', 2, 'Semifinal');
             
             const tbodyFinal = document.getElementById('final-tbody');
-            tbodyFinal.innerHTML = `<tr><td class="center" style="font-weight:bold; color:#1e3a8a; background-color:#e0f2fe;">Grande Final 🏆</td><td class="center" style="background-color:#e0f2fe; font-weight:bold;">19/07</td><td class="right" style="background-color:#e0f2fe; font-weight:bold;">Finalista 1</td><td class="center" style="background-color:#e0f2fe;"><div class="placar-wrapper"><div class="score" style="border-color:#1e3a8a;"></div> x <div class="score" style="border-color:#1e3a8a;"></div></div></td><td style="background-color:#e0f2fe; font-weight:bold;">Finalista 2</td><td style="background-color:#e0f2fe; font-weight:bold;">MetLife (New York)</td></tr>`;
+            if(tbodyFinal) {
+                tbodyFinal.innerHTML = `<tr><td class="center" style="font-weight:bold; color:#1e3a8a; background-color:#e0f2fe;">Grande Final 🏆</td><td class="center" style="background-color:#e0f2fe; font-weight:bold;">19/07</td><td class="right" style="background-color:#e0f2fe; font-weight:bold;">Finalista 1</td><td class="center" style="background-color:#e0f2fe;"><div class="placar-wrapper"><div class="score" style="border-color:#1e3a8a;"></div> x <div class="score" style="border-color:#1e3a8a;"></div></div></td><td style="background-color:#e0f2fe; font-weight:bold;">Finalista 2</td><td style="background-color:#e0f2fe; font-weight:bold;">MetLife (New York)</td></tr>`;
+            }
         }
 
+        // Garante que o aplicativo rode imediatamente assim que a página abre
         document.addEventListener('DOMContentLoaded', renderizarAplicativo);
     </script>
 </body>
