@@ -214,22 +214,61 @@
             // Lendo de forma direta os dados injetados nativamente pelo Python na memória
             let placaresLive = typeof PLACARES_LIVE_SERVIDORE !== 'undefined' ? PLACARES_LIVE_SERVIDORE : {};
 
+            // Dicionário inteligente para mapear o que está escrito na tabela do site para o que a API envia
             const traduzirParaFifa = (nome) => {
+                const n = nome.toLowerCase().trim();
                 const mapa = {
-                    "bélgica": "belgium", "egito": "egypt", "espanha": "spain", "cabo verde": "cabo verde",
-                    "suécia": "sweden", "tunísia": "tunisia", "méxico": "mexico", "áfrica do sul": "south africa",
-                    "coreia do sul": "korea republic", "tchéquia": "czechia", "canadá": "canada",
-                    "bósnia": "bosnia and herzegovina", "brasil": "brazil", "marrocos": "morocco",
-                    "haiti": "haiti", "escócia": "scotland", "estados unidos": "usa", "paraguai": "paraguay",
-                    "austrália": "australia", "turquia": "turkey", "alemanha": "germany", "curaçao": "curaçao",
-                    "costa do marfim": "côte d'ivoire", "equador": "ecuador", "países baixos": "netherlands",
-                    "japão": "japan", "irã": "iran", "nova zelândia": "new zealand", "arábia saudita": "saudi arabia",
-                    "uruguai": "uruguay", "frança": "france", "senegal": "senegal", "iraque": "iraq",
-                    "noruega": "norway", "argentina": "argentina", "argélia": "algeria", "áustria": "austria",
-                    "jordânia": "jordan", "portugal": "portugal", "rd congo": "dr congo", "uzbequistão": "uzbekistan",
-                    "colômbia": "colombia", "inglaterra": "england", "croácia": "croatia", "gana": "ghana", "panamá": "panama"
+                    "brasil": "brazil",
+                    "méxico": "mexico",
+                    "coreia do sul": "south korea",
+                    "tchéquia": "czech republic",
+                    "áfrica do sul": "south africa",
+                    "canadá": "canada",
+                    "bósnia": "bosnia and herzegovina",
+                    "catar": "qatar",
+                    "suíça": "switzerland",
+                    "marrocos": "morocco",
+                    "haiti": "haiti",
+                    "escócia": "scotland",
+                    "estados unidos": "usa",
+                    "austrália": "australia",
+                    "turquia": "turkey",
+                    "paraguai": "paraguay",
+                    "alemanha": "germany",
+                    "costa do marfim": "ivory coast",
+                    "equador": "ecuador",
+                    "curaçao": "curacao",
+                    "suécia": "sweden",
+                    "países baixar": "netherlands",
+                    "países baixos": "netherlands",
+                    "japão": "japan",
+                    "tunísia": "tunisia",
+                    "bélgica": "belgium",
+                    "egito": "egypt",
+                    "irã": "iran",
+                    "nova zelândia": "new zealand",
+                    "espanha": "spain",
+                    "cabo verde": "cape verde",
+                    "arábia saudita": "saudi arabia",
+                    "uruguai": "uruguay",
+                    "frança": "france",
+                    "senegal": "senegal",
+                    "iraque": "iraq",
+                    "noruega": "norway",
+                    "argentina": "argentina",
+                    "argélia": "algeria",
+                    "áustria": "austria",
+                    "jordânia": "jordan",
+                    "portugal": "portugal",
+                    "rd congo": "dr congo",
+                    "uzbequistão": "uzbekistan",
+                    "colômbia": "colombia",
+                    "inglaterra": "england",
+                    "croácia": "croatia",
+                    "gana": "ghana",
+                    "panamá": "panama"
                 };
-                return mapa[nome.toLowerCase()] || nome.toLowerCase();
+                return mapa[n] || n;
             };
 
             Object.keys(timesPorGrupo).forEach(g => {
