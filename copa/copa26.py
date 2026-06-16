@@ -2,12 +2,18 @@ import requests
 import os
 from datetime import datetime, timezone, timedelta
 import json
+import unicodedata
+
+def normalizar_nome(txt):
+    """ Remove acentos, deixa tudo em minúsculo e limpa espaços """
+    if not txt:
+        return ""
+    origin = str(txt).lower().strip()
+    # Remove acentos (ex: 'méxico' vira 'mexico')
+    nfkd = unicodedata.normalize('NFKD', origin)
+    return "".join([c for c in nfkd if not unicodedata.combining(c)])
 
 def get_live_scores():
-    """
-    Busca os dados de jogos e placares diretamente de uma API/feed de dados 
-    esportivos atualizado para a Copa do Mundo 2026.
-    """
     url = "https://fixturedownload.com/feed/json/fifa-world-cup-2026"
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -17,77 +23,46 @@ def get_live_scores():
     try:
         response = requests.get(url, headers=headers, timeout=15)
         if response.status_code == 200:
-            dados_jogos = response.json()
-            for jogo in dados_jogos:
+            for jogo in response.json():
                 home_score = jogo.get('HomeTeamScore')
                 away_score = jogo.get('AwayTeamScore')
                 
-                # Só processa se o jogo tiver gols/resultados válidos registrados
                 if home_score is not None and away_score is not None:
-                    t1_name = str(jogo.get('HomeTeam')).lower().strip()
-                    t2_name = str(jogo.get('AwayTeam')).lower().strip()
+                    t1 = normalizar_nome(jogo.get('HomeTeam'))
+                    t2 = normalizar_nome(jogo.get('AwayTeam'))
                     
-                    # Salva no formato que o JavaScript do seu template espera buscar
-                    key = f"{t1_name}v{t2_name}"
-                    scores[key] = (str(home_score), str(away_score))
-            print(f"⚽ Sucesso! {len(scores)} placares dinâmicos obtidos da API principal.")
+                    # Salva das duas formas possíveis para o JS achar não importa a ordem
+                    scores[f"{t1}v{t2}"] = (str(home_score), str(away_score))
+                    scores[f"{t2}v{t1}"] = (str(away_score), str(home_score))
+            print(f"⚽ Sucesso: {len(scores) // 2} placares mapeados de forma bidirecional.")
             return scores
     except Exception as e:
-        print(f"Erro na API principal: {e}. Tentando plano de contingência...")
-        
-    # CONTINGÊNCIA: Caso a API principal apresente instabilidade
-    try:
-        url_fallback = "https://raw.githubusercontent.com/openfootball/world-cup/master/2026/cup.json"
-        res = requests.get(url_fallback, timeout=10)
-        if res.status_code == 200:
-            data = res.json()
-            for r in data.get('rounds', []):
-                for m in r.get('matches', []):
-                    if m.get('score') is not None:
-                        t1 = m['team1'].lower().strip()
-                        t2 = m['team2'].lower().strip()
-                        s1 = str(m['score']['fulltime'][0])
-                        s2 = str(m['score']['fulltime'][1])
-                        scores[f"{t1}v{t2}"] = (s1, s2)
-            return scores
-    except Exception as e:
-        print(f"Erro na contingência: {e}")
-
+        print(f"Erro na API: {e}")
     return scores
 
 def gerar_html():
-    # 1. Configura fuso horário de Brasília
     fuso_brasilia = timezone(timedelta(hours=-3))
     agora = datetime.now(fuso_brasilia).strftime("%d/%m/%Y às %H:%M")
     
-    # 2. Coleta os placares de forma automatizada e dinâmica
     live_scores = get_live_scores()
+    
+    if not os.path.exists("copa"):
+        os.makedirs("copa")
+    with open("copa/placar.json", "w", encoding="utf-8") as jf:
+        json.dump(live_scores, jf, ensure_ascii=False, indent=4)
         
-    # 3. Localiza e lê o seu arquivo de template HTML
-    template_path = "copa/copa_template.html"
-    if not os.path.exists(template_path):
-        template_path = os.path.join("copa", "copa_template.html")
-        
-    with open(template_path, "r", encoding="utf-8") as f:
+    with open("copa/copa_template.html", "r", encoding="utf-8") as f:
         html = f.read()
         
-    # 4. SALVAMENTO CORRETO: Grava o arquivo placar.json obrigatoriamente dentro da pasta 'copa'
-    json_path = "copa/placar.json"
-    if not os.path.exists("copa"):
-        json_path = "placar.json"
-        
-    with open(json_path, "w", encoding="utf-8") as jf:
-        json.dump(live_scores, jf, ensure_ascii=False, indent=4)
-    print(f"✅ Arquivo 'placar.json' atualizado com sucesso em: {json_path}")
-    
-    # 5. Injeta a data atual na barra de status (Canto superior esquerdo)
     html_final = html.replace("__STATUS_BAR_PLACEHOLDER__", f"Última atualização: {agora}")
     
-    # 6. Grava o HTML final compilado dentro da pasta correta
-    output_html_path = "copa/copa.html"
-    with open(output_html_path, "w", encoding="utf-8") as f:
+    # Injeta os dados na memória do HTML
+    dados_colados = f"\n<script>const PLACARES_LIVE_SERVIDORE = {json.dumps(live_scores)};</script>\n"
+    html_final = html_final.replace("<body>", f"<body>{dados_colados}")
+    
+    with open("copa/copa.html", "w", encoding="utf-8") as f:
         f.write(html_final)
-    print(f"✅ Site 'copa.html' renderizado com sucesso em: {output_html_path}")
+    print("✅ HTML atualizado com sucesso!")
 
 if __name__ == "__main__":
     gerar_html()
