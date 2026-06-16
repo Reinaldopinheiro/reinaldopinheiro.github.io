@@ -211,62 +211,64 @@
         }
 
         async function renderizarAplicativo() {
-            // Lendo de forma direta os dados injetados nativamente pelo Python na memória
             let placaresLive = typeof PLACARES_LIVE_SERVIDORE !== 'undefined' ? PLACARES_LIVE_SERVIDORE : {};
 
-            // Dicionário inteligente para mapear o que está escrito na tabela do site para o que a API envia
+            const normalizarJS = (txt) => {
+                return txt.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            };
+
+            // Dicionário mapeado para bater EXATAMENTE com o retorno cru do arquivo JSON real da API
             const traduzirParaFifa = (nome) => {
-                const n = nome.toLowerCase().trim();
+                const n = normalizarJS(nome);
                 const mapa = {
                     "brasil": "brazil",
-                    "méxico": "mexico",
-                    "coreia do sul": "south korea",
-                    "tchéquia": "czech republic",
-                    "áfrica do sul": "south africa",
-                    "canadá": "canada",
-                    "bósnia": "bosnia and herzegovina",
+                    "mexico": "mexico",
+                    "coreia do sul": "korea republic",
+                    "tchequia": "czechia",
+                    "africa do sul": "south africa",
+                    "canada": "canada",
+                    "bosnia": "bosnia and herzegovina",
                     "catar": "qatar",
-                    "suíça": "switzerland",
+                    "suica": "switzerland",
                     "marrocos": "morocco",
                     "haiti": "haiti",
-                    "escócia": "scotland",
+                    "escocia": "scotland",
                     "estados unidos": "usa",
-                    "austrália": "australia",
+                    "australia": "australia",
                     "turquia": "turkey",
                     "paraguai": "paraguay",
                     "alemanha": "germany",
                     "costa do marfim": "ivory coast",
                     "equador": "ecuador",
-                    "curaçao": "curacao",
-                    "suécia": "sweden",
-                    "países baixar": "netherlands",
-                    "países baixos": "netherlands",
-                    "japão": "japan",
-                    "tunísia": "tunisia",
-                    "bélgica": "belgium",
+                    "curacao": "curacao",
+                    "suecia": "sweden",
+                    "paises baixos": "netherlands",
+                    "japao": "japan",
+                    "tunisia": "tunisia",
+                    "belgica": "belgium",
                     "egito": "egypt",
-                    "irã": "iran",
-                    "nova zelândia": "new zealand",
+                    "ira": "iran",
+                    "nova zelandia": "new zealand",
                     "espanha": "spain",
                     "cabo verde": "cape verde",
-                    "arábia saudita": "saudi arabia",
+                    "arabia saudita": "saudi arabia",
                     "uruguai": "uruguay",
-                    "frança": "france",
+                    "franca": "france",
                     "senegal": "senegal",
                     "iraque": "iraq",
                     "noruega": "norway",
                     "argentina": "argentina",
-                    "argélia": "algeria",
-                    "áustria": "austria",
-                    "jordânia": "jordan",
+                    "argelia": "algeria",
+                    "austria": "austria",
+                    "jordania": "jordan",
                     "portugal": "portugal",
                     "rd congo": "dr congo",
-                    "uzbequistão": "uzbekistan",
-                    "colômbia": "colombia",
+                    "uzbequistao": "uzbekistan",
+                    "colombia": "colombia",
                     "inglaterra": "england",
-                    "croácia": "croatia",
+                    "croacia": "croatia",
                     "gana": "ghana",
-                    "panamá": "panama"
+                    "panama": "panama"
                 };
                 return mapa[n] || n;
             };
@@ -291,14 +293,15 @@
                     }
 
                     if(p1 !== "" && p2 !== "" && p1 !== null && p2 !== null && !isNaN(p1) && !isNaN(p2)) {
-                        let time1 = timesPorGrupo[j.grupo].find(t => t.n.toLowerCase() === j.t1.toLowerCase());
-                        let time2 = timesPorGrupo[j.grupo].find(t => t.n.toLowerCase() === j.t2.toLowerCase());
+                        let time1 = timesPorGrupo[j.grupo].find(t => normalizarJS(t.n) === normalizarJS(j.t1));
+                        let time2 = timesPorGrupo[j.grupo].find(t => normalizarJS(t.n) === normalizarJS(j.t2));
                         
                         if(time1 && time2) {
                             time1.j += 1; time2.j += 1;
-                            time1.sg += (p1 - p2); time2.sg += (p2 - p1);
-                            if(p1 > p2) { time1.p += 3; }
-                            else if(p2 > p1) { time2.p += 3; }
+                            time1.sg += (parseInt(p1) - parseInt(p2)); 
+                            time2.sg += (parseInt(p2) - parseInt(p1));
+                            if(parseInt(p1) > parseInt(p2)) { time1.p += 3; }
+                            else if(parseInt(p2) > parseInt(p1)) { time2.p += 3; }
                             else { time1.p += 1; time2.p += 1; }
                         }
                     }
