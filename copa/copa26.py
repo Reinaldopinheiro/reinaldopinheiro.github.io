@@ -1,6 +1,6 @@
 # ==============================================================================
 # PROGRAMA: Central Real-Time Copa do Mundo 2026 - RPC
-# VERSÃO: v7.0.0 (Ajuste de APIs e Correção GitHub Actions)
+# VERSÃO: v7.0.1 (Remoção Definitiva de Dependências GitLocais)
 # DATA: 16/06/2026
 # AUTOR/MANTENEDOR: Reinaldo Pinheiro Consultoria
 # ==============================================================================
@@ -16,9 +16,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # ==========================================
 # CONFIGURAÇÕES DE DEPLOY E FONTES DE DADOS
 # ==========================================
-# Mudança para um feed público estável e alternativo sem restrição de tokens/planos pagos
 URL_FONTE_REAL = "https://raw.githubusercontent.com/openfootball/world-cup/master/2026/cup.json"
-
 CAMINHO_REPOSITORIO_LOCAL = "./"  
 COPYRIGHT = "Oferecimento: RPC - Reinaldo Pinheiro Consultoria - Ajude a ter novos projetos doando no pix: doe@reinaldopinheiro.com.br"
 
@@ -131,7 +129,6 @@ def buscar_dados_reais():
                     "encerrado": encerrado
                 }
                 
-                # Distribuição com tratamento de erro estrutural de listas
                 if "Group" in stage_name or grupo_jogo != "":
                     if match_idx <= 24: estrutura_copa["grupos"][1].append(jogo_dict)
                     elif match_idx <= 48: estrutura_copa["grupos"][2].append(jogo_dict)
@@ -362,10 +359,9 @@ def compilar_html(classificacao, estrutura_copa):
     print("✨ copa.html gerado com sucesso!")
 
 if __name__ == "__main__":
-    # Execução única otimizada para servidores CI/CD (GitHub Actions)
     estrutura_dados = buscar_dados_reais()
     if estrutura_dados:
         tabela_calculada = atualizar_classificacao(estrutura_dados)
         compilar_html(tabela_calculada, estrutura_dados)
     else:
-        print("❌ Erro catastrófico ao processar tabelas.")
+        print("❌ Erro ao processar tabelas.")
