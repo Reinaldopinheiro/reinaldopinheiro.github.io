@@ -31,15 +31,9 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
-          
-          # Procura o arquivo copa.html onde quer que ele tenha sido gerado e move para o lugar certo
-          if [ -f "copa.html" ]; then
-            mkdir -p copa
-            mv copa.html copa/copa.html
-          fi
-          
+                              
           # Adiciona o arquivo garante que o Git não quebre se não houver mudanças
-          git add copa/copa.html
+          git add copa/copa26.html
           
           # Só faz o commit se houver alguma alteração real no arquivo
           git diff --quiet && git diff --staged --quiet || (git commit -m "⚽ Automação: Atualização dos placares da Copa" && git push)
