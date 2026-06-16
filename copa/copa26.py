@@ -1,6 +1,6 @@
 # ==============================================================================
 # PROGRAMA: Central Real-Time Copa do Mundo 2026 - RPC
-# VERSÃO: v7.0.1 (Remoção Definitiva de Dependências GitLocais)
+# VERSÃO: v7.0.2 (Ajuste Absoluto de Caminho para GitHub Actions)
 # DATA: 16/06/2026
 # AUTOR/MANTENEDOR: Reinaldo Pinheiro Consultoria
 # ==============================================================================
@@ -17,7 +17,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # CONFIGURAÇÕES DE DEPLOY E FONTES DE DADOS
 # ==========================================
 URL_FONTE_REAL = "https://raw.githubusercontent.com/openfootball/world-cup/master/2026/cup.json"
-CAMINHO_REPOSITORIO_LOCAL = "copa"  
 COPYRIGHT = "Oferecimento: RPC - Reinaldo Pinheiro Consultoria - Ajude a ter novos projetos doando no pix: doe@reinaldopinheiro.com.br"
 
 times_mapeamento = {
@@ -353,10 +352,15 @@ def compilar_html(classificacao, estrutura_copa):
 </body>
 </html>"""
     
-    caminho_final = os.path.join(CAMINHO_REPOSITORIO_LOCAL, "copa.html")
+    # IMPORTANTE: Força o salvamento na pasta correta independente do diretório de chamada do script
+    if os.path.exists("copa") and os.path.isdir("copa"):
+        caminho_final = "copa/copa.html"
+    else:
+        caminho_final = "copa.html"
+        
     with open(caminho_final, "w", encoding="utf-8") as f:
         f.write(html)
-    print("✨ copa.html gerado com sucesso!")
+    print(f"✨ Arquivo gerado com sucesso em: {os.path.abspath(caminho_final)}")
 
 if __name__ == "__main__":
     estrutura_dados = buscar_dados_reais()
