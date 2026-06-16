@@ -217,7 +217,7 @@
                 return txt.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             };
 
-            // Dicionário mapeado para bater EXATAMENTE com o retorno cru do arquivo JSON real da API
+            // Dicionário definitivo corrigido de acordo com o retorno real do seu JSON
             const traduzirParaFifa = (nome) => {
                 const n = normalizarJS(nome);
                 const mapa = {
@@ -235,10 +235,11 @@
                     "escocia": "scotland",
                     "estados unidos": "usa",
                     "australia": "australia",
-                    "turquia": "turkey",
+                    "autralia": "australia",
+                    "turquia": "turkiye",       // CORRIGIDO: Batendo com "turkiye" do seu JSON
                     "paraguai": "paraguay",
                     "alemanha": "germany",
-                    "costa do marfim": "ivory coast",
+                    "costa do marfim": "cote divoire", // CORRIGIDO: Batendo com o padrão da API
                     "equador": "ecuador",
                     "curacao": "curacao",
                     "suecia": "sweden",
@@ -272,7 +273,7 @@
                 };
                 return mapa[n] || n;
             };
-
+						
             Object.keys(timesPorGrupo).forEach(g => {
                 timesPorGrupo[g].forEach(t => { t.p = 0; t.j = 0; t.sg = 0; });
             });
