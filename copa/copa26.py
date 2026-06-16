@@ -1,6 +1,6 @@
 # ==============================================================================
 # PROGRAMA: Central Real-Time Copa do Mundo 2026 - RPC
-# VERSÃO: v7.0.2 (Ajuste Absoluto de Caminho para GitHub Actions)
+# VERSÃO: v7.1.0 (Geração do arquivo copa26.html na pasta copa)
 # DATA: 16/06/2026
 # AUTOR/MANTENEDOR: Reinaldo Pinheiro Consultoria
 # ==============================================================================
@@ -352,11 +352,11 @@ def compilar_html(classificacao, estrutura_copa):
 </body>
 </html>"""
     
-    # IMPORTANTE: Força o salvamento na pasta correta independente do diretório de chamada do script
+    # === REGRA DE CAMINHO PARA SALVAR copa26.html DENTRO DA PASTA copa ===
     if os.path.exists("copa") and os.path.isdir("copa"):
-        caminho_final = "copa/copa.html"
+        caminho_final = os.path.join("copa", "copa26.html")
     else:
-        caminho_final = "copa.html"
+        caminho_final = "copa26.html"
         
     with open(caminho_final, "w", encoding="utf-8") as f:
         f.write(html)
