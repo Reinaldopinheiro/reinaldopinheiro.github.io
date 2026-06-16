@@ -216,7 +216,7 @@
             
             // Tenta buscar o arquivo placar.json gerado pelo Python, se falhar ou não existir ainda, usa objeto vazio com segurança.
             try {
-                const resposta = await fetch('placar.json');
+                const resposta = await fetch('copa/placar.json');
                 if (resposta.ok) {
                     placaresLive = await resposta.json();
                 }
