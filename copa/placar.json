@@ -3,11 +3,23 @@
         "2",
         "0"
     ],
+    "south africavmexico": [
+        "0",
+        "2"
+    ],
     "korea republicvczechia": [
         "2",
         "1"
     ],
+    "czechiavkorea republic": [
+        "1",
+        "2"
+    ],
     "canadavbosnia and herzegovina": [
+        "1",
+        "1"
+    ],
+    "bosnia and herzegovinavcanada": [
         "1",
         "1"
     ],
@@ -15,7 +27,15 @@
         "4",
         "1"
     ],
+    "paraguayvusa": [
+        "1",
+        "4"
+    ],
     "qatarvswitzerland": [
+        "1",
+        "1"
+    ],
+    "switzerlandvqatar": [
         "1",
         "1"
     ],
@@ -23,31 +43,63 @@
         "1",
         "1"
     ],
+    "moroccovbrazil": [
+        "1",
+        "1"
+    ],
     "haitivscotland": [
         "0",
         "1"
     ],
-    "australiavtürkiye": [
+    "scotlandvhaiti": [
+        "1",
+        "0"
+    ],
+    "australiavturkiye": [
         "2",
         "0"
     ],
-    "germanyvcuraçao": [
+    "turkiyevaustralia": [
+        "0",
+        "2"
+    ],
+    "germanyvcuracao": [
         "7",
         "1"
+    ],
+    "curacaovgermany": [
+        "1",
+        "7"
     ],
     "netherlandsvjapan": [
         "2",
         "2"
     ],
-    "côte d'ivoirevecuador": [
+    "japanvnetherlands": [
+        "2",
+        "2"
+    ],
+    "cote d'ivoirevecuador": [
         "1",
         "0"
+    ],
+    "ecuadorvcote d'ivoire": [
+        "0",
+        "1"
     ],
     "swedenvtunisia": [
         "5",
         "1"
     ],
+    "tunisiavsweden": [
+        "1",
+        "5"
+    ],
     "spainvcabo verde": [
+        "0",
+        "0"
+    ],
+    "cabo verdevspain": [
         "0",
         "0"
     ],
@@ -55,11 +107,23 @@
         "1",
         "1"
     ],
+    "egyptvbelgium": [
+        "1",
+        "1"
+    ],
     "saudi arabiavuruguay": [
         "1",
         "1"
     ],
+    "uruguayvsaudi arabia": [
+        "1",
+        "1"
+    ],
     "ir iranvnew zealand": [
+        "2",
+        "2"
+    ],
+    "new zealandvir iran": [
         "2",
         "2"
     ]
