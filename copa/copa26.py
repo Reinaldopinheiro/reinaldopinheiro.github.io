@@ -1,6 +1,6 @@
 # ==============================================================================
 # PROGRAMA: Central Real-Time Copa do Mundo 2026 - RPC
-# VERSÃO: v6.1.0 (Dados Oficiais FIFA Live)
+# VERSÃO: v7.0.0 (Ajuste de APIs e Correção GitHub Actions)
 # DATA: 16/06/2026
 # AUTOR/MANTENEDOR: Reinaldo Pinheiro Consultoria
 # ==============================================================================
@@ -9,36 +9,18 @@ import time
 import os
 from datetime import datetime
 import requests
-from git import Repo
 
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ==========================================
-# CONFIGURAÇÕES DE DEPLOY E FONTES OFICIAIS REAL-TIME
+# CONFIGURAÇÕES DE DEPLOY E FONTES DE DADOS
 # ==========================================
-URL_FONTE_REAL = "https://api.fifa.com/api/v3/calendar/matches?idSeason=254645&idCompetition=17"
+# Mudança para um feed público estável e alternativo sem restrição de tokens/planos pagos
+URL_FONTE_REAL = "https://raw.githubusercontent.com/openfootball/world-cup/master/2026/cup.json"
 
 CAMINHO_REPOSITORIO_LOCAL = "./"  
-BRANCH_GITHUB = "main"
 COPYRIGHT = "Oferecimento: RPC - Reinaldo Pinheiro Consultoria - Ajude a ter novos projetos doando no pix: doe@reinaldopinheiro.com.br"
-
-# Dicionário de tradução estrito baseado nas IDs oficiais da federação
-traducao_ids = {
-    "BRA": "BRASIL", "MEX": "México", "USA": "Estados Unidos", "CAN": "Canadá",
-    "ARG": "Argentina", "FRA": "França", "GER": "Alemanha", "ESP": "Espanha",
-    "POR": "Portugal", "ENG": "Inglaterra", "ITA": "Itália", "NED": "Países Baixos",
-    "BEL": "Bélgica", "CRO": "Croácia", "URU": "Uruguai", "COL": "Colômbia",
-    "MAR": "Marrocos", "SEN": "Senegal", "JPN": "Japão", "KOR": "Coreia do Sul",
-    "AUS": "Austrália", "TUN": "Tunísia", "EGY": "Egito", "NGA": "Nigéria",
-    "KSA": "Arábia Saudita", "PAR": "Paraguai", "ECU": "Equador", "PER": "Peru",
-    "CHI": "Chile", "SWE": "Suécia", "SUI": "Suíça", "DEN": "Dinamarca",
-    "RSA": "África do Sul", "CZE": "Tchéquia", "BIH": "Bósnia", "QAT": "Catar",
-    "SCO": "Escócia", "HAI": "Haiti", "TUR": "Turquia", "CUW": "Curaçao",
-    "CIV": "Costa do Marfim", "CPV": "Cabo Verde", "IRQ": "Iraque", "NOR": "Noruega",
-    "ALG": "Argélia", "AUT": "Áustria", "JOR": "Jordânia", "COD": "RD Congo",
-    "UZB": "Uzbequistão", "GHA": "Gana", "PAN": "Panamá", "NZL": "Nova Zelândia"
-}
 
 times_mapeamento = {
     "México": "mx", "África do Sul": "za", "Coreia do Sul": "kr", "Tchéquia": "cz",
@@ -80,92 +62,98 @@ def inicializar_classificacao():
             tabela[g][nome] = {"P": 0, "J": 0, "V": 0, "SG": 0, "f": flag, "b": is_br}
     return tabela
 
+def traduzir_nome(nome_en):
+    traducoes = {
+        "Brazil": "BRASIL", "Mexico": "México", "South Africa": "África do Sul", "South Korea": "Coreia do Sul",
+        "Czech Republic": "Tchéquia", "Czechia": "Tchéquia", "Canada": "Canadá", "Bosnia and Herzegovina": "Bósnia",
+        "Qatar": "Catar", "Switzerland": "Suíça", "Morocco": "Marrocos", "Scotland": "Escócia", "USA": "Estados Unidos",
+        "United States": "Estados Unidos", "Paraguay": "Paraguai", "Australia": "Austrália", "Turkey": "Turquia",
+        "Germany": "Alemanha", "Ivory Coast": "Costa do Marfim", "Ecuador": "Equador", "Netherlands": "Países Baixos",
+        "Japan": "Japão", "Sweden": "Suécia", "Tunisia": "Tunísia", "Belgium": "Bélgica", "Egypt": "Egito",
+        "Iran": "Irã", "New Zealand": "Nova Zelândia", "Spain": "Espanha", "Cape Verde": "Cabo Verde",
+        "Saudi Arabia": "Arábia Saudita", "Uruguay": "Uruguai", "France": "França", "Norway": "Noruega",
+        "Argentina": "Argentina", "Algeria": "Argélia", "Austria": "Áustria", "Jordan": "Jordânia",
+        "Portugal": "Portugal", "DR Congo": "RD Congo", "Uzbekistan": "Uzbequistão", "Colombia": "Colômbia",
+        "England": "Inglaterra", "Croatia": "Croácia", "Ghana": "Gana", "Panama": "Panamá"
+    }
+    return traducoes.get(nome_en, nome_en)
+
 def buscar_dados_reais():
     estrutura_copa = {
         "grupos": {1: [], 2: [], 3: []},
         "r32": [], "r16": [], "r8": [], "r4": [], "third": [], "final": []
     }
     try:
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] [LIVE] Acessando banco de dados oficial da FIFA...")
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(URL_FONTE_REAL, headers=headers, timeout=15, verify=False)
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Sincronizando com o provedor aberto de resultados...")
+        response = requests.get(URL_FONTE_REAL, timeout=15, verify=False)
         
         if response.status_code != 200:
-            print(f"⚠️ Servidor FIFA instável (Status {response.status_code}).")
             return None
             
         dados = response.json()
-        results = dados.get("Results", [])
+        rounds = dados.get("rounds", [])
         
-        if not results:
-            print("⚠️ Sem registros na resposta da API.")
-            return None
-
-        for match in results:
-            home_data = match.get("Home", {}) or {}
-            away_data = match.get("Away", {}) or {}
+        match_idx = 1
+        for rnd in rounds:
+            stage_name = rnd.get("name", "")
+            matches = rnd.get("matches", [])
             
-            id_home = home_data.get("IdCountry", "")
-            id_away = away_data.get("IdCountry", "")
-            
-            t1_pt = traducao_ids.get(id_home, home_data.get("ShortClubName", "A definir"))
-            t2_pt = traducao_ids.get(id_away, away_data.get("ShortClubName", "A definir"))
-            
-            g1 = match.get("HomeTeamScore", None)
-            g2 = match.get("AwayTeamScore", None)
-            
-            period = match.get("Period", 0)
-            encerrado = period == 3 or (g1 is not None and g2 is not None)
-            
-            grupo_jogo = ""
-            for g, lista in grupos_definidos.items():
-                if t1_pt in lista or t2_pt in lista:
-                    grupo_jogo = g
-                    break
-            
-            raw_date = match.get("Date", "")
-            try:
-                dt = datetime.strptime(raw_date[:10], "%Y-%m-%d")
-                data_formatada = dt.strftime("%d/%m")
-            except:
-                data_formatada = "A def."
-
-            hora_formatada = raw_date[11:16].replace(":", "h") if len(raw_date) > 16 else "16h00"
-            
-            match_num = int(match.get("IdMatch", 0)) % 200
-            if match_num == 0:
-                continue
-
-            jogo_dict = {
-                "num": match_num, "data": data_formatada, "hora": hora_formatada, "grupo": grupo_jogo,
-                "t1": t1_pt, "f1": times_mapeamento.get(t1_pt, "un"),
-                "t2": t2_pt, "f2": times_mapeamento.get(t2_pt, "un"),
-                "est": match.get("Stadium", {}).get("Name", [{"Description": "Estádio FIFA"}])[0].get("Description", "Estádio FIFA"),
-                "g1": g1 if g1 is not None else "", "g2": g2 if g2 is not None else "", 
-                "encerrado": encerrado
-            }
-
-            if match_num <= 72:
-                if match_num <= 24: rodada = 1
-                elif match_num <= 48: rodada = 2
-                else: rodada = 3
-                estrutura_copa["grupos"][rodada].append(jogo_dict)
-            elif match_num <= 88:
-                estrutura_copa["r32"].append(jogo_dict)
-            elif match_num <= 96:
-                estrutura_copa["r16"].append(jogo_dict)
-            elif match_num <= 100:
-                estrutura_copa["r8"].append(jogo_dict)
-            elif match_num <= 102:
-                estrutura_copa["r4"].append(jogo_dict)
-            elif match_num == 103:
-                estrutura_copa["third"].append(jogo_dict)
-            elif match_num == 104:
-                estrutura_copa["final"].append(jogo_dict)
-
+            for match in matches:
+                t1_raw = match.get("team1", {}).get("name", "A definir")
+                t2_raw = match.get("team2", {}).get("name", "A definir")
+                
+                t1_pt = traduzir_nome(t1_raw)
+                t2_pt = traduzir_nome(t2_raw)
+                
+                g1 = match.get("score1", None)
+                g2 = match.get("score2", None)
+                encerrado = g1 is not None and g2 is not None
+                
+                grupo_jogo = ""
+                for g, lista in grupos_definidos.items():
+                    if t1_pt in lista or t2_pt in lista:
+                        grupo_jogo = g
+                        break
+                
+                raw_date = match.get("date", "")
+                try:
+                    dt = datetime.strptime(raw_date, "%Y-%m-%d")
+                    data_formatada = dt.strftime("%d/%m")
+                except:
+                    data_formatada = "A def."
+                
+                jogo_dict = {
+                    "num": match_idx, "data": data_formatada, "hora": "16h00", "grupo": grupo_jogo,
+                    "t1": t1_pt, "f1": times_mapeamento.get(t1_pt, "un"),
+                    "t2": t2_pt, "f2": times_mapeamento.get(t2_pt, "un"),
+                    "est": match.get("stadium", {}).get("name", "Estádio Mundialista"),
+                    "g1": g1 if g1 is not None else "", "g2": g2 if g2 is not None else "", 
+                    "encerrado": encerrado
+                }
+                
+                # Distribuição com tratamento de erro estrutural de listas
+                if "Group" in stage_name or grupo_jogo != "":
+                    if match_idx <= 24: estrutura_copa["grupos"][1].append(jogo_dict)
+                    elif match_idx <= 48: estrutura_copa["grupos"][2].append(jogo_dict)
+                    else: estrutura_copa["grupos"][3].append(jogo_dict)
+                elif "Round of 32" in stage_name:
+                    estrutura_copa["r32"].append(jogo_dict)
+                elif "Round of 16" in stage_name:
+                    estrutura_copa["r16"].append(jogo_dict)
+                elif "Quarter-finals" in stage_name:
+                    estrutura_copa["r8"].append(jogo_dict)
+                elif "Semi-finals" in stage_name:
+                    estrutura_copa["r4"].append(jogo_dict)
+                elif "Third place" in stage_name:
+                    estrutura_copa["third"].append(jogo_dict)
+                elif "Final" in stage_name:
+                    estrutura_copa["final"].append(jogo_dict)
+                
+                match_idx += 1
+                
         return estrutura_copa
     except Exception as e:
-        print(f"❌ Falha crítica no processador oficial: {e}")
+        print(f"❌ Falha ao coletar dados reais: {e}")
         return None
 
 def atualizar_classificacao(estrutura_copa):
@@ -257,7 +245,7 @@ def compilar_html(classificacao, estrutura_copa):
         .date-col {{ font-weight: bold; color: #1e3a8a; }}
         .group-badge {{ background-color: #e2e8f0; color: #334155; font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 11px; }}
         .group-badge.fase {{ background-color: #fee2e2; color: #991b1b; }}
-        .flag {{ inline-block; width: 20px; height: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border-radius: 2px; vertical-align: middle; margin: 0 4px; }}
+        .flag {{ display: inline-block; width: 20px; height: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border-radius: 2px; vertical-align: middle; margin: 0 4px; }}
         .brasil-text {{ font-weight: bold; color: #047857; }}
         .placar-wrapper {{ display: flex; justify-content: center; align-items: center; gap: 6px; }}
         .score {{ background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-weight: bold; }}
@@ -275,11 +263,10 @@ def compilar_html(classificacao, estrutura_copa):
         </div>
 
         <div class="status-bar">
-            <div><strong>Sincronização Direta da FIFA:</strong> {datetime.now().strftime('%d/%m/%Y às %H:%M:%S')}</div>
+            <div><strong>Sincronização Ativa:</strong> {datetime.now().strftime('%d/%m/%Y às %H:%M:%S')}</div>
             <div style="font-weight: bold; color: #0d9488;">● Placar Real Ativo</div>
         </div>
 
-        <!-- ABA 1: CLASSIFICAÇÃO -->
         <div id="classificacao" class="tab-content active">
             <div class="groups-grid">"""
 
@@ -306,11 +293,10 @@ def compilar_html(classificacao, estrutura_copa):
                     </table>
                 </div>"""
 
-    html += """
+    html += f"""
             </div>
         </div>
 
-        <!-- ABA 2: FASE DE GRUPOS -->
         <div id="jogos-grupo" class="tab-content">
             <div class="subtabs-container">
                 <button class="subtab-btn active" onclick="switchSubTab('rodada1', event)">1ª Rodada</button>
@@ -318,12 +304,11 @@ def compilar_html(classificacao, estrutura_copa):
                 <button class="subtab-btn" onclick="switchSubTab('rodada3', event)">3ª Rodada</button>
             </div>
             
-            <div id="rodada1" class="subtab-content active"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Fase</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>""" + renderizar_tabela_jogos(estrutura_copa["grupos"][1]) + """</tbody></table></div></div>
-            <div id="rodada2" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Fase</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>""" + renderizar_tabela_jogos(estrutura_copa["grupos"][2]) + """</tbody></table></div></div>
-            <div id="rodada3" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Fase</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>""" + renderizar_tabela_jogos(estrutura_copa["grupos"][3]) + """</tbody></table></div></div>
+            <div id="rodada1" class="subtab-content active"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Fase</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>{renderizar_tabela_jogos(estrutura_copa["grupos"][1])}</tbody></table></div></div>
+            <div id="rodada2" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Fase</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>{renderizar_tabela_jogos(estrutura_copa["grupos"][2])}</tbody></table></div></div>
+            <div id="rodada3" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Fase</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>{renderizar_tabela_jogos(estrutura_copa["grupos"][3])}</tbody></table></div></div>
         </div>
 
-        <!-- ABA 3: MATA-MATA -->
         <div id="eliminatorias" class="tab-content">
             <div class="subtabs-container">
                 <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos</button>
@@ -333,16 +318,16 @@ def compilar_html(classificacao, estrutura_copa):
                 <button class="subtab-btn" onclick="switchSubTab('fase-finais', event)">Finais 🏆</button>
             </div>
 
-            <div id="fase-32" class="subtab-content active"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Jogo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>""" + renderizar_tabela_jogos(estrutura_copa["r32"]) + """</tbody></table></div></div>
-            <div id="fase-16" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Jogo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>""" + renderizar_tabela_jogos(estrutura_copa["r16"]) + """</tbody></table></div></div>
-            <div id="fase-8" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Jogo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>""" + renderizar_tabela_jogos(estrutura_copa["r8"]) + """</tbody></table></div></div>
-            <div id="fase-4" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Jogo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>""" + renderizar_tabela_jogos(estrutura_copa["r4"]) + """</tbody></table></div></div>
+            <div id="fase-32" class="subtab-content active"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Jogo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>{renderizar_tabela_jogos(estrutura_copa["r32"])}</tbody></table></div></div>
+            <div id="fase-16" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Jogo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>{renderizar_tabela_jogos(estrutura_copa["r16"])}</tbody></table></div></div>
+            <div id="fase-8" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Jogo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>{renderizar_tabela_jogos(estrutura_copa["r8"])}</tbody></table></div></div>
+            <div id="fase-4" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Jogo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody>{renderizar_tabela_jogos(estrutura_copa["r4"])}</tbody></table></div></div>
             
             <div id="fase-finais" class="subtab-content">
                 <h3 style="margin:10px 0; color:#1e3a8a; font-size:14px;">Disputa do Terceiro Lugar</h3>
-                <div class="table-wrapper"><table><tbody>""" + renderizar_tabela_jogos(estrutura_copa["third"]) + """</tbody></table></div>
+                <div class="table-wrapper"><table><tbody>{renderizar_tabela_jogos(estrutura_copa["third"])}</tbody></table></div>
                 <h3 style="margin:10px 0; color:#1e3a8a; font-size:14px;">Grande Final da Copa do Mundo 2026</h3>
-                <div class="table-wrapper"><table><tbody>""" + renderizar_tabela_jogos(estrutura_copa["final"]) + """</tbody></table></div>
+                <div class="table-wrapper"><table><tbody>{renderizar_tabela_jogos(estrutura_copa["final"])}</tbody></table></div>
             </div>
         </div>
     </div>
@@ -374,37 +359,13 @@ def compilar_html(classificacao, estrutura_copa):
     caminho_final = os.path.join(CAMINHO_REPOSITORIO_LOCAL, "copa.html")
     with open(caminho_final, "w", encoding="utf-8") as f:
         f.write(html)
-
-def fazer_upload_github():
-    try:
-        horario = datetime.now().strftime('%H:%M:%S')
-        repo = Repo(CAMINHO_REPOSITORIO_LOCAL)
-        repo.git.checkout(BRANCH_GITHUB)
-        repo.index.add(["copa.html"])
-        if repo.is_dirty(untracked_files=False):
-            repo.index.commit(f"Dados Reais FIFA Live - {horario}")
-            origem = repo.remote(name='origin')
-            origem.push(BRANCH_GITHUB, kill_after_timeout=15)
-            print(f"[{horario}] ↑ Servidor reinaldopinheiro.com.br atualizado com dados Oficiais da FIFA!")
-        else:
-            print(f"[{horario}] ✅ Dados checados. Placar mantido idêntico ao oficial da FIFA.")
-    except Exception as e:
-        print(f"❌ Erro Git Deploy: {e}")
+    print("✨ copa.html gerado com sucesso!")
 
 if __name__ == "__main__":
-    print("=" * 60)
-    print("ENGINE OFICIAL DO CALENDÁRIO VIVO DA FIFA ATIVADA")
-    print("=" * 60)
-    
-    while True:
-        estrutura_dados = buscar_dados_reais()
-        
-        if estrutura_dados:
-            tabela_calculada = atualizar_classificacao(estrutura_dados)
-            compilar_html(tabela_calculada, estrutura_dados)
-            fazer_upload_github()
-        else:
-            print("⚠️ Aguardando resposta dos servidores centrais da FIFA...")
-            
-        print("-" * 60)
-        time.sleep(60)
+    # Execução única otimizada para servidores CI/CD (GitHub Actions)
+    estrutura_dados = buscar_dados_reais()
+    if estrutura_dados:
+        tabela_calculada = atualizar_classificacao(estrutura_dados)
+        compilar_html(tabela_calculada, estrutura_dados)
+    else:
+        print("❌ Erro catastrófico ao processar tabelas.")
