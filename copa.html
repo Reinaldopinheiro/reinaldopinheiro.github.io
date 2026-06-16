@@ -2,17 +2,6 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0;url=./copa/copa_template.html">
-    <title>Redirecionando...</title>
-</head>
-<body>
-    <p>Se você não for redirecionado automaticamente, <a href="./copa/copa_template.html">clique aqui</a>.</p>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Central da Copa do Mundo 2026 - RPC Consultoria</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
@@ -77,7 +66,7 @@
         </div>
 
         <div class="status-bar">
-            <div id="api-status"><strong>Status:</strong> Dados Oficiais Sincronizados. Última atualização: 16/06/2026 às 10:35.</div>
+            <div id="api-status"><strong>Status:</strong> Dados Oficiais Sincronizados. Última atualização: 16/06/2026 às 10:56.</div>
             <div class="live-indicator"><div class="pulse" style="background-color: #0d9488;"></div> Sincronizado</div>
         </div>
 
@@ -264,7 +253,35 @@
             }
         }
 
-        function renderizarAplicativo() {
+        async function renderizarAplicativo() {
+            let placaresLive = {};
+            try {
+                const resposta = await fetch('placar.json');
+                if (resposta.ok) {
+                    placaresLive = await resposta.json();
+                }
+            } catch (e) {
+                console.log("Ainda não há placares ao vivo disponíveis, usando os padrões.");
+            }
+
+            const traduzirParaFifa = (nome) => {
+                const mapa = {
+                    "bélgica": "belgium", "egito": "egypt", "espanha": "spain", "cabo verde": "cabo verde",
+                    "suécia": "sweden", "tunísia": "tunisia", "méxico": "mexico", "áfrica do sul": "south africa",
+                    "coreia do sul": "korea republic", "tchéquia": "czechia", "canadá": "canada",
+                    "bósnia": "bosnia and herzegovina", "brasil": "brazil", "marrocos": "morocco",
+                    "haiti": "haiti", "escócia": "scotland", "estados unidos": "usa", "paraguai": "paraguay",
+                    "austrália": "australia", "turquia": "turkey", "alemanha": "germany", "curaçao": "curaçao",
+                    "costa do marfim": "côte d'ivoire", "equador": "ecuador", "países baixos": "netherlands",
+                    "japão": "japan", "irã": "iran", "nova zelândia": "new zealand", "arábia saudita": "saudi arabia",
+                    "uruguai": "uruguay", "frança": "france", "senegal": "senegal", "iraque": "iraq",
+                    "noruega": "norway", "argentina": "argentina", "argélia": "algeria", "áustria": "austria",
+                    "jordânia": "jordan", "portugal": "portugal", "rd congo": "dr congo", "uzbequistão": "uzbekistan",
+                    "colômbia": "colombia", "inglaterra": "england", "croácia": "croatia", "gana": "ghana", "panamá": "panama"
+                };
+                return mapa[nome.toLowerCase()] || nome.toLowerCase();
+            };
+
             const containerGrupos = document.getElementById('groups-container');
             containerGrupos.innerHTML = '';
             Object.keys(timesPorGrupo).forEach(grupo => {
@@ -293,11 +310,24 @@
                     if(j.isBrasil || j.t1 === "BRASIL" || j.t2 === "BRASIL") tr.className = 'brasil-row';
                     let bClassT1 = j.t1 === "BRASIL" ? "class='brasil-text'" : "";
                     let bClassT2 = j.t2 === "BRASIL" ? "class='brasil-text'" : "";
+                    
+                    let t1Fifa = traduzirParaFifa(j.t1);
+                    let t2Fifa = traduzirParaFifa(j.t2);
+                    let chaveJogo = t1Fifa + "v" + t2Fifa;
+                    
+                    let placar1 = j.s1;
+                    let placar2 = j.s2;
+                    
+                    if (placaresLive[chaveJogo]) {
+                        placar1 = placaresLive[chaveJogo][0];
+                        placar2 = placaresLive[chaveJogo][1];
+                    }
+
                     tr.innerHTML = `
                         <td class="center date-col">` + j.data + `<br><span style="font-size:11px; font-weight:normal; color:#64748b;">` + j.hora + `</span></td>
                         <td class="center"><span class="group-badge">` + j.grupo + `</span></td>
                         <td class="right"><span ` + bClassT1 + `>` + j.t1 + `</span> <span class="flag fi fi-` + j.f1 + `"></span></td>
-                        <td class="center"><div class="placar-wrapper"><div class="score">` + j.s1 + `</div><span style="color:#94a3b8;">x</span><div class="score">` + j.s2 + `</div></div></td>
+                        <td class="center"><div class="placar-wrapper"><div class="score">` + placar1 + `</div><span style="color:#94a3b8;">x</span><div class="score">` + placar2 + `</div></div></td>
                         <td><span class="flag fi fi-` + j.f2 + `"></span> <span ` + bClassT2 + `>` + j.t2 + `</span></td>
                         <td style="color:#64748b; font-size:12px;">` + j.est + `</td>
                     `;
