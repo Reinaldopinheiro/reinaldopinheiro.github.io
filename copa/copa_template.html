@@ -66,7 +66,6 @@
         </div>
 
         <div class="status-bar">
-            <!-- Esta div preserva exatamente o texto injetado pelo copa26.py -->
             <div id="api-status">__STATUS_BAR_PLACEHOLDER__</div>
             <div class="live-indicator"><div class="pulse"></div> Sincronizado</div>
         </div>
@@ -188,7 +187,7 @@
                     jogos.push({ data: "18-23/06", hora: "A definir", grupo: g, t1: t[1].n, f1: t[1].f, s1: "", s2: "", t2: t[3].n, f2: t[3].f, est: "Estádio FIFA" });
                 } else if (rodada === 3) {
                     jogos.push({ data: "24-27/06", hora: "A definir", grupo: g, t1: t[3].n, f1: t[3].f, s1: "", s2: "", t2: t[0].n, f2: t[0].f, est: "Estádio FIFA" });
-                    jogos.push({ data: "24-27/06", hora: "A definir", group: g, t1: t[1].n, f1: t[1].f, s1: "", s2: "", t2: t[2].n, f2: t[2].f, est: "Estádio FIFA" });
+                    jogos.push({ data: "24-27/06", hora: "A definir", grupo: g, t1: t[1].n, f1: t[1].f, s1: "", s2: "", t2: t[2].n, f2: t[2].f, est: "Estádio FIFA" });
                 }
             });
             return jogos;
@@ -212,23 +211,11 @@
         }
 
         async function renderizarAplicativo() {
-            let placaresLive = {};
-            
-            // Busca o arquivo JSON estritamente dentro da pasta copa/
-            try {
-                const resposta = await fetch('copa/placar.json');
-                if (resposta.ok) {
-                    placaresLive = await resposta.json(); // Corrigido para 'resposta'
-                    console.log("Placares carregados com sucesso da pasta copa/.");
-                } else {
-                    console.log("Erro: Arquivo copa/placar.json não foi encontrado no servidor.");
-                }
-            } catch (e) { 
-                console.log("Erro crítico ao tentar ler a pasta copa/: ", e); 
-            }
+            // Lendo de forma direta os dados injetados nativamente pelo Python na memória
+            let placaresLive = typeof PLACARES_LIVE_SERVIDORE !== 'undefined' ? PLACARES_LIVE_SERVIDORE : {};
 
             const traduzirParaFifa = (nome) => {
-            const mapa = {
+                const mapa = {
                     "bélgica": "belgium", "egito": "egypt", "espanha": "spain", "cabo verde": "cabo verde",
                     "suécia": "sweden", "tunísia": "tunisia", "méxico": "mexico", "áfrica do sul": "south africa",
                     "coreia do sul": "korea republic", "tchéquia": "czechia", "canadá": "canada",
@@ -245,12 +232,10 @@
                 return mapa[nome.toLowerCase()] || nome.toLowerCase();
             };
 
-            // Certifica de zerar os dados de classificação para a matemática rodar limpa
             Object.keys(timesPorGrupo).forEach(g => {
                 timesPorGrupo[g].forEach(t => { t.p = 0; t.j = 0; t.sg = 0; });
             });
 
-            // Processador matemático dos pontos por grupo
             [1, 2, 3].forEach(numRodada => {
                 const jogos = gerarJogosEstruturais(numRodada);
                 jogos.forEach(j => {
@@ -281,7 +266,6 @@
                 });
             });
 
-            // Renderiza os painéis visuais de cada grupo
             const containerGrupos = document.getElementById('groups-container');
             containerGrupos.innerHTML = '';
             Object.keys(timesPorGrupo).forEach(grupo => {
@@ -301,7 +285,6 @@
                 containerGrupos.appendChild(div);
             });
 
-            // Monta as linhas das tabelas das rodadas injetando o placar correto ou "-"
             [1, 2, 3].forEach(numRodada => {
                 const tbody = document.getElementById(`rodada` + numRodada + `-tbody`);
                 if(!tbody) return;
@@ -348,7 +331,6 @@
             }
         }
 
-        // Garante que o aplicativo rode imediatamente assim que a página abre
         document.addEventListener('DOMContentLoaded', renderizarAplicativo);
     </script>
 </body>
