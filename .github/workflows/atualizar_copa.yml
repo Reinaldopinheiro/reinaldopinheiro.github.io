@@ -30,5 +30,4 @@ jobs:
           
           # Força o download das novidades e resolve o conflito favorecendo o arquivo gerado pelo robô
           git pull origin main -X theirs --rebase
-          
           git push origin main
