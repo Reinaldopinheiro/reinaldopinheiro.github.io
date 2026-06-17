@@ -1,6 +1,6 @@
 # ==============================================================================
 # PROGRAMA: Central Real-Time Copa do Mundo 2026 - RPC
-# VERSÃO: v7.1.1 (CORRIGIDA)
+# VERSÃO: v7.2.0 (CORREÇÃO DE EXTRAÇÃO DE PLACARES)
 # DATA: 17/06/2026
 # AUTOR/MANTENEDOR: Reinaldo Pinheiro Consultoria
 # ==============================================================================
@@ -102,8 +102,22 @@ def buscar_dados_reais():
                 t1_pt = traduzir_nome(t1_raw)
                 t2_pt = traduzir_nome(t2_raw)
                 
-                g1 = match.get("score1", None)
-                g2 = match.get("score2", None)
+                # --- CORREÇÃO DA EXTRAÇÃO DOS PLACARES DO OPENFOOTBALL ---
+                g1, g2 = None, None
+                if "score" in match and match["score"] is not None:
+                    score_obj = match["score"]
+                    # Verifica se usa a chave de tempo regulamentar 'ft' (Full Time)
+                    if "ft" in score_obj and isinstance(score_obj["ft"], list) and len(score_obj["ft"]) >= 2:
+                        g1 = score_obj["ft"][0]
+                        g2 = score_obj["ft"][1]
+                    else:
+                        g1 = score_obj.get("score1", None)
+                        g2 = score_obj.get("score2", None)
+                
+                # Caso a API use chaves de primeiro nível direto (fallback)
+                if g1 is None: g1 = match.get("score1", None)
+                if g2 is None: g2 = match.get("score2", None)
+                
                 encerrado = g1 is not None and g2 is not None
                 
                 grupo_jogo = ""
@@ -128,30 +142,32 @@ def buscar_dados_reais():
                     "encerrado": encerrado
                 }
                 
-                # CORREÇÃO DA LÓGICA DE FILTRAGEM POR NOME DE RODADA (STAGENAME)
-                if "Matchday 1" in stage_name or "1ª Rodada" in stage_name:
+                # --- CORREÇÃO DO MAPEAMENTO SEGURO DE RODADAS ---
+                stage_upper = stage_name.upper()
+                if "1" in stage_upper or "RODADA 1" in stage_upper or "MATCHDAY 1" in stage_upper:
                     estrutura_copa["grupos"][1].append(jogo_dict)
-                elif "Matchday 2" in stage_name or "2ª Rodada" in stage_name:
+                elif "2" in stage_upper or "RODADA 2" in stage_upper or "MATCHDAY 2" in stage_upper:
                     estrutura_copa["grupos"][2].append(jogo_dict)
-                elif "Matchday 3" in stage_name or "3ª Rodada" in stage_name:
+                elif "3" in stage_upper or "RODADA 3" in stage_upper or "MATCHDAY 3" in stage_upper:
                     estrutura_copa["grupos"][3].append(jogo_dict)
-                elif "Group" in stage_name:
-                    # Fallback caso venha genérico mas saibamos o índice aproximado
+                elif "ROUND OF 32" in stage_upper or "32" in stage_upper:
+                    estrutura_copa["r32"].append(jogo_dict)
+                elif "ROUND OF 16" in stage_upper or "16" in stage_upper:
+                    estrutura_copa["r16"].append(jogo_dict)
+                elif "QUARTER" in stage_upper or "QUARTAS" in stage_upper:
+                    estrutura_copa["r8"].append(jogo_dict)
+                elif "SEMI" in stage_upper:
+                    estrutura_copa["r4"].append(jogo_dict)
+                elif "THIRD" in stage_upper or "TERCEIRO" in stage_upper:
+                    estrutura_copa["third"].append(jogo_dict)
+                elif "FINAL" in stage_upper:
+                    estrutura_copa["final"].append(jogo_dict)
+                else:
+                    # Fallback linear inteligente por índice caso o nome mude totalmente
                     if match_idx <= 24: estrutura_copa["grupos"][1].append(jogo_dict)
                     elif match_idx <= 48: estrutura_copa["grupos"][2].append(jogo_dict)
-                    else: estrutura_copa["grupos"][3].append(jogo_dict)
-                elif "Round of 32" in stage_name:
-                    estrutura_copa["r32"].append(jogo_dict)
-                elif "Round of 16" in stage_name:
-                    estrutura_copa["r16"].append(jogo_dict)
-                elif "Quarter-finals" in stage_name:
-                    estrutura_copa["r8"].append(jogo_dict)
-                elif "Semi-finals" in stage_name:
-                    estrutura_copa["r4"].append(jogo_dict)
-                elif "Third place" in stage_name:
-                    estrutura_copa["third"].append(jogo_dict)
-                elif "Final" in stage_name:
-                    estrutura_copa["final"].append(jogo_dict)
+                    elif match_idx <= 72: estrutura_copa["grupos"][3].append(jogo_dict)
+                    else: estrutura_copa["r32"].append(jogo_dict)
                 
                 match_idx += 1
                 
@@ -249,7 +265,7 @@ def compilar_html(classificacao, estrutura_copa):
         .date-col {{ font-weight: bold; color: #1e3a8a; }}
         .group-badge {{ background-color: #e2e8f0; color: #334155; font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 11px; }}
         .group-badge.fase {{ background-color: #fee2e2; color: #991b1b; }}
-        .flag {{ display: inline-block; width: 20px; height: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border-radius: 2px; vertical-align: middle; margin: 0 4px; }}
+        .flag {{ inline-block; width: 20px; height: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border-radius: 2px; vertical-align: middle; margin: 0 4px; }}
         .brasil-text {{ font-weight: bold; color: #047857; }}
         .placar-wrapper {{ display: flex; justify-content: center; align-items: center; gap: 6px; }}
         .score {{ background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-weight: bold; }}
