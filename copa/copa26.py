@@ -16,7 +16,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # ==========================================
 # CONFIGURAÇÕES DE DEPLOY E FONTES DE DADOS
 # ==========================================
-URL_FONTE_REAL = "https://raw.githubusercontent.com/openfootball/world-cup/master/2026/cup.json"
+URL_FONTE_REAL = "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json"
 COPYRIGHT = "Oferecimento: RPC - Reinaldo Pinheiro Consultoria - Ajude a ter novos projetos doando no pix: doe@reinaldopinheiro.com.br"
 
 times_mapeamento = {
@@ -353,10 +353,12 @@ def compilar_html(classificacao, estrutura_copa):
 </html>"""
     
     # === REGRA DE CAMINHO PARA SALVAR copa26.html DENTRO DA PASTA copa ===
-    if os.path.exists("copa") and os.path.isdir("copa"):
-        caminho_final = os.path.join("copa", "copa26.html")
-    else:
-        caminho_final = "copa26.html"
+    # Garante que o diretório 'copa' exista
+    diretorio_copa = "copa"
+    if not os.path.exists(diretorio_copa):
+        os.makedirs(diretorio_copa)
+    
+    caminho_final = os.path.join(diretorio_copa, "copa26.html")
         
     with open(caminho_final, "w", encoding="utf-8") as f:
         f.write(html)
