@@ -3,8 +3,9 @@ on:
   workflow_dispatch: # <--- ESSA LINHA EXATA É O QUE ATIVA O BOTÃO MANUAL NO GITHUB
   schedule:
   - cron: '*/5 * * * *'
-  workflow_dispatch:
-
+permissions:
+  contents: write
+workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
