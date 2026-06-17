@@ -1,7 +1,7 @@
 # ==============================================================================
 # PROGRAMA: Central Real-Time Copa do Mundo 2026 - RPC
-# VERSÃO: v7.1.0 (Geração do arquivo copa26.html na pasta copa)
-# DATA: 16/06/2026
+# VERSÃO: v7.1.1 (CORRIGIDA)
+# DATA: 17/06/2026
 # AUTOR/MANTENEDOR: Reinaldo Pinheiro Consultoria
 # ==============================================================================
 
@@ -128,7 +128,15 @@ def buscar_dados_reais():
                     "encerrado": encerrado
                 }
                 
-                if "Group" in stage_name or grupo_jogo != "":
+                # CORREÇÃO DA LÓGICA DE FILTRAGEM POR NOME DE RODADA (STAGENAME)
+                if "Matchday 1" in stage_name or "1ª Rodada" in stage_name:
+                    estrutura_copa["grupos"][1].append(jogo_dict)
+                elif "Matchday 2" in stage_name or "2ª Rodada" in stage_name:
+                    estrutura_copa["grupos"][2].append(jogo_dict)
+                elif "Matchday 3" in stage_name or "3ª Rodada" in stage_name:
+                    estrutura_copa["grupos"][3].append(jogo_dict)
+                elif "Group" in stage_name:
+                    # Fallback caso venha genérico mas saibamos o índice aproximado
                     if match_idx <= 24: estrutura_copa["grupos"][1].append(jogo_dict)
                     elif match_idx <= 48: estrutura_copa["grupos"][2].append(jogo_dict)
                     else: estrutura_copa["grupos"][3].append(jogo_dict)
@@ -352,8 +360,6 @@ def compilar_html(classificacao, estrutura_copa):
 </body>
 </html>"""
     
-    # === REGRA DE CAMINHO PARA SALVAR copa26.html DENTRO DA PASTA copa ===
-    # Garante que o diretório 'copa' exista
     diretorio_copa = "copa"
     if not os.path.exists(diretorio_copa):
         os.makedirs(diretorio_copa)
