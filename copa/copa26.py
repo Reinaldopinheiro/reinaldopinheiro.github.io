@@ -1,13 +1,13 @@
 # ==============================================================================
 # PROGRAMA: Central Real-Time Copa do Mundo 2026 - RPC
-# VERSÃO: v7.2.0 (CORREÇÃO DE EXTRAÇÃO DE PLACARES)
+# VERSÃO: v7.6.0 (SALVAMENTO NO DIRETÓRIO DO SCRIPT E TIMEZONE GMT-3)
 # DATA: 17/06/2026
 # AUTOR/MANTENEDOR: Reinaldo Pinheiro Consultoria
 # ==============================================================================
 
 import time
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 
 import urllib3
@@ -60,6 +60,7 @@ def inicializar_classificacao():
     return tabela
 
 def traduzir_nome(nome_en):
+    if not nome_en: return "A definir"
     traducoes = {
         "Brazil": "BRASIL", "Mexico": "México", "South Africa": "África do Sul", "South Korea": "Coreia do Sul",
         "Czech Republic": "Tchéquia", "Czechia": "Tchéquia", "Canada": "Canadá", "Bosnia and Herzegovina": "Bósnia",
@@ -73,7 +74,7 @@ def traduzir_nome(nome_en):
         "Portugal": "Portugal", "DR Congo": "RD Congo", "Uzbekistan": "Uzbequistão", "Colombia": "Colômbia",
         "England": "Inglaterra", "Croatia": "Croácia", "Ghana": "Gana", "Panama": "Panamá"
     }
-    return traducoes.get(nome_en, nome_en)
+    return traducoes.get(nome_en.strip(), nome_en.strip())
 
 def buscar_dados_reais():
     estrutura_copa = {
@@ -81,11 +82,8 @@ def buscar_dados_reais():
         "r32": [], "r16": [], "r8": [], "r4": [], "third": [], "final": []
     }
     try:
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] Sincronizando com o provedor aberto de resultados...")
         response = requests.get(URL_FONTE_REAL, timeout=15, verify=False)
-        
-        if response.status_code != 200:
-            return None
+        if response.status_code != 200: return None
             
         dados = response.json()
         rounds = dados.get("rounds", [])
@@ -102,11 +100,9 @@ def buscar_dados_reais():
                 t1_pt = traduzir_nome(t1_raw)
                 t2_pt = traduzir_nome(t2_raw)
                 
-                # --- CORREÇÃO DA EXTRAÇÃO DOS PLACARES DO OPENFOOTBALL ---
                 g1, g2 = None, None
                 if "score" in match and match["score"] is not None:
                     score_obj = match["score"]
-                    # Verifica se usa a chave de tempo regulamentar 'ft' (Full Time)
                     if "ft" in score_obj and isinstance(score_obj["ft"], list) and len(score_obj["ft"]) >= 2:
                         g1 = score_obj["ft"][0]
                         g2 = score_obj["ft"][1]
@@ -114,7 +110,6 @@ def buscar_dados_reais():
                         g1 = score_obj.get("score1", None)
                         g2 = score_obj.get("score2", None)
                 
-                # Caso a API use chaves de primeiro nível direto (fallback)
                 if g1 is None: g1 = match.get("score1", None)
                 if g2 is None: g2 = match.get("score2", None)
                 
@@ -122,7 +117,8 @@ def buscar_dados_reais():
                 
                 grupo_jogo = ""
                 for g, lista in grupos_definidos.items():
-                    if t1_pt in lista or t2_pt in lista:
+                    if any(t1_pt.lower() in selec.lower() or selec.lower() in t1_pt.lower() for selec in lista) or \
+                       any(t2_pt.lower() in selec.lower() or selec.lower() in t2_pt.lower() for selec in lista):
                         grupo_jogo = g
                         break
                 
@@ -142,7 +138,6 @@ def buscar_dados_reais():
                     "encerrado": encerrado
                 }
                 
-                # --- CORREÇÃO DO MAPEAMENTO SEGURO DE RODADAS ---
                 stage_upper = stage_name.upper()
                 if "1" in stage_upper or "RODADA 1" in stage_upper or "MATCHDAY 1" in stage_upper:
                     estrutura_copa["grupos"][1].append(jogo_dict)
@@ -163,7 +158,6 @@ def buscar_dados_reais():
                 elif "FINAL" in stage_upper:
                     estrutura_copa["final"].append(jogo_dict)
                 else:
-                    # Fallback linear inteligente por índice caso o nome mude totalmente
                     if match_idx <= 24: estrutura_copa["grupos"][1].append(jogo_dict)
                     elif match_idx <= 48: estrutura_copa["grupos"][2].append(jogo_dict)
                     elif match_idx <= 72: estrutura_copa["grupos"][3].append(jogo_dict)
@@ -173,7 +167,6 @@ def buscar_dados_reais():
                 
         return estrutura_copa
     except Exception as e:
-        print(f"❌ Falha ao coletar dados reais: {e}")
         return None
 
 def atualizar_classificacao(estrutura_copa):
@@ -183,21 +176,34 @@ def atualizar_classificacao(estrutura_copa):
             if j["encerrado"] and j["g1"] != "" and j["g2"] != "":
                 try:
                     g1, g2 = int(j["g1"]), int(j["g2"])
-                    grupo = j["grupo"]
                     t1, t2 = j["t1"], j["t2"]
-                    if grupo in classificacao_limpa and t1 in classificacao_limpa[grupo] and t2 in classificacao_limpa[grupo]:
-                        classificacao_limpa[grupo][t1]["J"] += 1
-                        classificacao_limpa[grupo][t2]["J"] += 1
-                        classificacao_limpa[grupo][t1]["SG"] += (g1 - g2)
-                        classificacao_limpa[grupo][t2]["SG"] += (g2 - g1)
-                        if g1 > g2:
-                            classificacao_limpa[grupo][t1]["P"] += 3
-                        elif g2 > g1:
-                            classificacao_limpa[grupo][t2]["P"] += 3
-                        else:
-                            classificacao_limpa[grupo][t1]["P"] += 1
-                            classificacao_limpa[grupo][t2]["P"] += 1
-                except ValueError:
+                    grupo = j["grupo"]
+                    
+                    if not grupo:
+                        for g, lista in grupos_definidos.items():
+                            if any(t1.lower() in s.lower() or s.lower() in t1.lower() for s in lista):
+                                grupo = g
+                                break
+                    
+                    if grupo in classificacao_limpa:
+                        alvo_t1, alvo_t2 = None, None
+                        for nome_membro in classificacao_limpa[grupo].keys():
+                            if t1.lower() in nome_membro.lower() or nome_membro.lower() in t1.lower(): alvo_t1 = nome_membro
+                            if t2.lower() in nome_membro.lower() or nome_membro.lower() in t2.lower(): alvo_t2 = nome_membro
+                        
+                        if alvo_t1 and alvo_t2:
+                            classificacao_limpa[grupo][alvo_t1]["J"] += 1
+                            classificacao_limpa[grupo][alvo_t2]["J"] += 1
+                            classificacao_limpa[grupo][alvo_t1]["SG"] += (g1 - g2)
+                            classificacao_limpa[grupo][alvo_t2]["SG"] += (g2 - g1)
+                            if g1 > g2:
+                                classificacao_limpa[grupo][alvo_t1]["P"] += 3
+                            elif g2 > g1:
+                                classificacao_limpa[grupo][alvo_t2]["P"] += 3
+                            else:
+                                classificacao_limpa[grupo][alvo_t1]["P"] += 1
+                                classificacao_limpa[grupo][alvo_t2]["P"] += 1
+                except:
                     continue
     return classificacao_limpa
 
@@ -229,6 +235,10 @@ def renderizar_tabela_jogos(lista_jogos):
     return html_jogos
 
 def compilar_html(classificacao, estrutura_copa):
+    # Aplica fuso horário GMT-3 (Horário de Brasília) subtraindo 3 horas do UTC nativo
+    data_gmt3 = datetime.utcnow() - timedelta(hours=3)
+    data_site = data_gmt3.strftime('%d/%m/%Y às %H:%M:%S (Horário de Brasília)')
+
     html = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -270,7 +280,6 @@ def compilar_html(classificacao, estrutura_copa):
         .placar-wrapper {{ display: flex; justify-content: center; align-items: center; gap: 6px; }}
         .score {{ background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-weight: bold; }}
         footer {{ position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: #ffffff; padding: 16px; text-align: center; font-size: 13px; font-weight: 500; box-shadow: 0 -4px 10px rgba(0,0,0,0.15); z-index: 1000; }}
-        .pix-destaque {{ color: #5eead4; font-weight: bold; text-decoration: underline; }}
     </style>
 </head>
 <body>
@@ -283,7 +292,7 @@ def compilar_html(classificacao, estrutura_copa):
         </div>
 
         <div class="status-bar">
-            <div><strong>Sincronização Ativa:</strong> {datetime.now().strftime('%d/%m/%Y às %H:%M:%S')}</div>
+            <div><strong>Sincronização Ativa:</strong> {data_site}</div>
             <div style="font-weight: bold; color: #0d9488;">● Placar Real Ativo</div>
         </div>
 
@@ -376,15 +385,14 @@ def compilar_html(classificacao, estrutura_copa):
 </body>
 </html>"""
     
-    diretorio_copa = "copa"
-    if not os.path.exists(diretorio_copa):
-        os.makedirs(diretorio_copa)
-    
-    caminho_final = os.path.join(diretorio_copa, "copa26.html")
+    # === REGRA EXPLICITA: SALVAR copa26.html NA MESMA PASTA DO COPA26.PY ===
+    # Descobre dinamicamente a pasta onde o copa26.py está residindo
+    diretorio_do_script = os.path.dirname(os.path.abspath(__file__))
+    caminho_final = os.path.join(diretorio_do_script, "copa26.html")
         
     with open(caminho_final, "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"✨ Arquivo gerado com sucesso em: {os.path.abspath(caminho_final)}")
+    print(f"✨ Arquivo gerado com sucesso em: {caminho_final}")
 
 if __name__ == "__main__":
     estrutura_dados = buscar_dados_reais()
