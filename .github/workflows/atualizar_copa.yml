@@ -29,23 +29,18 @@ jobs:
         run: |
           python copa/copa26.py
 
-      - name: 5. Configurar Buffer do Git e Enviar Alterações
+ - name: 5. Enviar alterações e dar o Push de volta para o GitHub Pages
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
           
-          # Correção crucial para evitar o erro 'remote end hung up unexpectedly'
           git config --global http.postBuffer 524288000
-          git config --global http.lowSpeedLimit 0
-          git config --global http.lowSpeedTime 999999
-                              
+          
+          # Garante o rastreamento correto na pasta do script
           git add copa/copa26.html
           
-          # Só faz o commit e push se houver alguma alteração real no arquivo
           if ! git diff --quiet --staged; then
             git commit -m "⚽ Automação: Atualização dos placares da Copa"
-            
-            # Tenta fazer o push com tratamento de persistência
             git push origin HEAD:${{ github.ref_name }} || (sleep 5 && git push origin HEAD:${{ github.ref_name }})
           else
             echo "Nenhuma mudança detectada nos placares. Pulando push."
