@@ -62,17 +62,30 @@ def inicializar_classificacao():
 def traduzir_nome(nome_en):
     if not nome_en: return "A definir"
     traducoes = {
-        "Brazil": "BRASIL", "Mexico": "México", "South Africa": "África do Sul", "South Korea": "Coreia do Sul",
-        "Czech Republic": "Tchéquia", "Czechia": "Tchéquia", "Canada": "Canadá", "Bosnia and Herzegovina": "Bósnia",
-        "Qatar": "Catar", "Switzerland": "Suíça", "Morocco": "Marrocos", "Scotland": "Escócia", "USA": "Estados Unidos",
-        "United States": "Estados Unidos", "Paraguay": "Paraguai", "Australia": "Austrália", "Turkey": "Turquia",
-        "Germany": "Alemanha", "Ivory Coast": "Costa do Marfim", "Ecuador": "Equador", "Netherlands": "Países Baixos",
-        "Japan": "Japão", "Sweden": "Suécia", "Tunisia": "Tunísia", "Belgium": "Bélgica", "Egypt": "Egito",
-        "Iran": "Irã", "New Zealand": "Nova Zelândia", "Spain": "Espanha", "Cape Verde": "Cabo Verde",
-        "Saudi Arabia": "Arábia Saudita", "Uruguay": "Uruguai", "France": "França", "Norway": "Noruega",
-        "Argentina": "Argentina", "Algeria": "Argélia", "Austria": "Áustria", "Jordan": "Jordânia",
-        "Portugal": "Portugal", "DR Congo": "RD Congo", "Uzbekistan": "Uzbequistão", "Colombia": "Colômbia",
-        "England": "Inglaterra", "Croatia": "Croácia", "Ghana": "Gana", "Panama": "Panamá"
+        #--- "Brazil": "BRASIL", "Mexico": "México", "South Africa": "África do Sul", "South Korea": "Coreia do Sul",
+        #--- "Czech Republic": "Tchéquia", "Czechia": "Tchéquia", "Canada": "Canadá", "Bosnia and Herzegovina": "Bósnia",
+        #--- "Qatar": "Catar", "Switzerland": "Suíça", "Morocco": "Marrocos", "Scotland": "Escócia", "USA": "Estados Unidos",
+        #--- "United States": "Estados Unidos", "Paraguay": "Paraguai", "Australia": "Austrália", "Turkey": "Turquia",
+        #--- "Germany": "Alemanha", "Ivory Coast": "Costa do Marfim", "Ecuador": "Equador", "Netherlands": "Países Baixos",
+        #--- "Japan": "Japão", "Sweden": "Suécia", "Tunisia": "Tunísia", "Belgium": "Bélgica", "Egypt": "Egito",
+        #--- "Iran": "Irã", "New Zealand": "Nova Zelândia", "Spain": "Espanha", "Cape Verde": "Cabo Verde",
+        #--- "Saudi Arabia": "Arábia Saudita", "Uruguay": "Uruguai", "France": "França", "Norway": "Noruega",
+        #--- "Argentina": "Argentina", "Algeria": "Argélia", "Austria": "Áustria", "Jordan": "Jordânia",
+        #--- "Portugal": "Portugal", "DR Congo": "RD Congo", "Uzbekistan": "Uzbequistão", "Colombia": "Colômbia",
+        #--- "England": "Inglaterra", "Croatia": "Croácia", "Ghana": "Gana", "Panama": "Panamá"
+        
+          "brasil": "brazil", "mexico": "mexico", "coreia do sul": "south korea", "tchequia": "czech republic",
+                    "africa do sul": "south africa", "canada": "canada", "bosnia": "bosnia & herzegovina",
+                    "catar": "qatar", "suica": "switzerland", "marrocos": "morocco", "haiti": "haiti", "escocia": "scotland",
+                    "estados unidos": "usa", "australia": "australia", "turquia": "turkey", "paraguai": "paraguay",
+                    "alemanha": "germany", "costa do marfim": "ivory coast", "equador": "ecuador", "curacao": "curacao",
+                    "suecia": "sweden", "paises baixos": "netherlands", "japao": "japan", "tunisia": "tunisia",
+                    "belgica": "belgium", "egito": "egypt", "ira": "iran", "nova zelandia": "new zealand",
+                    "espanha": "spain", "cabo verde": "cape verde", "arabia saudita": "saudi arabia", "uruguai": "uruguay",
+                    "franca": "france", "senegal": "senegal", "iraque": "iraq", "noruega": "norway", "argentina": "argentina",
+                    "argelia": "algeria", "austria": "austria", "jordania": "jordan", "portugal": "portugal",
+                    "rd congo": "dr congo", "uzbequistao": "uzbekistan", "colombia": "colombia", "inglaterra": "england",
+                    "croacia": "croatia", "gana": "ghana", "panama": "panama"
     }
     return traducoes.get(nome_en.strip(), nome_en.strip())
 
