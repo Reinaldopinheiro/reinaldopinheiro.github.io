@@ -28,7 +28,7 @@ jobs:
         pip install requests urllib3
 
     - name: Executar o Script da Copa
-      run: python copa26.py
+      run: python copa/copa26.py
 
     # 🚨 CRÍTICO: Salva as alterações de copa26.html e placar.json de volta no repositório
     - name: Commitar e Enviar alterações para o GitHub
