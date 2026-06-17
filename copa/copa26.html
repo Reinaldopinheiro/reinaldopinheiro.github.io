@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Real-Time Copa do Mundo 2026 - RPC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #f4f6f9; color: #1e293b; padding-bottom: 100px; }
+        header { background-color: #ffffff; border-bottom: 3px solid #0d9488; padding: 15px 0; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .header-banner { max-width: 100%; height: auto; max-height: 110px; display: block; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .tabs-container { display: flex; background: #cbd5e1; padding: 4px; border-radius: 8px; margin-bottom: 20px; gap: 4px; overflow-x: auto; }
+        .tab-btn { flex: 1; padding: 12px; background: none; border: none; font-size: 13px; font-weight: bold; color: #475569; cursor: pointer; border-radius: 6px; text-align: center; white-space: nowrap; }
+        .tab-btn.active { background: #1e3a8a; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .subtabs-container { display: flex; background: #e2e8f0; padding: 4px; border-radius: 6px; margin-bottom: 15px; gap: 4px; overflow-x: auto; }
+        .subtab-btn { padding: 8px 16px; background: none; border: none; font-size: 12px; font-weight: bold; color: #475569; cursor: pointer; border-radius: 4px; white-space: nowrap; }
+        .subtab-btn.active { background: #0d9488; color: white; }
+        .tab-content, .subtab-content { display: none; }
+        .tab-content.active, .subtab-content.active { display: block; }
+        .status-bar { background-color: #ffffff; border-left: 4px solid #0d9488; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #475569; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .groups-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+        .group-card { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border-top: 4px solid #0d9488; }
+        .group-title { font-size: 14px; font-weight: bold; color: #1e3a8a; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        .table-wrapper { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th { background-color: #1e3a8a; color: white; font-weight: 700; padding: 10px; text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        tr:nth-child(even) td { background-color: #f8fafc; }
+        .center { text-align: center; } .right { text-align: right; }
+        .c-p { font-weight: bold; color: #1e3a8a; }
+        tr.brasil-row td { background-color: #f0fdf4 !important; }
+        .date-col { font-weight: bold; color: #1e3a8a; }
+        .group-badge { background-color: #e2e8f0; color: #334155; font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+        .group-badge.fase { background-color: #fee2e2; color: #991b1b; }
+        .flag { inline-block; width: 20px; height: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border-radius: 2px; vertical-align: middle; margin: 0 4px; }
+        .brasil-text { font-weight: bold; color: #047857; }
+        .placar-wrapper { display: flex; justify-content: center; align-items: center; gap: 6px; }
+        .score { background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+        footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: #ffffff; padding: 16px; text-align: center; font-size: 13px; font-weight: 500; box-shadow: 0 -4px 10px rgba(0,0,0,0.15); z-index: 1000; }
+    </style>
+</head>
+<body>
+    <header><img src="image_0f6aff.png" alt="RPC Consultoria" class="header-banner"></header>
+    <div class="container">
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchMainTab('classificacao', event)">📊 Todos os Grupos</button>
+            <button class="tab-btn" onclick="switchMainTab('jogos-grupo', event)">⚽ Fase de Grupos</button>
+            <button class="tab-btn" onclick="switchMainTab('eliminatorias', event)">🏆 Fases Eliminatórias</button>
+        </div>
+
+        <div class="status-bar">
+            <div><strong>Sincronização Ativa:</strong> 17/06/2026 às 15:20:59 (Horário de Brasília)</div>
+            <div style="font-weight: bold; color: #0d9488;">● Placar Real Ativo</div>
+        </div>
+
+        <div id="classificacao" class="tab-content active">
+            <div class="groups-grid">
+                <div class="group-card">
+                    <div class="group-title">Grupo A</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-mx"></span> <span >México</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-za"></span> <span >África do Sul</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-kr"></span> <span >Coreia do Sul</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-cz"></span> <span >Tchéquia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo B</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-ca"></span> <span >Canadá</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ba"></span> <span >Bósnia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-qa"></span> <span >Catar</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ch"></span> <span >Suíça</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo C</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr class='brasil-row'>
+                                <td><span class="flag fi fi-br"></span> <span class='brasil-text'>BRASIL</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ma"></span> <span >Marrocos</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ht"></span> <span >Haiti</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-gb-sct"></span> <span >Escócia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo D</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-us"></span> <span >Estados Unidos</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-py"></span> <span >Paraguai</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-au"></span> <span >Austrália</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-tr"></span> <span >Turquia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo E</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-de"></span> <span >Alemanha</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-cw"></span> <span >Curaçao</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ci"></span> <span >Costa do Marfim</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ec"></span> <span >Equador</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo F</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-nl"></span> <span >Países Baixos</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-jp"></span> <span >Japão</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-se"></span> <span >Suécia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-tn"></span> <span >Tunísia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo G</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-be"></span> <span >Bélgica</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-eg"></span> <span >Egito</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ir"></span> <span >Irã</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-nz"></span> <span >Nova Zelândia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo H</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-es"></span> <span >Espanha</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-cv"></span> <span >Cabo Verde</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-sa"></span> <span >Arábia Saudita</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-uy"></span> <span >Uruguai</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo I</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-fr"></span> <span >França</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-sn"></span> <span >Senegal</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-iq"></span> <span >Iraque</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-no"></span> <span >Noruega</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo J</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-ar"></span> <span >Argentina</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-dz"></span> <span >Argélia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-at"></span> <span >Áustria</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-jo"></span> <span >Jordânia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo K</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-pt"></span> <span >Portugal</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-cd"></span> <span >RD Congo</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-uz"></span> <span >Uzbequistão</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-co"></span> <span >Colômbia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo L</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-gb-eng"></span> <span >Inglaterra</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-hr"></span> <span >Croácia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-gh"></span> <span >Gana</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-pa"></span> <span >Panamá</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="jogos-grupo" class="tab-content">
+            <div class="subtabs-container">
+                <button class="subtab-btn active" onclick="switchSubTab('rodada1', event)">1ª Rodada</button>
+                <button class="subtab-btn" onclick="switchSubTab('rodada2', event)">2ª Rodada</button>
+                <button class="subtab-btn" onclick="switchSubTab('rodada3', event)">3ª Rodada</button>
+            </div>
+            
+            <div id="rodada1" class="subtab-content active"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Fase</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando encerramento das etapas anteriores.</td></tr></tbody></table></div></div>
+            <div id="rodada2" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Fase</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando encerramento das etapas anteriores.</td></tr></tbody></table></div></div>
+            <div id="rodada3" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Fase</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando encerramento das etapas anteriores.</td></tr></tbody></table></div></div>
+        </div>
+
+        <div id="eliminatorias" class="tab-content">
+            <div class="subtabs-container">
+                <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-16', event)">Oitavas</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-8', event)">Quartas</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-4', event)">Semifinais</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-finais', event)">Finais 🏆</button>
+            </div>
+
+            <div id="fase-32" class="subtab-content active"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Jogo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando encerramento das etapas anteriores.</td></tr></tbody></table></div></div>
+            <div id="fase-16" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Jogo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando encerramento das etapas anteriores.</td></tr></tbody></table></div></div>
+            <div id="fase-8" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Jogo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando encerramento das etapas anteriores.</td></tr></tbody></table></div></div>
+            <div id="fase-4" class="subtab-content"><div class="table-wrapper"><table><thead><tr><th class="center">Data/Hora</th><th class="center">Jogo</th><th class="right">Seleção 1</th><th class="center">Placar</th><th>Seleção 2</th><th>Estádio</th></tr></thead><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando encerramento das etapas anteriores.</td></tr></tbody></table></div></div>
+            
+            <div id="fase-finais" class="subtab-content">
+                <h3 style="margin:10px 0; color:#1e3a8a; font-size:14px;">Disputa do Terceiro Lugar</h3>
+                <div class="table-wrapper"><table><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando encerramento das etapas anteriores.</td></tr></tbody></table></div>
+                <h3 style="margin:10px 0; color:#1e3a8a; font-size:14px;">Grande Final da Copa do Mundo 2026</h3>
+                <div class="table-wrapper"><table><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando encerramento das etapas anteriores.</td></tr></tbody></table></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div>Oferecimento: RPC - Reinaldo Pinheiro Consultoria - Ajude a ter novos projetos doando no pix: doe@reinaldopinheiro.com.br</div>
+    </footer>
+
+    <script>
+        function switchMainTab(tabId, event) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            const primeiraSubAba = document.getElementById(tabId).querySelector('.subtab-btn');
+            if (primeiraSubAba) { primeiraSubAba.click(); }
+        }
+        function switchSubTab(subTabId, event) {
+            const pai = document.getElementById(subTabId).parentElement;
+            pai.querySelectorAll('.subtab-content').forEach(el => el.classList.remove('active'));
+            pai.querySelectorAll('.subtab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(subTabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>
