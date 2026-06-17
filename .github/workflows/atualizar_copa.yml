@@ -1,8 +1,8 @@
 name: Atualizar Dados da Copa 2026
-
 on:
+  workflow_dispatch: # <--- ESSA LINHA EXATA É O QUE ATIVA O BOTÃO MANUAL NO GITHUB
   schedule:
-    - cron: '*/5 * * * *'
+  - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
