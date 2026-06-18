@@ -66,10 +66,11 @@
         </div>
 
         <div class="status-bar">
-            <div><strong>Última Sincronização:</strong> 17/06/2026 às 18:30:40 (Brasília)</div>
+            <div><strong>Última Sincronização:</strong> 18/06/2026 às 12:26:47 (Brasília)</div>
             <div style="font-weight: bold; color: #0d9488;">● Servidor Online - Dados Reais FIFA</div>
         </div>
 
+        <!-- CLASSIFICAÇÃO -->
         <div id="classificacao" class="tab-content active">
             <div class="groups-grid">
                 <div class="group-card">
@@ -398,6 +399,12 @@
                         <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
                         <tbody>
                             <tr >
+                                <td><span class="flag fi fi-co"></span> <span >Colômbia</span></td>
+                                <td class="center c-p">3</td>
+                                <td class="center">1</td>
+                                <td class="center">2</td>
+                            </tr>
+                            <tr >
                                 <td><span class="flag fi fi-pt"></span> <span >Portugal</span></td>
                                 <td class="center c-p">1</td>
                                 <td class="center">1</td>
@@ -412,14 +419,8 @@
                             <tr >
                                 <td><span class="flag fi fi-uz"></span> <span >Uzbequistão</span></td>
                                 <td class="center c-p">0</td>
-                                <td class="center">0</td>
-                                <td class="center">0</td>
-                            </tr>
-                            <tr >
-                                <td><span class="flag fi fi-co"></span> <span >Colômbia</span></td>
-                                <td class="center c-p">0</td>
-                                <td class="center">0</td>
-                                <td class="center">0</td>
+                                <td class="center">1</td>
+                                <td class="center">-2</td>
                             </tr>
                         </tbody>
                     </table>
@@ -431,27 +432,27 @@
                         <tbody>
                             <tr >
                                 <td><span class="flag fi fi-gb-eng"></span> <span >Inglaterra</span></td>
-                                <td class="center c-p">0</td>
-                                <td class="center">0</td>
-                                <td class="center">0</td>
-                            </tr>
-                            <tr >
-                                <td><span class="flag fi fi-hr"></span> <span >Croácia</span></td>
-                                <td class="center c-p">0</td>
-                                <td class="center">0</td>
-                                <td class="center">0</td>
+                                <td class="center c-p">3</td>
+                                <td class="center">1</td>
+                                <td class="center">2</td>
                             </tr>
                             <tr >
                                 <td><span class="flag fi fi-gh"></span> <span >Gana</span></td>
-                                <td class="center c-p">0</td>
-                                <td class="center">0</td>
-                                <td class="center">0</td>
+                                <td class="center c-p">3</td>
+                                <td class="center">1</td>
+                                <td class="center">1</td>
                             </tr>
                             <tr >
                                 <td><span class="flag fi fi-pa"></span> <span >Panamá</span></td>
                                 <td class="center c-p">0</td>
-                                <td class="center">0</td>
-                                <td class="center">0</td>
+                                <td class="center">1</td>
+                                <td class="center">-1</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-hr"></span> <span >Croácia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">1</td>
+                                <td class="center">-2</td>
                             </tr>
                         </tbody>
                     </table>
@@ -459,6 +460,7 @@
             </div>
         </div>
 
+        <!-- JOGOS -->
         <div id="jogos-grupo" class="tab-content">
             <div class="subtabs-container">
                 <button class="subtab-btn active" onclick="switchSubTab('rodada1', event)">1ª Rodada</button>
@@ -712,7 +714,7 @@
             <td class="right"><span >Gana</span> <span class="flag fi fi-gh"></span></td>
             <td class="center">
                 <div class="placar-wrapper">
-                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                    <div class="score">1</div><span style="color:#94a3b8;">x</span><div class="score">0</div>
                 </div>
             </td>
             <td><span class="flag fi fi-pa"></span> <span >Panamá</span></td>
@@ -724,7 +726,7 @@
             <td class="right"><span >Inglaterra</span> <span class="flag fi fi-gb-eng"></span></td>
             <td class="center">
                 <div class="placar-wrapper">
-                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                    <div class="score">4</div><span style="color:#94a3b8;">x</span><div class="score">2</div>
                 </div>
             </td>
             <td><span class="flag fi fi-hr"></span> <span >Croácia</span></td>
@@ -748,7 +750,7 @@
             <td class="right"><span >Uzbequistão</span> <span class="flag fi fi-uz"></span></td>
             <td class="center">
                 <div class="placar-wrapper">
-                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                    <div class="score">1</div><span style="color:#94a3b8;">x</span><div class="score">3</div>
                 </div>
             </td>
             <td><span class="flag fi fi-co"></span> <span >Colômbia</span></td>
@@ -1334,6 +1336,7 @@
         </tr></tbody></table></div></div>
         </div>
 
+        <!-- ELIMINATÓRIAS -->
         <div id="eliminatorias" class="tab-content">
             <div class="subtabs-container">
                 <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos</button>
