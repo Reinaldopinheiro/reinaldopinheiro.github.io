@@ -2,14 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 import urllib3
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # ==============================================================================
 # PROGRAMA: NOTICIAS RPC
-# VERSÃO: 5.1
+# VERSÃO: 5.2
 # DATA DA VERSÃO: 18/06/2026
 # DESENVOLVEDORES: Reinaldo Pinheiro Consultoria com Gemini
-# DESCRIÇÃO: Script automatizado via GitHub Actions com QRCode em imagem local.
+# DESCRIÇÃO: Script com ajuste manual de fuso horário GMT-3 para o GitHub.
 # ==============================================================================
 
 # Supressão dos avisos de requisições inseguras
@@ -48,17 +48,16 @@ def create_html():
     links = read_links('links.rpc')
     headlines_by_site = get_headlines(links)
     
-    # Gerando a data/hora atual de Brasília (UTC-3 aproximado para o GitHub Runner)
-    last_update_date = datetime.utcnow().strftime('%d/%m/%Y %H:%M:%S UTC')
-    pix_key = "doe@reinaldopinheiro.com.br"
+    # Obtém o horário UTC do servidor do GitHub e subtrai 3 horas para virar GMT-3 (Horário de Brasília)
+    gmt_minus_3 = datetime.utcnow() - timedelta(hours=3)
+    last_update_date = gmt_minus_3.strftime('%d/%m/%Y %H:%M:%S (GMT-3)')
     
-    # Caminho da imagem local solicitada
+    pix_key = "doe@reinaldopinheiro.com.br"
     qrcode_filename = "noticias-qrcode-pix.png"
 
     try:
         with open('noticias.html', 'w', encoding='utf-8') as f:
             f.write('<html><head><title>NOTICIAS RPC</title><meta charset="UTF-8">\n')
-            # CSS básico inline para melhorar a apresentação visual da página
             f.write('<style>\n')
             f.write('  body { font-family: Helvetica, Arial, sans-serif; margin: 40px; color: #333; background-color: #f9f9f9; }\n')
             f.write('  h1 { color: #111; border-bottom: 2px solid #333; padding-bottom: 10px; }\n')
@@ -69,10 +68,9 @@ def create_html():
             f.write('  footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 13px; color: #555; text-align: center; }\n')
             f.write('  .donate-box { display: inline-block; text-align: center; margin-top: 15px; padding: 10px; border: 1px dashed #28a745; background-color: #f1fbf3; border-radius: 5px; }\n')
             f.write('  .donate-box img { margin-top: 8px; max-width: 150px; height: auto; }\n')
-            f.write('</style>\n')
+            f.write('\n</style>\n')
             f.write('</head><body>\n')
             
-            # Título em Destaque
             f.write('<h1>NOTICIAS RPC</h1>\n')
             f.write(f'<p><em>Data da última atualização: {last_update_date}</em></p>\n')
 
@@ -82,13 +80,11 @@ def create_html():
                     f.write(f'<div class="noticia"><a href="{link}" target="_blank">{headline}</a></div>\n')
                 f.write('</div>\n')
 
-            # Rodapé Customizado com a imagem local do QRCode Pix
             f.write('<footer>\n')
-            f.write('  <p>© 2026 Copyright Reinaldo Pinheiro Consultoria com Gemini - Versão 5.1 (Script Automático)</p>\n')
+            f.write('  <p>© 2026 Copyright Reinaldo Pinheiro Consultoria com Gemini - Versão 5.2 (Script Automático)</p>\n')
             f.write('  <div class="donate-box">\n')
             f.write(f'    <strong>🎁 Ajude a criar novos projetos</strong><br>\n')
             f.write(f'    Chave PIX: <code>{pix_key}</code><br>\n')
-            # Alterado aqui para carregar a imagem notícias-qrcode-pix.png
             f.write(f'    <img src="{qrcode_filename}" alt="QRCode PIX Donate" title="Escaneie para doar"><br>\n')
             f.write('    <span>Aponte a câmera do seu banco para o QRCode</span>\n')
             f.write('  </div>\n')
