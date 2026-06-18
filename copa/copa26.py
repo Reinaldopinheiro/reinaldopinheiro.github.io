@@ -1,15 +1,16 @@
 # ==============================================================================
 # PROGRAMA: Central Real-Time Copa do Mundo 2026 - RPC
-# VERSÃO: v21.2.0 (LAYOUT VISUAL COMPLETO - TAÇA, LOGO E BANDEIRA - SEM ESTATÍSTICAS)
-# DATA: 17/06/2026
+# VERSÃO: v22.1.0 (CONVERSÃO DINÂMICA DE HORÁRIO E SINCRONIZAÇÃO COMPLETA)
+# DATA: 18/06/2026
 # AUTOR/MANTENEDOR: Reinaldo Pinheiro Consultoria
 # ==============================================================================
 
 import os
 import json
 import base64
-from datetime import datetime, timedelta
+from datetime import datetime
 import requests
+import pytz
 
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -48,7 +49,13 @@ grupos_definidos = {
 }
 
 def obter_logo_base64():
+    # Procura na pasta atual ou na pasta pai em busca do arquivo de logotipo corporativo
     arquivo_logo = "logorpc.png"
+    if not os.path.exists(arquivo_logo):
+        # Fallback caso esteja rodando sob caminhos alterados pelo Actions
+        diretorio_atual = os.path.dirname(os.path.abspath(__file__))
+        arquivo_logo = os.path.join(diretorio_atual, "logorpc.png")
+        
     if os.path.exists(arquivo_logo):
         try:
             with open(arquivo_logo, "rb") as image_file:
@@ -87,15 +94,29 @@ def traduzir_nome(nome_en):
 
 def extrair_data_hora(string_data):
     if not string_data:
-        return "A def.", "16h00"
+        return "A def.", "A def."
     try:
-        if "T" in string_data:
-            dt = datetime.strptime(string_data.split("Z")[0].split("+")[0], "%Y-%m-%dT%H:%M:%S")
+        # Normaliza a string eliminando sufixos Z ou variações comuns
+        data_limpa = string_data.split(".")[0].replace("Z", "+00:00")
+        
+        # Faz a leitura tratando fuso da API (UTC padrão)
+        if "T" in data_limpa:
+            try:
+                dt = datetime.strptime(data_limpa, "%Y-%m-%dT%H:%M:%S%z")
+            except ValueError:
+                dt = datetime.strptime(data_limpa, "%Y-%m-%dT%H:%M:%S")
+                dt = dt.replace(tzinfo=pytz.utc)
         else:
-            dt = datetime.strptime(string_data, "%Y-%m-%d")
-        dt = dt - timedelta(hours=3)
-        return dt.strftime("%d/%m"), dt.strftime("%H:%M")
-    except:
+            dt = datetime.strptime(data_limpa, "%Y-%m-%d")
+            dt = dt.replace(tzinfo=pytz.utc)
+            
+        # Converte dinamicamente para o fuso horário oficial de Brasília
+        fuso_brasilia = pytz.timezone("America/Sao_Paulo")
+        dt_br = dt.astimezone(fuso_brasilia)
+        
+        return dt_br.strftime("%d/%m"), dt_br.strftime("%H:%M")
+    except Exception as e:
+        print(f"⚠️ Falha de parse na data '{string_data}': {e}")
         return "A def.", "16h00"
 
 def buscar_dados_reais():
@@ -106,7 +127,7 @@ def buscar_dados_reais():
     }
     try:
         headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(URL_API_REALTIME, headers=headers, timeout=12, verify=False)
+        response = requests.get(URL_API_REALTIME, headers=headers, timeout=15, verify=False)
         if response.status_code != 200:
             return (estrutura_copa, False)
             
@@ -147,7 +168,7 @@ def buscar_dados_reais():
 
         return (estrutura_copa, True)
     except Exception as e:
-        print(f"❌ Falha ao processar dados: {e}")
+        print(f"❌ Falha ao processar dados da API: {e}")
         return (estrutura_copa, False)
 
 def atualizar_classificacao(estrutura_copa):
@@ -198,8 +219,9 @@ def renderizar_tabela_jogos(lista_jogos):
     return html_jogos
 
 def compilar_html(classificacao, estrutura_copa, status_conexao):
-    data_gmt3 = datetime.utcnow() - timedelta(hours=3)
-    data_site = data_gmt3.strftime('%d/%m/%Y às %H:%M:%S (Brasília)')
+    fuso_br = pytz.timezone("America/Sao_Paulo")
+    data_site = datetime.now(fuso_br).strftime('%d/%m/%Y às %H:%M:%S (Brasília)')
+    
     cor_status = "#0d9488" if status_conexao else "#ef4444"
     txt_status = "● Servidor Online - Dados Reais FIFA" if status_conexao else "● Erro ao sincronizar placares"
     logo_src = obter_logo_base64()
@@ -276,6 +298,7 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             <div style="font-weight: bold; color: {cor_status};">{txt_status}</div>
         </div>
 
+        <!-- CLASSIFICAÇÃO -->
         <div id="classificacao" class="tab-content active">
             <div class="groups-grid">"""
 
@@ -306,6 +329,7 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             </div>
         </div>
 
+        <!-- JOGOS -->
         <div id="jogos-grupo" class="tab-content">
             <div class="subtabs-container">
                 <button class="subtab-btn active" onclick="switchSubTab('rodada1', event)">1ª Rodada</button>
@@ -317,6 +341,7 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             <div id="rodada3" class="subtab-content"><div class="table-wrapper"><table><tbody>{renderizar_tabela_jogos(estrutura_copa["grupos"][3])}</tbody></table></div></div>
         </div>
 
+        <!-- ELIMINATÓRIAS -->
         <div id="eliminatorias" class="tab-content">
             <div class="subtabs-container">
                 <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos</button>
@@ -360,7 +385,12 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
 </body>
 </html>"""
 
-    with open("copa26.html", "w", encoding="utf-8") as f:
+    # Descobre o diretório absoluto da pasta copa para forçar o salvamento no local adequado
+    diretorio_atual = os.path.dirname(os.path.abspath(__file__))
+    caminho_html = os.path.join(diretorio_atual, "copa26.html")
+    caminho_json = os.path.join(diretorio_atual, "placar.json")
+
+    with open(caminho_html, "w", encoding="utf-8") as f:
         f.write(html)
     
     dados_para_salvar = {
@@ -368,10 +398,10 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
         "classificacao": classificacao, 
         "jogos": estrutura_copa
     }
-    with open("placar.json", "w", encoding="utf-8") as f:
+    with open(caminho_json, "w", encoding="utf-8") as f:
         json.dump(dados_para_salvar, f, ensure_ascii=False, indent=4)
         
-    print("✨ Sincronização Executada com Sucesso (Estrutura de tabelas limpa)!")
+    print(f"✨ Sincronização executada e salva em: {diretorio_atual}")
 
 if __name__ == "__main__":
     estrutura_dados, sucesso = buscar_dados_reais()
