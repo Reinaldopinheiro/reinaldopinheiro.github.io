@@ -1,15 +1,20 @@
 import requests
 from bs4 import BeautifulSoup
 import urllib3
-import time
 import os
 from datetime import datetime
-import tkinter as tk
+
+# ==============================================================================
+# PROGRAMA: NOTICIAS RPC
+# VERSÃO: 5.0
+# DATA DA VERSÃO: 18/06/2026
+# DESENVOLVEDORES: Reinaldo Pinheiro Consultoria com Gemini
+# DESCRIÇÃO: Script automatizado via GitHub Actions para agregação de RSS feeds.
+# ==============================================================================
 
 # Supressão dos avisos de requisições inseguras
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# Função para ler os links do arquivo texto
 def read_links(file_path):
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -21,16 +26,17 @@ def read_links(file_path):
         print(f"Erro ao ler o arquivo de links: {e}")
         return []
 
-# Função para obter manchetes com hiperlinks
 def get_headlines(links):
     headlines_by_site = {}
     print("Obtendo manchetes...")
 
     for url in links:
         try:
-            response = requests.get(url, verify=False)
+            # Força um User-Agent para evitar bloqueios em ambiente de servidor (GitHub)
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+            response = requests.get(url, headers=headers, verify=False, timeout=15)
             soup = BeautifulSoup(response.content, 'xml')
-            site_name = url.split('/')[2]  # Pega o nome do site do link
+            site_name = url.split('/')[2]
             news_items = soup.find_all('item', limit=5)
             headlines_by_site[site_name] = [(item.title.text, item.link.text) for item in news_items]
         except Exception as e:
@@ -38,16 +44,37 @@ def get_headlines(links):
 
     return headlines_by_site
 
-# Função para criar o arquivo HTML
 def create_html():
     links = read_links('links.rpc')
     headlines_by_site = get_headlines(links)
+    
+    # Gerando a data/hora atual de Brasília (UTC-3 aproximado para o GitHub Runner)
+    last_update_date = datetime.utcnow().strftime('%d/%m/%Y %H:%M:%S UTC')
+    pix_key = "doe@reinaldopinheiro.com.br"
+    
+    # URL pública para gerar o QRCode dinamicamente usando a API do Google Charts
+    qrcode_url = f"https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl={pix_key}"
+
     try:
         with open('noticias.html', 'w', encoding='utf-8') as f:
-            f.write('<html><head><title>Noticias RPC</title><meta charset="UTF-8">\n')
-            f.write('<meta http-equiv="refresh" content="60">\n')  # Meta tag para atualizar a cada 60 segundos
+            f.write('<html><head><title>NOTICIAS RPC</title><meta charset="UTF-8">\n')
+            # CSS básico inline para melhorar a apresentação visual da página
+            f.write('<style>\n')
+            f.write('  body { font-family: Helvetica, Arial, sans-serif; margin: 40px; color: #333; background-color: #f9f9f9; }\n')
+            f.write('  h1 { color: #111; border-bottom: 2px solid #333; padding-bottom: 10px; }\n')
+            f.write('  h2 { color: #0056b3; margin-top: 30px; }\n')
+            f.write('  .noticia { margin: 10px 0; padding: 5px; }\n')
+            f.write('  .noticia a { text-decoration: none; color: #222; font-size: 16px; }\n')
+            f.write('  .noticia a:hover { color: #0056b3; text-decoration: underline; }\n')
+            f.write('  footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 13px; color: #555; text-align: center; }\n')
+            f.write('  .donate-box { display: inline-block; text-align: center; margin-top: 15px; padding: 10px; border: 1px dashed #28a745; background-color: #f1fbf3; border-radius: 5px; }\n')
+            f.write('  .donate-box img { margin-top: 8px; }\n')
+            f.write('</style>\n')
             f.write('</head><body>\n')
-            f.write(f'<h1>Noticias RPC</h1>\n')
+            
+            # Título em Destaque solicitado
+            f.write('<h1>NOTICIAS RPC</h1>\n')
+            f.write(f'<p><em>Data da última atualização: {last_update_date}</em></p>\n')
 
             for site, headlines in headlines_by_site.items():
                 f.write(f'<h2>{site}</h2>\n<div class="noticias">\n')
@@ -55,66 +82,22 @@ def create_html():
                     f.write(f'<div class="noticia"><a href="{link}" target="_blank">{headline}</a></div>\n')
                 f.write('</div>\n')
 
+            # Rodapé Customizado com Ícone/QRCode de Doação (Donate)
+            f.write('<footer>\n')
+            f.write('  <p>© 2026 Copyright Reinaldo Pinheiro Consultoria com Gemini - Versão 5.0 (Script Automático)</p>\n')
+            f.write('  <div class="donate-box">\n')
+            f.write(f'    <strong>🎁 Ajude a criar novos projetos</strong><br>\n')
+            f.write(f'    Chave PIX: <code>{pix_key}</code><br>\n')
+            f.write(f'    <img src="{qrcode_url}" alt="QRCode PIX Donate" title="Escaneie para doar"><br>\n')
+            f.write('    <span>Aponte a câmera do seu banco para o QRCode</span>\n')
+            f.write('  </div>\n')
+            f.write('</footer>\n')
+
             f.write('</body></html>')
 
         print("Arquivo HTML criado com sucesso.")
     except Exception as e:
         print(f"Erro ao criar arquivo HTML: {e}")
 
-# Função para adicionar a data da última atualização ao HTML
-def add_last_update_date():
-    src_path = 'noticias.html'
-    try:
-        last_update_time = os.path.getmtime(src_path)
-        last_update_date = datetime.fromtimestamp(last_update_time).strftime('%d/%m/%Y %H:%M:%S')
-        
-        with open(src_path, 'r+', encoding='utf-8') as f:
-            content = f.read()
-            f.seek(0, 0)
-            f.write(content.replace('<h1>Noticias RPC</h1>', f'<h1>Noticias RPC</h1><p>Data da última atualização: {last_update_date}</p>', 1))
-        
-        print(f'Data da última atualização adicionada ao arquivo {src_path}.')
-    except Exception as e:
-        print(f"Erro ao adicionar data da última atualização ao arquivo: {e}")
-
-# Função para atualizar a contagem regressiva na janela
-def update_countdown(label, remaining):
-    if remaining <= 0:
-        label.config(text="Atualizando...")
-        root.update()
-        create_html()
-        add_last_update_date()
-        root.after(1000, start_countdown, label, 120)
-    else:
-        label.config(text=f"Próxima atualização em {remaining} segundos.")
-        root.after(1000, update_countdown, label, remaining - 1)
-
-# Função para iniciar a contagem regressiva
-def start_countdown(label, remaining):
-    update_countdown(label, remaining)
-
-# Configuração da janela Tkinter
-root = tk.Tk()
-root.title("Noticias RPC")
-root.geometry("340x150")  # Aumentei a largura da janela em mais 20 pixels
-
-# Labels para o nome do programa e versão
-title_label = tk.Label(root, text="Noticias RPC", font=("Helvetica", 16, "bold"))
-title_label.pack(pady=5)
-
-version_label = tk.Label(root, text="Versão: 4.1 - 31/01/2025", font=("Helvetica", 12))
-version_label.pack(pady=5)
-
-# Label para a contagem regressiva
-countdown_label = tk.Label(root, text="", font=("Helvetica", 14))
-countdown_label.pack(pady=10)
-
-# Label para o copyright na parte inferior
-copyright_label = tk.Label(root, text="© Reinaldo Pinheiro com Copilot", font=("Helvetica", 8))
-copyright_label.pack(side="bottom", pady=5)
-
-# Inicia a contagem regressiva
-start_countdown(countdown_label, 120)
-
-# Executa a janela Tkinter
-root.mainloop()
+if __name__ == "__main__":
+    create_html()
