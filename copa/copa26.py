@@ -104,11 +104,25 @@ def extrair_data_hora(string_data):
             try:
                 dt = datetime.strptime(data_limpa, "%Y-%m-%dT%H:%M:%S%z")
             except ValueError:
-                dt = datetime.strptime(data_limpa, "%Y-%m-%dT%H:%M:%S")
-                dt = dt.replace(tzinfo=pytz.utc)
+                try:
+                    dt = datetime.strptime(data_limpa, "%Y-%m-%dT%H:%M:%S")
+                    dt = dt.replace(tzinfo=pytz.utc)
+                except ValueError:
+                    # Tenta sem fuso horário
+                    dt = datetime.strptime(data_limpa.split("+")[0], "%Y-%m-%dT%H:%M:%S")
+                    dt = dt.replace(tzinfo=pytz.utc)
         else:
-            dt = datetime.strptime(data_limpa, "%Y-%m-%d")
-            dt = dt.replace(tzinfo=pytz.utc)
+            # Trata formato com espaço (YYYY-MM-DD HH:MM:SS)
+            try:
+                dt = datetime.strptime(data_limpa, "%Y-%m-%d %H:%M:%S%z")
+            except ValueError:
+                try:
+                    dt = datetime.strptime(data_limpa.split("+")[0], "%Y-%m-%d %H:%M:%S")
+                    dt = dt.replace(tzinfo=pytz.utc)
+                except ValueError:
+                    # Fallback para data apenas
+                    dt = datetime.strptime(data_limpa.split(" ")[0], "%Y-%m-%d")
+                    dt = dt.replace(tzinfo=pytz.utc)
             
         # Converte dinamicamente para o fuso horário oficial de Brasília
         fuso_brasilia = pytz.timezone("America/Sao_Paulo")
