@@ -1,61 +1,49 @@
-name: Sincronizar Central Copa do Mundo 2026
+name: Atualizar Dados da Copa 2026
 
-# Controla quando o workflow será executado
 on:
+  workflow_dispatch:
   schedule:
-    # Executa automaticamente a cada hora cheia (ex: 13:00, 14:00, etc.)
-    - cron: '0/5 * * * *'
-  
-  # Permite que você clique no botão "Run workflow" na aba Actions do GitHub para testar manualmente
-  workflow_dispatch: 
+    - cron: '*/5 * * * *' # Roda a cada 5 minutos
 
-# Define as permissões globais do robô do GitHub - CRÍTICO para permitir gravação de arquivos
 permissions:
   contents: write
 
 jobs:
-  sincronizar_dados:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    # Passo 1: Copia os arquivos do seu repositório para dentro da máquina virtual do GitHub
-    - name: Baixar código do repositório
+    - name: 1. Baixar código do repositório
       uses: actions/checkout@v4
 
-    # Passo 2: Configura o ambiente com a versão estável mais recente do Python 3
-    - name: Configurar o Python
+    - name: 2. Configurar o Python no Servidor
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
-    # Passo 3: Instala os pacotes necessários que o seu script copa26.py utiliza
-    - name: Instalar dependências necessárias
+    - name: 3. Instalar Dependências de Raspagem
       run: |
         python -m pip install --upgrade pip
         pip install requests urllib3
 
-    # Passo 4: Altera os privilégios da pasta no Linux do GitHub para permissão total (Leitura, Escrita e Execução)
-    - name: Liberar permissão de escrita na pasta do projeto
+    - name: 4. Liberar permissão na pasta
       run: chmod -R 777 .
 
-    # Passo 5: Executa o seu script Python (que agora criará os arquivos sem restrições do sistema)
-    - name: Executar o Script da Copa
-      run: python copa26.py
+    # 🚨 CORRIGIDO AQUI: Adicionado o caminho "copa/" antes do script
+    - name: 5. Executar o Script de Atualização
+      run: python copa/copa26.py
 
-    # Passo 6: Salva os arquivos copa26.html e placar.json gerados e faz o envio (push) de volta para o repositório
-    - name: Commitar e Enviar alterações para o repositório
+    - name: 6. Enviar alterações e dar o Push
       run: |
-        # Configura as credenciais padrão do robô do GitHub
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
         
-        # Prepara explicitamente os arquivos gerados ou modificados pelo Python
-        git add copa26.html placar.json
+        # 🚨 CORRIGIDO AQUI: Garante que o Git adicione o HTML dentro da pasta copa
+        git add copa/copa26.html
         
-        # Verifica se houve alguma alteração real nos placares antes de forçar o commit
-        if ! git diff --cached --quiet; then
-          git commit -m "🤖 [Bot] Central atualizada em tempo real via API"
-          git push
+        if ! git diff --quiet --cached; then
+          git commit -m "⚽ Automação: Atualização dos placares da Copa"
+          git push origin HEAD:main
         else
-          echo "Nenhum resultado novo detetado na API da FIFA. Repositório atualizado."
+          echo "Nenhuma mudança detectada nos placares."
         fi
