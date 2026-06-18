@@ -6,10 +6,10 @@ from datetime import datetime
 
 # ==============================================================================
 # PROGRAMA: NOTICIAS RPC
-# VERSÃO: 5.0
+# VERSÃO: 5.1
 # DATA DA VERSÃO: 18/06/2026
 # DESENVOLVEDORES: Reinaldo Pinheiro Consultoria com Gemini
-# DESCRIÇÃO: Script automatizado via GitHub Actions para agregação de RSS feeds.
+# DESCRIÇÃO: Script automatizado via GitHub Actions com QRCode em imagem local.
 # ==============================================================================
 
 # Supressão dos avisos de requisições inseguras
@@ -52,8 +52,8 @@ def create_html():
     last_update_date = datetime.utcnow().strftime('%d/%m/%Y %H:%M:%S UTC')
     pix_key = "doe@reinaldopinheiro.com.br"
     
-    # URL pública para gerar o QRCode dinamicamente usando a API do Google Charts
-    qrcode_url = f"https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl={pix_key}"
+    # Caminho da imagem local solicitada
+    qrcode_filename = "noticias-qrcode-pix.png"
 
     try:
         with open('noticias.html', 'w', encoding='utf-8') as f:
@@ -68,11 +68,11 @@ def create_html():
             f.write('  .noticia a:hover { color: #0056b3; text-decoration: underline; }\n')
             f.write('  footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 13px; color: #555; text-align: center; }\n')
             f.write('  .donate-box { display: inline-block; text-align: center; margin-top: 15px; padding: 10px; border: 1px dashed #28a745; background-color: #f1fbf3; border-radius: 5px; }\n')
-            f.write('  .donate-box img { margin-top: 8px; }\n')
+            f.write('  .donate-box img { margin-top: 8px; max-width: 150px; height: auto; }\n')
             f.write('</style>\n')
             f.write('</head><body>\n')
             
-            # Título em Destaque solicitado
+            # Título em Destaque
             f.write('<h1>NOTICIAS RPC</h1>\n')
             f.write(f'<p><em>Data da última atualização: {last_update_date}</em></p>\n')
 
@@ -82,13 +82,14 @@ def create_html():
                     f.write(f'<div class="noticia"><a href="{link}" target="_blank">{headline}</a></div>\n')
                 f.write('</div>\n')
 
-            # Rodapé Customizado com Ícone/QRCode de Doação (Donate)
+            # Rodapé Customizado com a imagem local do QRCode Pix
             f.write('<footer>\n')
-            f.write('  <p>© 2026 Copyright Reinaldo Pinheiro Consultoria com Gemini - Versão 5.0 (Script Automático)</p>\n')
+            f.write('  <p>© 2026 Copyright Reinaldo Pinheiro Consultoria com Gemini - Versão 5.1 (Script Automático)</p>\n')
             f.write('  <div class="donate-box">\n')
             f.write(f'    <strong>🎁 Ajude a criar novos projetos</strong><br>\n')
             f.write(f'    Chave PIX: <code>{pix_key}</code><br>\n')
-            f.write(f'    <img src="{qrcode_url}" alt="QRCode PIX Donate" title="Escaneie para doar"><br>\n')
+            # Alterado aqui para carregar a imagem notícias-qrcode-pix.png
+            f.write(f'    <img src="{qrcode_filename}" alt="QRCode PIX Donate" title="Escaneie para doar"><br>\n')
             f.write('    <span>Aponte a câmera do seu banco para o QRCode</span>\n')
             f.write('  </div>\n')
             f.write('</footer>\n')
