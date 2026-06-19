@@ -58,12 +58,12 @@
     <div class="container">
         <div class="tabs-container">
             <button class="tab-btn active" onclick="switchMainTab('classificacao', event)">📊 Classificação dos Grupos</button>
-            <button class="tab-btn" onclick="switchMainTab('jogos-grupo', event)">📅 Fase de Grupos</button>
+            <button class="tab-btn" onclick="switchMainTab('jogos-grupo', event)">📅 Todos os Jogos da Fase de Grupos</button>
             <button class="tab-btn" onclick="switchMainTab('eliminatorias', event)">🏆 Fases Eliminatórias</button>
         </div>
 
         <div class="status-bar">
-            <div><strong>Última Atualização:</strong> 19/06/2026 às 10:48:01 (Brasília)</div>
+            <div><strong>Última Atualização:</strong> 19/06/2026 às 13:25:35 (Brasília)</div>
             <div style="font-weight: bold; color: #0d9488;">● Dados Oficiais FIFA Atualizados</div>
         </div>
 
@@ -77,26 +77,26 @@
                         <tbody>
                             <tr >
                                 <td><span class="flag fi fi-mx"></span> <span >México</span></td>
-                                <td class="center c-p">3</td>
-                                <td class="center">1</td>
+                                <td class="center c-p">6</td>
                                 <td class="center">2</td>
+                                <td class="center">3</td>
                             </tr>
                             <tr >
                                 <td><span class="flag fi fi-kr"></span> <span >Coreia do Sul</span></td>
                                 <td class="center c-p">3</td>
-                                <td class="center">1</td>
-                                <td class="center">1</td>
+                                <td class="center">2</td>
+                                <td class="center">0</td>
                             </tr>
                             <tr >
                                 <td><span class="flag fi fi-cz"></span> <span >Tchéquia</span></td>
-                                <td class="center c-p">0</td>
-                                <td class="center">1</td>
+                                <td class="center c-p">1</td>
+                                <td class="center">2</td>
                                 <td class="center">-1</td>
                             </tr>
                             <tr >
                                 <td><span class="flag fi fi-za"></span> <span >África do Sul</span></td>
-                                <td class="center c-p">0</td>
-                                <td class="center">1</td>
+                                <td class="center c-p">1</td>
+                                <td class="center">2</td>
                                 <td class="center">-2</td>
                             </tr>
                         </tbody>
@@ -109,27 +109,27 @@
                         <tbody>
                             <tr >
                                 <td><span class="flag fi fi-ca"></span> <span >Canadá</span></td>
-                                <td class="center c-p">1</td>
-                                <td class="center">1</td>
-                                <td class="center">0</td>
+                                <td class="center c-p">4</td>
+                                <td class="center">2</td>
+                                <td class="center">6</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ch"></span> <span >Suíça</span></td>
+                                <td class="center c-p">4</td>
+                                <td class="center">2</td>
+                                <td class="center">3</td>
                             </tr>
                             <tr >
                                 <td><span class="flag fi fi-ba"></span> <span >Bósnia</span></td>
                                 <td class="center c-p">1</td>
-                                <td class="center">1</td>
-                                <td class="center">0</td>
+                                <td class="center">2</td>
+                                <td class="center">-3</td>
                             </tr>
                             <tr >
                                 <td><span class="flag fi fi-qa"></span> <span >Catar</span></td>
                                 <td class="center c-p">1</td>
-                                <td class="center">1</td>
-                                <td class="center">0</td>
-                            </tr>
-                            <tr >
-                                <td><span class="flag fi fi-ch"></span> <span >Suíça</span></td>
-                                <td class="center c-p">1</td>
-                                <td class="center">1</td>
-                                <td class="center">0</td>
+                                <td class="center">2</td>
+                                <td class="center">-6</td>
                             </tr>
                         </tbody>
                     </table>
@@ -457,14 +457,12 @@
             </div>
         </div>
 
-        <!-- ABA DE JOGOS POR RODADA -->
+        <!-- ABA DE JOGOS DA FASE DE GRUPOS (UNIFICADA) -->
         <div id="jogos-grupo" class="tab-content">
-            <div class="subtabs-container">
-                <button class="subtab-btn active" onclick="switchSubTab('rodada1', event)">1ª Rodada</button>
-                <button class="subtab-btn" onclick="switchSubTab('rodada2', event)">2ª Rodada</button>
-                <button class="subtab-btn" onclick="switchSubTab('rodada3', event)">3ª Rodada</button>
-            </div>
-            <div id="rodada1" class="subtab-content active"><div class="table-wrapper"><table><tbody>
+            <div class="table-wrapper">
+                <table>
+                    <tbody>
+                        
         <tr >
             <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
             <td class="center"><span class='group-badge'>Grupo A</span></td>
@@ -752,21 +750,7 @@
             </td>
             <td><span class="flag fi fi-co"></span> <span >Colômbia</span></td>
             <td style="color:#64748b; font-size:12px;">Mexico City Stadium</td>
-        </tr></tbody></table></div></div>
-            <div id="rodada2" class="subtab-content"><div class="table-wrapper"><table><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando definições oficiais da FIFA.</td></tr></tbody></table></div></div>
-            <div id="rodada3" class="subtab-content"><div class="table-wrapper"><table><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando definições oficiais da FIFA.</td></tr></tbody></table></div></div>
-        </div>
-
-        <!-- ABA ELIMINATÓRIAS -->
-        <div id="eliminatorias" class="tab-content">
-            <div class="subtabs-container">
-                <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos</button>
-                <button class="subtab-btn" onclick="switchSubTab('fase-16', event)">Oitavas</button>
-                <button class="subtab-btn" onclick="switchSubTab('fase-8', event)">Quartas</button>
-                <button class="subtab-btn" onclick="switchSubTab('fase-4', event)">Semifinais</button>
-                <button class="subtab-btn" onclick="switchSubTab('fase-finais', event)">Finais 🏆</button>
-            </div>
-            <div id="fase-32" class="subtab-content active"><div class="table-wrapper"><table><tbody>
+        </tr>
         <tr >
             <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
             <td class="center"><span class='group-badge'>Grupo A</span></td>
@@ -1054,8 +1038,7 @@
             </td>
             <td><span class="flag fi fi-cd"></span> <span >RD Congo</span></td>
             <td style="color:#64748b; font-size:12px;">Guadalajara Stadium</td>
-        </tr></tbody></table></div></div>
-            <div id="fase-16" class="subtab-content"><div class="table-wrapper"><table><tbody>
+        </tr>
         <tr class='brasil-row'>
             <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
             <td class="center"><span class='group-badge'>Grupo C</span></td>
@@ -1343,7 +1326,23 @@
             </td>
             <td><span class="flag fi fi-uz"></span> <span >Uzbequistão</span></td>
             <td style="color:#64748b; font-size:12px;">Atlanta Stadium</td>
-        </tr></tbody></table></div></div>
+        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ABA ELIMINATÓRIAS -->
+        <div id="eliminatorias" class="tab-content">
+            <div class="subtabs-container">
+                <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-16', event)">Oitavas</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-8', event)">Quartas</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-4', event)">Semifinais</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-finais', event)">Finais 🏆</button>
+            </div>
+            <div id="fase-32" class="subtab-content active"><div class="table-wrapper"><table><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando definições oficiais da FIFA.</td></tr></tbody></table></div></div>
+            <div id="fase-16" class="subtab-content"><div class="table-wrapper"><table><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando definições oficiais da FIFA.</td></tr></tbody></table></div></div>
             <div id="fase-8" class="subtab-content"><div class="table-wrapper"><table><tbody>
         <tr >
             <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
