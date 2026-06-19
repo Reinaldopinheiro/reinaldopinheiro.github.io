@@ -1,6 +1,6 @@
 # ==============================================================================
 # PROGRAMA: Central Real-Time Copa do Mundo 2026 - RPC
-# VERSÃO: v26.3.0 (CÁLCULO AUTOMÁTICO DE PONTOS E SEPARAÇÃO DE RODADAS)
+# VERSÃO: v26.3.1 (COMPATIBILIDADE DE NOMES COM O PLACAR.JSON)
 # DATA: 19/06/2026
 # AUTOR: Reinaldo Pinheiro Consultoria
 # ==============================================================================
@@ -76,15 +76,21 @@ def inicializar_classificacao():
 
 def traduzir_nome(nome_en):
     if not nome_en: return "A definir"
+    
+    # CORREÇÃO: Dicionário mapeado para total compatibilidade com o placar.json
     traducoes = {
-        "Brazil": "BRASIL", "Mexico": "México", "South Africa": "África do Sul", "South Korea": "Coreia do Sul",
-        "Czech Republic": "Tchéquia", "Czechia": "Tchéquia", "Canada": "Canadá", "Bosnia and Herzegovina": "Bósnia",
+        "Brazil": "BRASIL", "Brasil": "BRASIL",
+        "Mexico": "México", "South Africa": "África do Sul", 
+        "Korea Republic": "Coreia do Sul", "South Korea": "Coreia do Sul",
+        "Czech Republic": "Tchéquia", "Czechia": "Tchéquia", 
+        "Canada": "Canadá", "Bosnia and Herzegovina": "Bósnia", "Bosnia": "Bósnia",
         "Qatar": "Catar", "Switzerland": "Suíça", "Morocco": "Marrocos", "Scotland": "Escócia", 
         "USA": "Estados Unidos", "United States": "Estados Unidos", "Paraguay": "Paraguai", "Australia": "Austrália", 
-        "Turkey": "Turquia", "Germany": "Alemanha", "Ivory Coast": "Costa do Marfim", "Ecuador": "Equador", 
+        "Turkey": "Turquia", "Türkiye": "Turquia",
+        "Germany": "Alemanha", "Curaçao": "Curaçao", "Côte d'Ivoire": "Costa do Marfim", "Ivory Coast": "Costa do Marfim", "Ecuador": "Equador", 
         "Netherlands": "Países Baixos", "Japan": "Japão", "Sweden": "Suécia", "Tunisia": "Tunísia", 
-        "Belgium": "Bélgica", "Egypt": "Egito", "Iran": "Irã", "New Zealand": "Nova Zelândia", 
-        "Spain": "Espanha", "Cape Verde": "Cabo Verde", "Saudi Arabia": "Arábia Saudita", "Uruguai": "Uruguai", 
+        "Belgium": "Bélgica", "Egypt": "Egito", "Iran": "Irã", "IR Iran": "Irã", "New Zealand": "Nova Zelândia", 
+        "Spain": "Espanha", "Cape Verde": "Cabo Verde", "Saudi Arabia": "Arábia Saudita", "Uruguay": "Uruguai", 
         "France": "França", "Norway": "Noruega", "Senegal": "Senegal", "Iraq": "Iraque",
         "Argentina": "Argentina", "Algeria": "Argélia", "Austria": "Áustria", "Jordan": "Jordânia",
         "Portugal": "Portugal", "DR Congo": "RD Congo", "Congo DR": "RD Congo", "Uzbekistan": "Uzbequistão", "Colombia": "Colômbia",
@@ -115,7 +121,6 @@ def extrair_data_hora(string_data):
 
 def buscar_dados_reais():
     print("🌐 Baixando dados oficiais da FIFA em tempo real...")
-    # Inicializa as listas internas de rodadas da Fase de Grupos de forma explícita
     estrutura_copa = {
         "grupos": {1: [], 2: [], 3: []},
         "r32": [], "r16": [], "r8": [], "r4": [], "third": [], "final": []
@@ -127,9 +132,6 @@ def buscar_dados_reais():
             return (estrutura_copa, False)
             
         dados = response.json()
-        
-        # Dicionário auxiliar para descobrir matematicamente qual é a rodada correta do grupo
-        # para evitar que a API misture jogos da 2ª rodada na aba da 1ª rodada
         contador_jogos_time = {}
 
         for match in dados:
@@ -157,9 +159,7 @@ def buscar_dados_reais():
             
             stage_number = match.get("RoundNumber", 1)
             
-            # Se for Fase de Grupos (RoundNumber = 1 na API, mas subdividido por rodadas internas)
             if stage_number == 1 and grupo_letra:
-                # Calcula de forma dinâmica a rodada real (1, 2 ou 3) com base no histórico de jogos mapeados
                 c1 = contador_jogos_time.get(t1, 0) + 1
                 c2 = contador_jogos_time.get(t2, 0) + 1
                 contador_jogos_time[t1] = c1
@@ -171,7 +171,6 @@ def buscar_dados_reais():
                 
                 estrutura_copa["grupos"][rodada_real].append(jogo_dict)
                 
-            # Fases eliminatórias seguintes
             elif stage_number == 2: estrutura_copa["r32"].append(jogo_dict)
             elif stage_number == 3: estrutura_copa["r16"].append(jogo_dict)
             elif stage_number == 4: estrutura_copa["r8"].append(jogo_dict)
@@ -186,7 +185,6 @@ def buscar_dados_reais():
 
 def atualizar_classificacao(estrutura_copa):
     classificacao_limpa = inicializar_classificacao()
-    # Varre as três rodadas calculadas para somar os pontos reais dos grupos
     for r in [1, 2, 3]:
         for j in estrutura_copa["grupos"][r]:
             if j["encerrado"]:
@@ -317,6 +315,7 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             <div style="font-weight: bold; color: {cor_status};">{txt_status}</div>
         </div>
 
+        <!-- ABA DE CLASSIFICAÇÃO -->
         <div id="classificacao" class="tab-content active">
             <div class="groups-grid">"""
 
@@ -347,6 +346,7 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             </div>
         </div>
 
+        <!-- ABA DE JOGOS POR RODADA -->
         <div id="jogos-grupo" class="tab-content">
             <div class="subtabs-container">
                 <button class="subtab-btn active" onclick="switchSubTab('rodada1', event)">1ª Rodada</button>
@@ -358,6 +358,7 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             <div id="rodada3" class="subtab-content"><div class="table-wrapper"><table><tbody>{renderizar_tabela_jogos(estrutura_copa["grupos"][3])}</tbody></table></div></div>
         </div>
 
+        <!-- ABA ELIMINATÓRIAS -->
         <div id="eliminatorias" class="tab-content">
             <div class="subtabs-container">
                 <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos</button>
@@ -401,7 +402,6 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
 </body>
 </html>"""
 
-    # Garante a escrita física na pasta correta do repositório
     diretorio_atual = os.path.dirname(os.path.abspath(__file__))
     caminho_html = os.path.join(diretorio_atual, "copa26.html")
     caminho_json = os.path.join(diretorio_atual, "placar.json")
