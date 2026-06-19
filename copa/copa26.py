@@ -1,8 +1,8 @@
 # ==============================================================================
 # PROGRAMA: Central Real-Time Copa do Mundo 2026 - RPC
-# VERSÃO: v26.3.2 (CORREÇÃO DE RODADAS E EXIBIÇÃO DE JOGOS)
+# VERSÃO: v26.4.0 (CORREÇÃO DE PARSING DE DATA COM ESPAÇOS EM BRASÍLIA)
 # DATA: 19/06/2026
-# AUTOR: Reinaldo Pinheiro Consultoria
+# AUTOR: Reinaldo Pinheiro Consultoria com Gemini
 # ==============================================================================
 
 import os
@@ -16,8 +16,10 @@ import urllib3
 # Desativa avisos de SSL para evitar falhas no ambiente do GitHub Actions
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+VERSION = "26.4.0"
 URL_API_REALTIME = "https://fixturedownload.com/feed/json/fifa-world-cup-2026"
-COPYRIGHT = "Oferecimento: RPC - Reinaldo Pinheiro Consultoria - Ajude a ter novos projetos doando no pix: doe@reinaldopinheiro.com.br"
+pix_key = "doe@reinaldopinheiro.com.br"
+qrcode_filename = "qrcode.png"  # Certifique-se de que este arquivo existe na mesma pasta do HTML
 
 # Mapeamento oficial dos países para os ícones de bandeiras (flag-icons)
 times_mapeamento = {
@@ -100,26 +102,29 @@ def extrair_data_hora(string_data):
     if not string_data:
         return "A def.", "A def."
     try:
-        data_limpa = string_data.split(".")[0].replace("Z", "+00:00")
-        if "T" in data_limpa:
-            try:
-                dt = datetime.strptime(data_limpa, "%Y-%m-%dT%H:%M:%S%z")
-            except ValueError:
-                dt = datetime.strptime(data_limpa, "%Y-%m-%dT%H:%M:%S")
-                dt = dt.replace(tzinfo=pytz.utc)
-        else:
-            dt = datetime.strptime(data_limpa, "%Y-%m-%d")
-            dt = dt.replace(tzinfo=pytz.utc)
+        # Substitui espaços por 'T' para que a string de data sempre siga o padrão ISO limpo
+        data_limpa = string_data.split(".")[0].strip().replace(" ", "T")
+        if data_limpa.endswith("Z"):
+            data_limpa = data_limpa[:-1] + "+00:00"
             
+        if "T" in data_limpa:
+            if "+" in data_limpa or "-" in data_limpa[10:]:
+                dt = datetime.strptime(data_limpa, "%Y-%m-%dT%H:%M:%S%z")
+            else:
+                dt = datetime.strptime(data_limpa, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=pytz.utc)
+        else:
+            dt = datetime.strptime(data_limpa, "%Y-%m-%d").replace(tzinfo=pytz.utc)
+            
+        # Converte para o fuso horário oficial de Brasília
         fuso_brasilia = pytz.timezone("America/Sao_Paulo")
         dt_br = dt.astimezone(fuso_brasilia)
         return dt_br.strftime("%d/%m"), dt_br.strftime("%H:%M")
     except Exception as e:
-        return "A def.", "16h00"
+        print(f"⚠️ Falha ao processar data '{string_data}': {e}")
+        return "A def.", "A def."
 
 def buscar_dados_reais():
     print("🌐 Baixando dados oficiais da FIFA em tempo real...")
-    # CORREÇÃO: "grupos" agora é uma lista direta, evitando que os jogos sumam por erro de rodada
     estrutura_copa = {
         "grupos": [], "r32": [], "r16": [], "r8": [], "r4": [], "third": [], "final": []
     }
@@ -156,7 +161,6 @@ def buscar_dados_reais():
             
             stage_number = match.get("RoundNumber", 1)
             
-            # CORREÇÃO: Filtra estritamente pela existência do grupo na fase inicial
             if stage_number == 1 or grupo_letra:
                 estrutura_copa["grupos"].append(jogo_dict)
             elif stage_number == 2: estrutura_copa["r32"].append(jogo_dict)
@@ -173,7 +177,6 @@ def buscar_dados_reais():
 
 def atualizar_classificacao(estrutura_copa):
     classificacao_limpa = inicializar_classificacao()
-    # CORREÇÃO: Varre de forma robusta e unificada todos os jogos da fase de grupos
     for j in estrutura_copa["grupos"]:
         if j["encerrado"]:
             g1, g2 = int(j["g1"]), int(j["g2"])
@@ -226,7 +229,7 @@ def renderizar_tabela_jogos(lista_jogos):
         </tr>"""
     return html_jogos
 
-def compilar_html(classificacao, estrutura_copa, status_conexao):
+def compiling_html(classificacao, estrutura_copa, status_conexao):
     fuso_br = pytz.timezone("America/Sao_Paulo")
     data_site = datetime.now(fuso_br).strftime('%d/%m/%Y às %H:%M:%S (Brasília)')
     
@@ -243,12 +246,16 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
     <style>
         * {{ box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }}
-        body {{ background-color: #f4f6f9; color: #1e293b; padding-bottom: 140px; }}
+        body {{ background-color: #f4f6f9; color: #1e293b; padding-bottom: 240px; }}
         header {{ background-color: #ffffff; border-bottom: 3px solid #0d9488; padding: 15px 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }}
         .header-top-row {{ display: flex; align-items: center; justify-content: space-between; max-width: 1000px; margin: 0 auto; padding: 0 20px; }}
-        .header-icon {{ font-size: 42px; }}
-        .header-logo {{ max-width: 260px; height: auto; }}
-        .main-title {{ text-align: center; margin-top: 12px; font-size: 24px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; }}
+        .header-flag-side {{ width: 50px; height: 35px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); border-radius: 4px; }}
+        
+        .title-container {{ display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 5px; }}
+        .title-logo {{ max-height: 45px; width: auto; object-fit: contain; }}
+        .main-title {{ font-size: 24px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; text-transform: uppercase; }}
+        
+        .version-badge {{ text-align: center; margin-top: 4px; font-size: 11px; font-weight: bold; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }}
         .container {{ max-width: 1200px; margin: 20px auto; padding: 0 15px; }}
         .tabs-container {{ display: flex; background: #cbd5e1; padding: 4px; border-radius: 8px; margin-bottom: 20px; gap: 4px; overflow-x: auto; }}
         .tab-btn {{ flex: 1; padding: 12px; background: none; border: none; font-size: 13px; font-weight: bold; color: #475569; cursor: pointer; border-radius: 6px; text-align: center; white-space: nowrap; }}
@@ -273,22 +280,34 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
         .date-col {{ font-weight: bold; color: #1e3a8a; }}
         .group-badge {{ background-color: #e2e8f0; color: #334155; font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 11px; }}
         .group-badge.fase {{ background-color: #fee2e2; color: #991b1b; }}
-        .flag {{ display: inline-block; width: 20px; height: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border-radius: 2px; vertical-align: middle; margin: 0 4px; }}
-        .header-flag {{ width: 50px; height: 35px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); border-radius: 4px; }}
+        .flag {{ inline-block; width: 20px; height: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border-radius: 2px; vertical-align: middle; margin: 0 4px; }}
         .brasil-text {{ font-weight: bold; color: #047857; }}
         .placar-wrapper {{ display: flex; justify-content: center; align-items: center; gap: 6px; }}
         .score {{ background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-weight: bold; }}
-        footer {{ position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: #ffffff; padding: 18px 20px; text-align: center; font-size: 13px; font-weight: 500; z-index: 1000; }}
+        
+        /* Estilos do rodapé com caixa de doação */
+        footer {{ position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: #ffffff; padding: 15px 20px; text-align: center; font-size: 13px; font-weight: 500; z-index: 1000; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); }}
+        footer p {{ margin-bottom: 8px; color: #e2e8f0; }}
+        .donate-box {{ background: rgba(255, 255, 255, 0.1); border: 1px dashed rgba(255, 255, 255, 0.3); border-radius: 6px; padding: 8px; display: inline-block; max-width: 400px; font-size: 11px; }}
+        .donate-box strong {{ font-size: 12px; color: #fde047; }}
+        .donate-box code {{ background: #0f172a; padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #38bdf8; font-size: 12px; }}
+        .donate-box img {{ height: 55px; width: auto; margin: 4px 0; border-radius: 4px; background: white; padding: 2px; vertical-align: middle; }}
+        .donate-box span {{ color: #cbd5e1; display: block; margin-top: 2px; }}
     </style>
 </head>
 <body>
     <header>
         <div class="header-top-row">
-            <div class="header-icon">⚽</div>
-            <img src="{logo_src}" alt="RPC Consultoria" class="header-logo">
-            <div><span class="flag fi fi-br header-flag"></span></div>
+            <div style="width: 50px;"></div>
+            
+            <div class="title-container">
+                <img src="{logo_src}" alt="RPC Consultoria" class="title-logo">
+                <h1 class="main-title">Central de Resultados Copa 2026</h1>
+            </div>
+            
+            <div><span class="flag fi fi-br header-flag-side"></span></div>
         </div>
-        <div class="main-title">CENTRAL DE RESULTADOS COPA 2026</div>
+        <div class="version-badge">Versão do Sistema: {VERSION}</div>
     </header>
     
     <div class="container">
@@ -303,7 +322,6 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             <div style="font-weight: bold; color: {cor_status};">{txt_status}</div>
         </div>
 
-        <!-- ABA DE CLASSIFICAÇÃO -->
         <div id="classificacao" class="tab-content active">
             <div class="groups-grid">"""
 
@@ -334,7 +352,6 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             </div>
         </div>
 
-        <!-- ABA DE JOGOS DA FASE DE GRUPOS (UNIFICADA) -->
         <div id="jogos-grupo" class="tab-content">
             <div class="table-wrapper">
                 <table>
@@ -345,7 +362,6 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             </div>
         </div>
 
-        <!-- ABA ELIMINATÓRIAS -->
         <div id="eliminatorias" class="tab-content">
             <div class="subtabs-container">
                 <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos</button>
@@ -367,9 +383,7 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
         </div>
     </div>
 
-    <footer>
-        <div class="footer-content">{COPYRIGHT}</div>
-    </footer>
+    {{html_footer_content}}
 
     <script>
         function switchMainTab(tabId, event) {{
@@ -389,12 +403,24 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
 </body>
 </html>"""
 
+    html_footer_formatted = f"""<footer>
+  <p>© 2026 Copyright Reinaldo Pinheiro Consultoria com Gemini - Versão {VERSION} (Script Automático)</p>
+  <div class="donate-box">
+    <strong>🎁 Ajude a criar novos projetos</strong><br>
+    Chave PIX: <code>{pix_key}</code><br>
+    <img src="{qrcode_filename}" alt="QRCode PIX Donate" title="Escaneie para doar"><br>
+    <span>Aponte a câmera do seu banco para o QRCode</span>
+  </div>
+</footer>"""
+
+    final_html_page = html.replace("{html_footer_content}", html_footer_formatted)
+
     diretorio_atual = os.path.dirname(os.path.abspath(__file__))
     caminho_html = os.path.join(diretorio_atual, "copa26.html")
     caminho_json = os.path.join(diretorio_atual, "placar.json")
 
     with open(caminho_html, "w", encoding="utf-8") as f:
-        f.write(html)
+        f.write(final_html_page)
         
     with open(caminho_json, "w", encoding="utf-8") as f:
         json.dump({
@@ -403,9 +429,9 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             "jogos": estrutura_copa
         }, f, ensure_ascii=False, indent=4)
         
-    print(f"✨ Pronto! Todos os jogos recuperados com sucesso em: {caminho_html}")
+    print(f"✨ Pronto! Página gerada com sucesso com fuso corrigido e sem erros de parsing.")
 
 if __name__ == "__main__":
     estrutura_dados, sucesso = buscar_dados_reais()
     tabela_calculada = atualizar_classificacao(estrutura_dados)
-    compilar_html(tabela_calculada, estrutura_dados, status_conexao=sucesso)
+    compiling_html(tabela_calculada, estrutura_dados, status_conexao=sucesso)
