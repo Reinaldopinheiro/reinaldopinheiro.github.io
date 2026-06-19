@@ -1,6 +1,6 @@
 # ==============================================================================
 # PROGRAMA: Central Real-Time Copa do Mundo 2026 - RPC
-# VERSÃO: v26.3.1 (COMPATIBILIDADE DE NOMES COM O PLACAR.JSON)
+# VERSÃO: v26.3.2 (CORREÇÃO DE RODADAS E EXIBIÇÃO DE JOGOS)
 # DATA: 19/06/2026
 # AUTOR: Reinaldo Pinheiro Consultoria
 # ==============================================================================
@@ -76,8 +76,6 @@ def inicializar_classificacao():
 
 def traduzir_nome(nome_en):
     if not nome_en: return "A definir"
-    
-    # CORREÇÃO: Dicionário mapeado para total compatibilidade com o placar.json
     traducoes = {
         "Brazil": "BRASIL", "Brasil": "BRASIL",
         "Mexico": "México", "South Africa": "África do Sul", 
@@ -121,9 +119,9 @@ def extrair_data_hora(string_data):
 
 def buscar_dados_reais():
     print("🌐 Baixando dados oficiais da FIFA em tempo real...")
+    # CORREÇÃO: "grupos" agora é uma lista direta, evitando que os jogos sumam por erro de rodada
     estrutura_copa = {
-        "grupos": {1: [], 2: [], 3: []},
-        "r32": [], "r16": [], "r8": [], "r4": [], "third": [], "final": []
+        "grupos": [], "r32": [], "r16": [], "r8": [], "r4": [], "third": [], "final": []
     }
     try:
         headers = {'User-Agent': 'Mozilla/5.0'}
@@ -132,7 +130,6 @@ def buscar_dados_reais():
             return (estrutura_copa, False)
             
         dados = response.json()
-        contador_jogos_time = {}
 
         for match in dados:
             id_jogo = match.get("MatchNumber")
@@ -159,18 +156,9 @@ def buscar_dados_reais():
             
             stage_number = match.get("RoundNumber", 1)
             
-            if stage_number == 1 and grupo_letra:
-                c1 = contador_jogos_time.get(t1, 0) + 1
-                c2 = contador_jogos_time.get(t2, 0) + 1
-                contador_jogos_time[t1] = c1
-                contador_jogos_time[t2] = c2
-                
-                rodada_real = max(c1, c2)
-                if rodada_real not in [1, 2, 3]: 
-                    rodada_real = 1
-                
-                estrutura_copa["grupos"][rodada_real].append(jogo_dict)
-                
+            # CORREÇÃO: Filtra estritamente pela existência do grupo na fase inicial
+            if stage_number == 1 or grupo_letra:
+                estrutura_copa["grupos"].append(jogo_dict)
             elif stage_number == 2: estrutura_copa["r32"].append(jogo_dict)
             elif stage_number == 3: estrutura_copa["r16"].append(jogo_dict)
             elif stage_number == 4: estrutura_copa["r8"].append(jogo_dict)
@@ -185,27 +173,27 @@ def buscar_dados_reais():
 
 def atualizar_classificacao(estrutura_copa):
     classificacao_limpa = inicializar_classificacao()
-    for r in [1, 2, 3]:
-        for j in estrutura_copa["grupos"][r]:
-            if j["encerrado"]:
-                g1, g2 = int(j["g1"]), int(j["g2"])
-                t1, t2 = j["t1"], j["t2"]
-                grupo = j["grupo"]
-                
-                if grupo in classificacao_limpa:
-                    if t1 in classificacao_limpa[grupo] and t2 in classificacao_limpa[grupo]:
-                        classificacao_limpa[grupo][t1]["J"] += 1
-                        classificacao_limpa[grupo][t2]["J"] += 1
-                        classificacao_limpa[grupo][t1]["SG"] += (g1 - g2)
-                        classificacao_limpa[grupo][t2]["SG"] += (g2 - g1)
-                        
-                        if g1 > g2: 
-                            classificacao_limpa[grupo][t1]["P"] += 3
-                        elif g2 > g1: 
-                            classificacao_limpa[grupo][t2]["P"] += 3
-                        else:
-                            classificacao_limpa[grupo][t1]["P"] += 1
-                            classificacao_limpa[grupo][t2]["P"] += 1
+    # CORREÇÃO: Varre de forma robusta e unificada todos os jogos da fase de grupos
+    for j in estrutura_copa["grupos"]:
+        if j["encerrado"]:
+            g1, g2 = int(j["g1"]), int(j["g2"])
+            t1, t2 = j["t1"], j["t2"]
+            grupo = j["grupo"]
+            
+            if grupo in classificacao_limpa:
+                if t1 in classificacao_limpa[grupo] and t2 in classificacao_limpa[grupo]:
+                    classificacao_limpa[grupo][t1]["J"] += 1
+                    classificacao_limpa[grupo][t2]["J"] += 1
+                    classificacao_limpa[grupo][t1]["SG"] += (g1 - g2)
+                    classificacao_limpa[grupo][t2]["SG"] += (g2 - g1)
+                    
+                    if g1 > g2: 
+                        classificacao_limpa[grupo][t1]["P"] += 3
+                    elif g2 > g1: 
+                        classificacao_limpa[grupo][t2]["P"] += 3
+                    else:
+                        classificacao_limpa[grupo][t1]["P"] += 1
+                        classificacao_limpa[grupo][t2]["P"] += 1
     return classificacao_limpa
 
 def renderizar_tabela_jogos(lista_jogos):
@@ -306,7 +294,7 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
     <div class="container">
         <div class="tabs-container">
             <button class="tab-btn active" onclick="switchMainTab('classificacao', event)">📊 Classificação dos Grupos</button>
-            <button class="tab-btn" onclick="switchMainTab('jogos-grupo', event)">📅 Fase de Grupos</button>
+            <button class="tab-btn" onclick="switchMainTab('jogos-grupo', event)">📅 Todos os Jogos da Fase de Grupos</button>
             <button class="tab-btn" onclick="switchMainTab('eliminatorias', event)">🏆 Fases Eliminatórias</button>
         </div>
 
@@ -346,16 +334,15 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             </div>
         </div>
 
-        <!-- ABA DE JOGOS POR RODADA -->
+        <!-- ABA DE JOGOS DA FASE DE GRUPOS (UNIFICADA) -->
         <div id="jogos-grupo" class="tab-content">
-            <div class="subtabs-container">
-                <button class="subtab-btn active" onclick="switchSubTab('rodada1', event)">1ª Rodada</button>
-                <button class="subtab-btn" onclick="switchSubTab('rodada2', event)">2ª Rodada</button>
-                <button class="subtab-btn" onclick="switchSubTab('rodada3', event)">3ª Rodada</button>
+            <div class="table-wrapper">
+                <table>
+                    <tbody>
+                        {renderizar_tabela_jogos(estrutura_copa["grupos"])}
+                    </tbody>
+                </table>
             </div>
-            <div id="rodada1" class="subtab-content active"><div class="table-wrapper"><table><tbody>{renderizar_tabela_jogos(estrutura_copa["grupos"][1])}</tbody></table></div></div>
-            <div id="rodada2" class="subtab-content"><div class="table-wrapper"><table><tbody>{renderizar_tabela_jogos(estrutura_copa["grupos"][2])}</tbody></table></div></div>
-            <div id="rodada3" class="subtab-content"><div class="table-wrapper"><table><tbody>{renderizar_tabela_jogos(estrutura_copa["grupos"][3])}</tbody></table></div></div>
         </div>
 
         <!-- ABA ELIMINATÓRIAS -->
@@ -416,7 +403,7 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             "jogos": estrutura_copa
         }, f, ensure_ascii=False, indent=4)
         
-    print(f"✨ Pronto! Página gerada e salva com sucesso em: {caminho_html}")
+    print(f"✨ Pronto! Todos os jogos recuperados com sucesso em: {caminho_html}")
 
 if __name__ == "__main__":
     estrutura_dados, sucesso = buscar_dados_reais()
