@@ -1,8 +1,8 @@
 # ==============================================================================
 # PROGRAMA: Central Real-Time Copa do Mundo 2026 - RPC
-# VERSÃO: v22.1.0 (CONVERSÃO DINÂMICA DE HORÁRIO E SINCRONIZAÇÃO COMPLETA)
-# DATA: 18/06/2026
-# AUTOR/MANTENEDOR: Reinaldo Pinheiro Consultoria
+# VERSÃO: v26.3.0 (CÁLCULO AUTOMÁTICO DE PONTOS E SEPARAÇÃO DE RODADAS)
+# DATA: 19/06/2026
+# AUTOR: Reinaldo Pinheiro Consultoria
 # ==============================================================================
 
 import os
@@ -11,13 +11,15 @@ import base64
 from datetime import datetime
 import requests
 import pytz
-
 import urllib3
+
+# Desativa avisos de SSL para evitar falhas no ambiente do GitHub Actions
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 URL_API_REALTIME = "https://fixturedownload.com/feed/json/fifa-world-cup-2026"
 COPYRIGHT = "Oferecimento: RPC - Reinaldo Pinheiro Consultoria - Ajude a ter novos projetos doando no pix: doe@reinaldopinheiro.com.br"
 
+# Mapeamento oficial dos países para os ícones de bandeiras (flag-icons)
 times_mapeamento = {
     "México": "mx", "África do Sul": "za", "Coreia do Sul": "kr", "Tchéquia": "cz",
     "Canadá": "ca", "Bósnia": "ba", "Catar": "qa", "Suíça": "ch",
@@ -49,10 +51,8 @@ grupos_definidos = {
 }
 
 def obter_logo_base64():
-    # Procura na pasta atual ou na pasta pai em busca do arquivo de logotipo corporativo
     arquivo_logo = "logorpc.png"
     if not os.path.exists(arquivo_logo):
-        # Fallback caso esteja rodando sob caminhos alterados pelo Actions
         diretorio_atual = os.path.dirname(os.path.abspath(__file__))
         arquivo_logo = os.path.join(diretorio_atual, "logorpc.png")
         
@@ -62,7 +62,7 @@ def obter_logo_base64():
                 encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
                 return f"data:image/png;base64,{encoded_string}"
         except Exception as e:
-            print(f"⚠️ Erro ao converter o arquivo local logorpc.png: {e}")
+            print(f"⚠️ Erro ao ler logorpc.png: {e}")
     return "https://via.placeholder.com/280x90?text=RPC+Consultoria"
 
 def inicializar_classificacao():
@@ -81,10 +81,10 @@ def traduzir_nome(nome_en):
         "Czech Republic": "Tchéquia", "Czechia": "Tchéquia", "Canada": "Canadá", "Bosnia and Herzegovina": "Bósnia",
         "Qatar": "Catar", "Switzerland": "Suíça", "Morocco": "Marrocos", "Scotland": "Escócia", 
         "USA": "Estados Unidos", "United States": "Estados Unidos", "Paraguay": "Paraguai", "Australia": "Austrália", 
-        "Turkey": "Turquia", "Germany": "Alemanha", "Côte d'Ivoire": "Costa do Marfim", "Ecuador": "Equador", 
+        "Turkey": "Turquia", "Germany": "Alemanha", "Ivory Coast": "Costa do Marfim", "Ecuador": "Equador", 
         "Netherlands": "Países Baixos", "Japan": "Japão", "Sweden": "Suécia", "Tunisia": "Tunísia", 
-        "Belgium": "Bélgica", "Egypt": "Egito", "IR Iran": "Irã", "Nova Zelândia": "Nova Zelândia", 
-        "Spain": "Espanha", "Cape Verde": "Cabo Verde", "Saudi Arabia": "Arábia Saudita", "Uruguay": "Uruguai", 
+        "Belgium": "Bélgica", "Egypt": "Egito", "Iran": "Irã", "New Zealand": "Nova Zelândia", 
+        "Spain": "Espanha", "Cape Verde": "Cabo Verde", "Saudi Arabia": "Arábia Saudita", "Uruguai": "Uruguai", 
         "France": "França", "Norway": "Noruega", "Senegal": "Senegal", "Iraq": "Iraque",
         "Argentina": "Argentina", "Algeria": "Argélia", "Austria": "Áustria", "Jordan": "Jordânia",
         "Portugal": "Portugal", "DR Congo": "RD Congo", "Congo DR": "RD Congo", "Uzbekistan": "Uzbequistão", "Colombia": "Colômbia",
@@ -96,45 +96,26 @@ def extrair_data_hora(string_data):
     if not string_data:
         return "A def.", "A def."
     try:
-        # Normaliza a string eliminando sufixos Z ou variações comuns
         data_limpa = string_data.split(".")[0].replace("Z", "+00:00")
-        
-        # Faz a leitura tratando fuso da API (UTC padrão)
         if "T" in data_limpa:
             try:
                 dt = datetime.strptime(data_limpa, "%Y-%m-%dT%H:%M:%S%z")
             except ValueError:
-                try:
-                    dt = datetime.strptime(data_limpa, "%Y-%m-%dT%H:%M:%S")
-                    dt = dt.replace(tzinfo=pytz.utc)
-                except ValueError:
-                    # Tenta sem fuso horário
-                    dt = datetime.strptime(data_limpa.split("+")[0], "%Y-%m-%dT%H:%M:%S")
-                    dt = dt.replace(tzinfo=pytz.utc)
+                dt = datetime.strptime(data_limpa, "%Y-%m-%dT%H:%M:%S")
+                dt = dt.replace(tzinfo=pytz.utc)
         else:
-            # Trata formato com espaço (YYYY-MM-DD HH:MM:SS)
-            try:
-                dt = datetime.strptime(data_limpa, "%Y-%m-%d %H:%M:%S%z")
-            except ValueError:
-                try:
-                    dt = datetime.strptime(data_limpa.split("+")[0], "%Y-%m-%d %H:%M:%S")
-                    dt = dt.replace(tzinfo=pytz.utc)
-                except ValueError:
-                    # Fallback para data apenas
-                    dt = datetime.strptime(data_limpa.split(" ")[0], "%Y-%m-%d")
-                    dt = dt.replace(tzinfo=pytz.utc)
+            dt = datetime.strptime(data_limpa, "%Y-%m-%d")
+            dt = dt.replace(tzinfo=pytz.utc)
             
-        # Converte dinamicamente para o fuso horário oficial de Brasília
         fuso_brasilia = pytz.timezone("America/Sao_Paulo")
         dt_br = dt.astimezone(fuso_brasilia)
-        
         return dt_br.strftime("%d/%m"), dt_br.strftime("%H:%M")
     except Exception as e:
-        print(f"⚠️ Falha de parse na data '{string_data}': {e}")
         return "A def.", "16h00"
 
 def buscar_dados_reais():
-    print("🌐 Sincronizando resultados em tempo real com a API da FIFA...")
+    print("🌐 Baixando dados oficiais da FIFA em tempo real...")
+    # Inicializa as listas internas de rodadas da Fase de Grupos de forma explícita
     estrutura_copa = {
         "grupos": {1: [], 2: [], 3: []},
         "r32": [], "r16": [], "r8": [], "r4": [], "third": [], "final": []
@@ -146,6 +127,11 @@ def buscar_dados_reais():
             return (estrutura_copa, False)
             
         dados = response.json()
+        
+        # Dicionário auxiliar para descobrir matematicamente qual é a rodada correta do grupo
+        # para evitar que a API misture jogos da 2ª rodada na aba da 1ª rodada
+        contador_jogos_time = {}
+
         for match in dados:
             id_jogo = match.get("MatchNumber")
             t1 = traduzir_nome(match.get("HomeTeam"))
@@ -169,38 +155,56 @@ def buscar_dados_reais():
                 "encerrado": encerrado
             }
             
-            stage = match.get("RoundNumber", 1)
-            if stage == 1: estrutura_copa["grupos"][1].append(jogo_dict)
-            elif stage == 2: estrutura_copa["grupos"][2].append(jogo_dict)
-            elif stage == 3: estrutura_copa["grupos"][3].append(jogo_dict)
-            elif stage == 4: estrutura_copa["r32"].append(jogo_dict)
-            elif stage == 5: estrutura_copa["r16"].append(jogo_dict)
-            elif stage == 6: estrutura_copa["r8"].append(jogo_dict)
-            elif stage == 7: estrutura_copa["r4"].append(jogo_dict)
-            elif stage == 8: estrutura_copa["third"].append(jogo_dict)
-            elif stage == 9: estrutura_copa["final"].append(jogo_dict)
+            stage_number = match.get("RoundNumber", 1)
+            
+            # Se for Fase de Grupos (RoundNumber = 1 na API, mas subdividido por rodadas internas)
+            if stage_number == 1 and grupo_letra:
+                # Calcula de forma dinâmica a rodada real (1, 2 ou 3) com base no histórico de jogos mapeados
+                c1 = contador_jogos_time.get(t1, 0) + 1
+                c2 = contador_jogos_time.get(t2, 0) + 1
+                contador_jogos_time[t1] = c1
+                contador_jogos_time[t2] = c2
+                
+                rodada_real = max(c1, c2)
+                if rodada_real not in [1, 2, 3]: 
+                    rodada_real = 1
+                
+                estrutura_copa["grupos"][rodada_real].append(jogo_dict)
+                
+            # Fases eliminatórias seguintes
+            elif stage_number == 2: estrutura_copa["r32"].append(jogo_dict)
+            elif stage_number == 3: estrutura_copa["r16"].append(jogo_dict)
+            elif stage_number == 4: estrutura_copa["r8"].append(jogo_dict)
+            elif stage_number == 5: estrutura_copa["r4"].append(jogo_dict)
+            elif stage_number == 6: estrutura_copa["third"].append(jogo_dict)
+            elif stage_number == 7: estrutura_copa["final"].append(jogo_dict)
 
         return (estrutura_copa, True)
     except Exception as e:
-        print(f"❌ Falha ao processar dados da API: {e}")
+        print(f"❌ Erro ao ler a API: {e}")
         return (estrutura_copa, False)
 
 def atualizar_classificacao(estrutura_copa):
     classificacao_limpa = inicializar_classificacao()
+    # Varre as três rodadas calculadas para somar os pontos reais dos grupos
     for r in [1, 2, 3]:
         for j in estrutura_copa["grupos"][r]:
-            if j["encerrado"] and j["g1"] != "" and j["g2"] != "":
+            if j["encerrado"]:
                 g1, g2 = int(j["g1"]), int(j["g2"])
                 t1, t2 = j["t1"], j["t2"]
                 grupo = j["grupo"]
+                
                 if grupo in classificacao_limpa:
                     if t1 in classificacao_limpa[grupo] and t2 in classificacao_limpa[grupo]:
                         classificacao_limpa[grupo][t1]["J"] += 1
                         classificacao_limpa[grupo][t2]["J"] += 1
                         classificacao_limpa[grupo][t1]["SG"] += (g1 - g2)
                         classificacao_limpa[grupo][t2]["SG"] += (g2 - g1)
-                        if g1 > g2: classificacao_limpa[grupo][t1]["P"] += 3
-                        elif g2 > g1: classificacao_limpa[grupo][t2]["P"] += 3
+                        
+                        if g1 > g2: 
+                            classificacao_limpa[grupo][t1]["P"] += 3
+                        elif g2 > g1: 
+                            classificacao_limpa[grupo][t2]["P"] += 3
                         else:
                             classificacao_limpa[grupo][t1]["P"] += 1
                             classificacao_limpa[grupo][t2]["P"] += 1
@@ -208,13 +212,17 @@ def atualizar_classificacao(estrutura_copa):
 
 def renderizar_tabela_jogos(lista_jogos):
     if not lista_jogos:
-        return "<tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando definições da FIFA.</td></tr>"
+        return "<tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando definições oficiais da FIFA.</td></tr>"
     html_jogos = ""
     for j in sorted(lista_jogos, key=lambda x: x['num']):
         is_br = (j["t1"] == "BRASIL" or j["t2"] == "BRASIL")
         row_class = "class='brasil-row'" if is_br else ""
         t1_class = "class='brasil-text'" if j["t1"] == "BRASIL" else ""
         t2_class = "class='brasil-text'" if j["t2"] == "BRASIL" else ""
+        
+        placar_1 = j["g1"] if j["encerrado"] else "-"
+        placar_2 = j["g2"] if j["encerrado"] else "-"
+        
         badge_vis = f"<span class='group-badge'>Grupo {j['grupo']}</span>" if j["grupo"] else f"<span class='group-badge fase'>Jogo {j['num']}</span>"
         
         html_jogos += f"""
@@ -224,7 +232,7 @@ def renderizar_tabela_jogos(lista_jogos):
             <td class="right"><span {t1_class}>{j["t1"]}</span> <span class="flag fi fi-{j['f1']}"></span></td>
             <td class="center">
                 <div class="placar-wrapper">
-                    <div class="score">{j["g1"]}</div><span style="color:#94a3b8;">x</span><div class="score">{j["g2"]}</div>
+                    <div class="score">{placar_1}</div><span style="color:#94a3b8;">x</span><div class="score">{placar_2}</div>
                 </div>
             </td>
             <td><span class="flag fi fi-{j['f2']}"></span> <span {t2_class}>{j["t2"]}</span></td>
@@ -237,7 +245,7 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
     data_site = datetime.now(fuso_br).strftime('%d/%m/%Y às %H:%M:%S (Brasília)')
     
     cor_status = "#0d9488" if status_conexao else "#ef4444"
-    txt_status = "● Servidor Online - Dados Reais FIFA" if status_conexao else "● Erro ao sincronizar placares"
+    txt_status = "● Dados Oficiais FIFA Atualizados" if status_conexao else "● Erro de sincronização"
     logo_src = obter_logo_base64()
 
     html = f"""<!DOCTYPE html>
@@ -245,16 +253,16 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tabela da Copa do Mundo de 2026 - RPC</title>
+    <title>Central de Resultados Copa do Mundo 2026 - RPC</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
     <style>
         * {{ box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }}
         body {{ background-color: #f4f6f9; color: #1e293b; padding-bottom: 140px; }}
         header {{ background-color: #ffffff; border-bottom: 3px solid #0d9488; padding: 15px 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }}
         .header-top-row {{ display: flex; align-items: center; justify-content: space-between; max-width: 1000px; margin: 0 auto; padding: 0 20px; }}
-        .header-icon {{ font-size: 42px; width: 60px; text-align: center; }}
+        .header-icon {{ font-size: 42px; }}
         .header-logo {{ max-width: 260px; height: auto; }}
-        .main-title {{ text-align: center; margin-top: 12px; font-size: 26px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; }}
+        .main-title {{ text-align: center; margin-top: 12px; font-size: 24px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; }}
         .container {{ max-width: 1200px; margin: 20px auto; padding: 0 15px; }}
         .tabs-container {{ display: flex; background: #cbd5e1; padding: 4px; border-radius: 8px; margin-bottom: 20px; gap: 4px; overflow-x: auto; }}
         .tab-btn {{ flex: 1; padding: 12px; background: none; border: none; font-size: 13px; font-weight: bold; color: #475569; cursor: pointer; border-radius: 6px; text-align: center; white-space: nowrap; }}
@@ -268,7 +276,7 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
         .groups-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }}
         .group-card {{ background: white; border-radius: 8px; padding: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border-top: 4px solid #0d9488; }}
         .group-title {{ font-size: 14px; font-weight: bold; color: #1e3a8a; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }}
-        .table-wrapper {{ background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 20px; }}
+        .table-wrapper {{ background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 20px; overflow-x:auto; }}
         table {{ width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }}
         th {{ background-color: #1e3a8a; color: white; font-weight: 700; padding: 10px; text-transform: uppercase; }}
         td {{ padding: 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }}
@@ -280,39 +288,35 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
         .group-badge {{ background-color: #e2e8f0; color: #334155; font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 11px; }}
         .group-badge.fase {{ background-color: #fee2e2; color: #991b1b; }}
         .flag {{ display: inline-block; width: 20px; height: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border-radius: 2px; vertical-align: middle; margin: 0 4px; }}
-        .header-flag {{ width: 55px; height: 38px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); border-radius: 4px; }}
+        .header-flag {{ width: 50px; height: 35px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); border-radius: 4px; }}
         .brasil-text {{ font-weight: bold; color: #047857; }}
         .placar-wrapper {{ display: flex; justify-content: center; align-items: center; gap: 6px; }}
         .score {{ background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-weight: bold; }}
-        footer {{ position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: #ffffff; padding: 18px 20px; text-align: center; font-size: 13px; font-weight: 500; box-shadow: 0 -4px 10px rgba(0,0,0,0.2); z-index: 1000; box-sizing: border-box; }}
-        footer .footer-content {{ max-width: 1200px; margin: 0 auto; line-height: 1.5; letter-spacing: 0.5px; }}
+        footer {{ position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: #ffffff; padding: 18px 20px; text-align: center; font-size: 13px; font-weight: 500; z-index: 1000; }}
     </style>
 </head>
 <body>
     <header>
         <div class="header-top-row">
-            <div class="header-icon">🏆</div>
+            <div class="header-icon">⚽</div>
             <img src="{logo_src}" alt="RPC Consultoria" class="header-logo">
-            <div>
-                <span class="flag fi fi-br header-flag"></span>
-            </div>
+            <div><span class="flag fi fi-br header-flag"></span></div>
         </div>
-        <div class="main-title">TABELA DA COPA 2026</div>
+        <div class="main-title">CENTRAL DE RESULTADOS COPA 2026</div>
     </header>
     
     <div class="container">
         <div class="tabs-container">
-            <button class="tab-btn active" onclick="switchMainTab('classificacao', event)">📊 Todos os Grupos</button>
-            <button class="tab-btn" onclick="switchMainTab('jogos-grupo', event)">⚽ Fase de Grupos</button>
+            <button class="tab-btn active" onclick="switchMainTab('classificacao', event)">📊 Classificação dos Grupos</button>
+            <button class="tab-btn" onclick="switchMainTab('jogos-grupo', event)">📅 Fase de Grupos</button>
             <button class="tab-btn" onclick="switchMainTab('eliminatorias', event)">🏆 Fases Eliminatórias</button>
         </div>
 
         <div class="status-bar">
-            <div><strong>Última Sincronização:</strong> {data_site}</div>
+            <div><strong>Última Atualização:</strong> {data_site}</div>
             <div style="font-weight: bold; color: {cor_status};">{txt_status}</div>
         </div>
 
-        <!-- CLASSIFICAÇÃO -->
         <div id="classificacao" class="tab-content active">
             <div class="groups-grid">"""
 
@@ -343,7 +347,6 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             </div>
         </div>
 
-        <!-- JOGOS -->
         <div id="jogos-grupo" class="tab-content">
             <div class="subtabs-container">
                 <button class="subtab-btn active" onclick="switchSubTab('rodada1', event)">1ª Rodada</button>
@@ -355,7 +358,6 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             <div id="rodada3" class="subtab-content"><div class="table-wrapper"><table><tbody>{renderizar_tabela_jogos(estrutura_copa["grupos"][3])}</tbody></table></div></div>
         </div>
 
-        <!-- ELIMINATÓRIAS -->
         <div id="eliminatorias" class="tab-content">
             <div class="subtabs-container">
                 <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos</button>
@@ -369,9 +371,9 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
             <div id="fase-8" class="subtab-content"><div class="table-wrapper"><table><tbody>{renderizar_tabela_jogos(estrutura_copa["r8"])}</tbody></table></div></div>
             <div id="fase-4" class="subtab-content"><div class="table-wrapper"><table><tbody>{renderizar_tabela_jogos(estrutura_copa["r4"])}</tbody></table></div></div>
             <div id="fase-finais" class="subtab-content">
-                <h3 style="margin:10px 0; color:#1e3a8a;">Terceiro Lugar</h3>
+                <h3 style="margin:10px 0; color:#1e3a8a; font-size:15px;">Disputa do Terceiro Lugar</h3>
                 <div class="table-wrapper"><table><tbody>{renderizar_tabela_jogos(estrutura_copa["third"])}</tbody></table></div>
-                <h3 style="margin:10px 0; color:#1e3a8a;">Grande Final</h3>
+                <h3 style="margin:10px 0; color:#1e3a8a; font-size:15px;">Grande Final</h3>
                 <div class="table-wrapper"><table><tbody>{renderizar_tabela_jogos(estrutura_copa["final"])}</tbody></table></div>
             </div>
         </div>
@@ -399,23 +401,22 @@ def compilar_html(classificacao, estrutura_copa, status_conexao):
 </body>
 </html>"""
 
-    # Descobre o diretório absoluto da pasta copa para forçar o salvamento no local adequado
+    # Garante a escrita física na pasta correta do repositório
     diretorio_atual = os.path.dirname(os.path.abspath(__file__))
     caminho_html = os.path.join(diretorio_atual, "copa26.html")
     caminho_json = os.path.join(diretorio_atual, "placar.json")
 
     with open(caminho_html, "w", encoding="utf-8") as f:
         f.write(html)
-    
-    dados_para_salvar = {
-        "atualizado_em": data_site, 
-        "classificacao": classificacao, 
-        "jogos": estrutura_copa
-    }
-    with open(caminho_json, "w", encoding="utf-8") as f:
-        json.dump(dados_para_salvar, f, ensure_ascii=False, indent=4)
         
-    print(f"✨ Sincronização executada e salva em: {diretorio_atual}")
+    with open(caminho_json, "w", encoding="utf-8") as f:
+        json.dump({
+            "atualizado_em": data_site, 
+            "classificacao": classificacao, 
+            "jogos": estrutura_copa
+        }, f, ensure_ascii=False, indent=4)
+        
+    print(f"✨ Pronto! Página gerada e salva com sucesso em: {caminho_html}")
 
 if __name__ == "__main__":
     estrutura_dados, sucesso = buscar_dados_reais()
