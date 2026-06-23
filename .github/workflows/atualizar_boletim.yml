@@ -1,0 +1,40 @@
+name: Atualizar Boletim Diário
+
+on:
+  schedule:
+    # 11:00 UTC equivale a 08:00 no Horário de Brasília
+    - cron: '0 11 * * *'
+  workflow_dispatch: # Permite rodar manualmente pelo painel do GitHub Actions
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clonar o repositório
+      uses: actions/checkout@v4
+
+    - name: Configurar o Python
+      uses: actions/actions-setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Instalar dependências
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4
+
+    - name: Executar gerador do boletim
+      run: python boletim5.py
+
+    - name: Enviar alterações para o GitHub
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        
+        # Monitora e adiciona o arquivo boletim5.html gerado na raiz do repositório
+        git add boletim5.html
+        
+        # Só realiza o commit se houver alguma alteração de conteúdo (clima, finanças, notícias, etc)
+        git diff-index --quiet HEAD || git commit -m "Automação: Boletim Diário Atualizado na Raiz"
+        git push
