@@ -25,6 +25,8 @@ jobs:
         pip install requests beautifulsoup4
 
     - name: Executar gerador do boletim
+      # O comando 'working-directory' avisa o GitHub para entrar na pasta 'boletim' antes de rodar
+      working-directory: ./boletim
       run: python boletim5.py
 
     - name: Enviar alterações para o GitHub
@@ -32,9 +34,9 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         
-        # Monitora e adiciona o arquivo boletim5.html gerado na raiz do repositório
-        git add boletim5.html
+        # Como o script salva na mesma pasta onde está, o HTML foi gerado dentro de 'boletim/'
+        git add boletim/boletim5.html
         
-        # Só realiza o commit se houver alguma alteração de conteúdo (clima, finanças, notícias, etc)
-        git diff-index --quiet HEAD || git commit -m "Automação: Boletim Diário Atualizado na Raiz"
+        # Só realiza o commit se houver alguma alteração de conteúdo
+        git diff-index --quiet HEAD || git commit -m "Automação: Boletim Diário Atualizado em boletim/"
         git push
