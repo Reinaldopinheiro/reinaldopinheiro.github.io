@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela da Copa do Mundo de 2026 - RPC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #f4f6f9; color: #1e293b; padding-bottom: 140px; }
+        header { background-color: #ffffff; border-bottom: 3px solid #0d9488; padding: 15px 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .header-top-row { display: flex; align-items: center; justify-content: space-between; max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+        .header-icon { font-size: 42px; width: 60px; text-align: center; }
+        .header-logo { max-width: 260px; height: auto; }
+        .main-title { text-align: center; margin-top: 12px; font-size: 26px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .tabs-container { display: flex; background: #cbd5e1; padding: 4px; border-radius: 8px; margin-bottom: 20px; gap: 4px; overflow-x: auto; }
+        .tab-btn { flex: 1; padding: 12px; background: none; border: none; font-size: 13px; font-weight: bold; color: #475569; cursor: pointer; border-radius: 6px; text-align: center; white-space: nowrap; }
+        .tab-btn.active { background: #1e3a8a; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .subtabs-container { display: flex; background: #e2e8f0; padding: 4px; border-radius: 6px; margin-bottom: 15px; gap: 4px; overflow-x: auto; }
+        .subtab-btn { padding: 8px 16px; background: none; border: none; font-size: 12px; font-weight: bold; color: #475569; cursor: pointer; border-radius: 4px; white-space: nowrap; }
+        .subtab-btn.active { background: #0d9488; color: white; }
+        .tab-content, .subtab-content { display: none; }
+        .tab-content.active, .subtab-content.active { display: block; }
+        .status-bar { background-color: #ffffff; border-left: 4px solid #0d9488; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #475569; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .groups-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+        .group-card { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border-top: 4px solid #0d9488; }
+        .group-title { font-size: 14px; font-weight: bold; color: #1e3a8a; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        .table-wrapper { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th { background-color: #1e3a8a; color: white; font-weight: 700; padding: 10px; text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        tr:nth-child(even) td { background-color: #f8fafc; }
+        .center { text-align: center; } .right { text-align: right; }
+        .c-p { font-weight: bold; color: #1e3a8a; }
+        tr.brasil-row td { background-color: #f0fdf4 !important; }
+        .date-col { font-weight: bold; color: #1e3a8a; }
+        .group-badge { background-color: #e2e8f0; color: #334155; font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+        .group-badge.fase { background-color: #fee2e2; color: #991b1b; }
+        .flag { display: inline-block; width: 20px; height: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border-radius: 2px; vertical-align: middle; margin: 0 4px; }
+        .header-flag { width: 55px; height: 38px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); border-radius: 4px; }
+        .brasil-text { font-weight: bold; color: #047857; }
+        .placar-wrapper { display: flex; justify-content: center; align-items: center; gap: 6px; }
+        .score { background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+        footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: #ffffff; padding: 18px 20px; text-align: center; font-size: 13px; font-weight: 500; box-shadow: 0 -4px 10px rgba(0,0,0,0.2); z-index: 1000; box-sizing: border-box; }
+        footer .footer-content { max-width: 1200px; margin: 0 auto; line-height: 1.5; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-top-row">
+            <div class="header-icon">🏆</div>
+            <img src="https://via.placeholder.com/280x90?text=RPC+Consultoria" alt="RPC Consultoria" class="header-logo">
+            <div>
+                <span class="flag fi fi-br header-flag"></span>
+            </div>
+        </div>
+        <div class="main-title">TABELA DA COPA 2026</div>
+    </header>
+    
+    <div class="container">
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchMainTab('classificacao', event)">📊 Todos os Grupos</button>
+            <button class="tab-btn" onclick="switchMainTab('jogos-grupo', event)">⚽ Fase de Grupos</button>
+            <button class="tab-btn" onclick="switchMainTab('eliminatorias', event)">🏆 Fases Eliminatórias</button>
+        </div>
+
+        <div class="status-bar">
+            <div><strong>Última Sincronização:</strong> 17/06/2026 às 18:54:07 (Brasília)</div>
+            <div style="font-weight: bold; color: #0d9488;">● Servidor Online - Dados Reais FIFA</div>
+        </div>
+
+        <div id="classificacao" class="tab-content active">
+            <div class="groups-grid">
+                <div class="group-card">
+                    <div class="group-title">Grupo A</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-mx"></span> <span >México</span></td>
+                                <td class="center c-p">3</td>
+                                <td class="center">1</td>
+                                <td class="center">2</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-kr"></span> <span >Coreia do Sul</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-cz"></span> <span >Tchéquia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-za"></span> <span >África do Sul</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">1</td>
+                                <td class="center">-2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo B</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-ca"></span> <span >Canadá</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ba"></span> <span >Bósnia</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-qa"></span> <span >Catar</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ch"></span> <span >Suíça</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo C</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-gb-sct"></span> <span >Escócia</span></td>
+                                <td class="center c-p">3</td>
+                                <td class="center">1</td>
+                                <td class="center">1</td>
+                            </tr>
+                            <tr class='brasil-row'>
+                                <td><span class="flag fi fi-br"></span> <span class='brasil-text'>BRASIL</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ma"></span> <span >Marrocos</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ht"></span> <span >Haiti</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">1</td>
+                                <td class="center">-1</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo D</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-us"></span> <span >Estados Unidos</span></td>
+                                <td class="center c-p">3</td>
+                                <td class="center">1</td>
+                                <td class="center">3</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-au"></span> <span >Austrália</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-tr"></span> <span >Turquia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-py"></span> <span >Paraguai</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">1</td>
+                                <td class="center">-3</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo E</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-de"></span> <span >Alemanha</span></td>
+                                <td class="center c-p">3</td>
+                                <td class="center">1</td>
+                                <td class="center">6</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ci"></span> <span >Costa do Marfim</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ec"></span> <span >Equador</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-cw"></span> <span >Curaçao</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">1</td>
+                                <td class="center">-6</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo F</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-se"></span> <span >Suécia</span></td>
+                                <td class="center c-p">3</td>
+                                <td class="center">1</td>
+                                <td class="center">4</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-nl"></span> <span >Países Baixos</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-jp"></span> <span >Japão</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-tn"></span> <span >Tunísia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">1</td>
+                                <td class="center">-4</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo G</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-be"></span> <span >Bélgica</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-eg"></span> <span >Egito</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-ir"></span> <span >Irã</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-nz"></span> <span >Nova Zelândia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo H</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-es"></span> <span >Espanha</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-cv"></span> <span >Cabo Verde</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-sa"></span> <span >Arábia Saudita</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-uy"></span> <span >Uruguai</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo I</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-no"></span> <span >Noruega</span></td>
+                                <td class="center c-p">3</td>
+                                <td class="center">1</td>
+                                <td class="center">3</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-fr"></span> <span >França</span></td>
+                                <td class="center c-p">3</td>
+                                <td class="center">1</td>
+                                <td class="center">2</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-sn"></span> <span >Senegal</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">1</td>
+                                <td class="center">-2</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-iq"></span> <span >Iraque</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">1</td>
+                                <td class="center">-3</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo J</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-ar"></span> <span >Argentina</span></td>
+                                <td class="center c-p">3</td>
+                                <td class="center">1</td>
+                                <td class="center">3</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-at"></span> <span >Áustria</span></td>
+                                <td class="center c-p">3</td>
+                                <td class="center">1</td>
+                                <td class="center">2</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-jo"></span> <span >Jordânia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">1</td>
+                                <td class="center">-2</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-dz"></span> <span >Argélia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">1</td>
+                                <td class="center">-3</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo K</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-pt"></span> <span >Portugal</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-cd"></span> <span >RD Congo</span></td>
+                                <td class="center c-p">1</td>
+                                <td class="center">1</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-uz"></span> <span >Uzbequistão</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-co"></span> <span >Colômbia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="group-card">
+                    <div class="group-title">Grupo L</div>
+                    <table>
+                        <thead><tr><th>Seleção</th><th class="center">P</th><th class="center">J</th><th class="center">SG</th></tr></thead>
+                        <tbody>
+                            <tr >
+                                <td><span class="flag fi fi-gb-eng"></span> <span >Inglaterra</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-hr"></span> <span >Croácia</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-gh"></span> <span >Gana</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                            <tr >
+                                <td><span class="flag fi fi-pa"></span> <span >Panamá</span></td>
+                                <td class="center c-p">0</td>
+                                <td class="center">0</td>
+                                <td class="center">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="jogos-grupo" class="tab-content">
+            <div class="subtabs-container">
+                <button class="subtab-btn active" onclick="switchSubTab('rodada1', event)">1ª Rodada</button>
+                <button class="subtab-btn" onclick="switchSubTab('rodada2', event)">2ª Rodada</button>
+                <button class="subtab-btn" onclick="switchSubTab('rodada3', event)">3ª Rodada</button>
+            </div>
+            <div id="rodada1" class="subtab-content active"><div class="table-wrapper"><table><tbody>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo A</span></td>
+            <td class="right"><span >México</span> <span class="flag fi fi-mx"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">2</div><span style="color:#94a3b8;">x</span><div class="score">0</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-za"></span> <span >África do Sul</span></td>
+            <td style="color:#64748b; font-size:12px;">Mexico City Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo A</span></td>
+            <td class="right"><span >Korea Republic</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">2</div><span style="color:#94a3b8;">x</span><div class="score">1</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-cz"></span> <span >Tchéquia</span></td>
+            <td style="color:#64748b; font-size:12px;">Guadalajara Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo B</span></td>
+            <td class="right"><span >Canadá</span> <span class="flag fi fi-ca"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">1</div><span style="color:#94a3b8;">x</span><div class="score">1</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-ba"></span> <span >Bósnia</span></td>
+            <td style="color:#64748b; font-size:12px;">Toronto Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo D</span></td>
+            <td class="right"><span >Estados Unidos</span> <span class="flag fi fi-us"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">4</div><span style="color:#94a3b8;">x</span><div class="score">1</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-py"></span> <span >Paraguai</span></td>
+            <td style="color:#64748b; font-size:12px;">Los Angeles Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo C</span></td>
+            <td class="right"><span >Haiti</span> <span class="flag fi fi-ht"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">0</div><span style="color:#94a3b8;">x</span><div class="score">1</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-gb-sct"></span> <span >Escócia</span></td>
+            <td style="color:#64748b; font-size:12px;">Boston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo D</span></td>
+            <td class="right"><span >Austrália</span> <span class="flag fi fi-au"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">2</div><span style="color:#94a3b8;">x</span><div class="score">0</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >Türkiye</span></td>
+            <td style="color:#64748b; font-size:12px;">BC Place Vancouver</td>
+        </tr>
+        <tr class='brasil-row'>
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo C</span></td>
+            <td class="right"><span class='brasil-text'>BRASIL</span> <span class="flag fi fi-br"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">1</div><span style="color:#94a3b8;">x</span><div class="score">1</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-ma"></span> <span >Marrocos</span></td>
+            <td style="color:#64748b; font-size:12px;">New York/New Jersey Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo B</span></td>
+            <td class="right"><span >Catar</span> <span class="flag fi fi-qa"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">1</div><span style="color:#94a3b8;">x</span><div class="score">1</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-ch"></span> <span >Suíça</span></td>
+            <td style="color:#64748b; font-size:12px;">San Francisco Bay Area Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo E</span></td>
+            <td class="right"><span >Côte d'Ivoire</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">1</div><span style="color:#94a3b8;">x</span><div class="score">0</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-ec"></span> <span >Equador</span></td>
+            <td style="color:#64748b; font-size:12px;">Philadelphia Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo E</span></td>
+            <td class="right"><span >Alemanha</span> <span class="flag fi fi-de"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">7</div><span style="color:#94a3b8;">x</span><div class="score">1</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-cw"></span> <span >Curaçao</span></td>
+            <td style="color:#64748b; font-size:12px;">Houston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo F</span></td>
+            <td class="right"><span >Países Baixos</span> <span class="flag fi fi-nl"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">2</div><span style="color:#94a3b8;">x</span><div class="score">2</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-jp"></span> <span >Japão</span></td>
+            <td style="color:#64748b; font-size:12px;">Dallas Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo F</span></td>
+            <td class="right"><span >Suécia</span> <span class="flag fi fi-se"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">5</div><span style="color:#94a3b8;">x</span><div class="score">1</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-tn"></span> <span >Tunísia</span></td>
+            <td style="color:#64748b; font-size:12px;">Monterrey Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo H</span></td>
+            <td class="right"><span >Arábia Saudita</span> <span class="flag fi fi-sa"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">1</div><span style="color:#94a3b8;">x</span><div class="score">1</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-uy"></span> <span >Uruguai</span></td>
+            <td style="color:#64748b; font-size:12px;">Miami Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo H</span></td>
+            <td class="right"><span >Espanha</span> <span class="flag fi fi-es"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">0</div><span style="color:#94a3b8;">x</span><div class="score">0</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-cv"></span> <span >Cabo Verde</span></td>
+            <td style="color:#64748b; font-size:12px;">Atlanta Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo G</span></td>
+            <td class="right"><span >IR Iran</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">2</div><span style="color:#94a3b8;">x</span><div class="score">2</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-nz"></span> <span >Nova Zelândia</span></td>
+            <td style="color:#64748b; font-size:12px;">Los Angeles Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo G</span></td>
+            <td class="right"><span >Bélgica</span> <span class="flag fi fi-be"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">1</div><span style="color:#94a3b8;">x</span><div class="score">1</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-eg"></span> <span >Egito</span></td>
+            <td style="color:#64748b; font-size:12px;">Seattle Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo I</span></td>
+            <td class="right"><span >França</span> <span class="flag fi fi-fr"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">3</div><span style="color:#94a3b8;">x</span><div class="score">1</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-sn"></span> <span >Senegal</span></td>
+            <td style="color:#64748b; font-size:12px;">New York/New Jersey Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo I</span></td>
+            <td class="right"><span >Iraque</span> <span class="flag fi fi-iq"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">1</div><span style="color:#94a3b8;">x</span><div class="score">4</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-no"></span> <span >Noruega</span></td>
+            <td style="color:#64748b; font-size:12px;">Boston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo J</span></td>
+            <td class="right"><span >Argentina</span> <span class="flag fi fi-ar"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">3</div><span style="color:#94a3b8;">x</span><div class="score">0</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-dz"></span> <span >Argélia</span></td>
+            <td style="color:#64748b; font-size:12px;">Kansas City Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo J</span></td>
+            <td class="right"><span >Áustria</span> <span class="flag fi fi-at"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">3</div><span style="color:#94a3b8;">x</span><div class="score">1</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-jo"></span> <span >Jordânia</span></td>
+            <td style="color:#64748b; font-size:12px;">San Francisco Bay Area Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo L</span></td>
+            <td class="right"><span >Gana</span> <span class="flag fi fi-gh"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-pa"></span> <span >Panamá</span></td>
+            <td style="color:#64748b; font-size:12px;">Toronto Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo L</span></td>
+            <td class="right"><span >Inglaterra</span> <span class="flag fi fi-gb-eng"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-hr"></span> <span >Croácia</span></td>
+            <td style="color:#64748b; font-size:12px;">Dallas Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo K</span></td>
+            <td class="right"><span >Portugal</span> <span class="flag fi fi-pt"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">1</div><span style="color:#94a3b8;">x</span><div class="score">1</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-cd"></span> <span >RD Congo</span></td>
+            <td style="color:#64748b; font-size:12px;">Houston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo K</span></td>
+            <td class="right"><span >Uzbequistão</span> <span class="flag fi fi-uz"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-co"></span> <span >Colômbia</span></td>
+            <td style="color:#64748b; font-size:12px;">Mexico City Stadium</td>
+        </tr></tbody></table></div></div>
+            <div id="rodada2" class="subtab-content"><div class="table-wrapper"><table><tbody>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo A</span></td>
+            <td class="right"><span >Tchéquia</span> <span class="flag fi fi-cz"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-za"></span> <span >África do Sul</span></td>
+            <td style="color:#64748b; font-size:12px;">Atlanta Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo B</span></td>
+            <td class="right"><span >Suíça</span> <span class="flag fi fi-ch"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-ba"></span> <span >Bósnia</span></td>
+            <td style="color:#64748b; font-size:12px;">Los Angeles Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo B</span></td>
+            <td class="right"><span >Canadá</span> <span class="flag fi fi-ca"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-qa"></span> <span >Catar</span></td>
+            <td style="color:#64748b; font-size:12px;">BC Place Vancouver</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo A</span></td>
+            <td class="right"><span >México</span> <span class="flag fi fi-mx"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >Korea Republic</span></td>
+            <td style="color:#64748b; font-size:12px;">Guadalajara Stadium</td>
+        </tr>
+        <tr class='brasil-row'>
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo C</span></td>
+            <td class="right"><span class='brasil-text'>BRASIL</span> <span class="flag fi fi-br"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-ht"></span> <span >Haiti</span></td>
+            <td style="color:#64748b; font-size:12px;">Philadelphia Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo C</span></td>
+            <td class="right"><span >Escócia</span> <span class="flag fi fi-gb-sct"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-ma"></span> <span >Marrocos</span></td>
+            <td style="color:#64748b; font-size:12px;">Boston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo D</span></td>
+            <td class="right"><span >Türkiye</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-py"></span> <span >Paraguai</span></td>
+            <td style="color:#64748b; font-size:12px;">San Francisco Bay Area Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo D</span></td>
+            <td class="right"><span >Estados Unidos</span> <span class="flag fi fi-us"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-au"></span> <span >Austrália</span></td>
+            <td style="color:#64748b; font-size:12px;">Seattle Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo E</span></td>
+            <td class="right"><span >Alemanha</span> <span class="flag fi fi-de"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >Côte d'Ivoire</span></td>
+            <td style="color:#64748b; font-size:12px;">Toronto Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo E</span></td>
+            <td class="right"><span >Equador</span> <span class="flag fi fi-ec"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-cw"></span> <span >Curaçao</span></td>
+            <td style="color:#64748b; font-size:12px;">Kansas City Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo F</span></td>
+            <td class="right"><span >Países Baixos</span> <span class="flag fi fi-nl"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-se"></span> <span >Suécia</span></td>
+            <td style="color:#64748b; font-size:12px;">Houston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo F</span></td>
+            <td class="right"><span >Tunísia</span> <span class="flag fi fi-tn"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-jp"></span> <span >Japão</span></td>
+            <td style="color:#64748b; font-size:12px;">Monterrey Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo H</span></td>
+            <td class="right"><span >Uruguai</span> <span class="flag fi fi-uy"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-cv"></span> <span >Cabo Verde</span></td>
+            <td style="color:#64748b; font-size:12px;">Miami Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo H</span></td>
+            <td class="right"><span >Espanha</span> <span class="flag fi fi-es"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-sa"></span> <span >Arábia Saudita</span></td>
+            <td style="color:#64748b; font-size:12px;">Atlanta Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo G</span></td>
+            <td class="right"><span >Bélgica</span> <span class="flag fi fi-be"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >IR Iran</span></td>
+            <td style="color:#64748b; font-size:12px;">Los Angeles Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo G</span></td>
+            <td class="right"><span >Nova Zelândia</span> <span class="flag fi fi-nz"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-eg"></span> <span >Egito</span></td>
+            <td style="color:#64748b; font-size:12px;">BC Place Vancouver</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo I</span></td>
+            <td class="right"><span >Noruega</span> <span class="flag fi fi-no"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-sn"></span> <span >Senegal</span></td>
+            <td style="color:#64748b; font-size:12px;">New York/New Jersey Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo I</span></td>
+            <td class="right"><span >França</span> <span class="flag fi fi-fr"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-iq"></span> <span >Iraque</span></td>
+            <td style="color:#64748b; font-size:12px;">Philadelphia Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo J</span></td>
+            <td class="right"><span >Argentina</span> <span class="flag fi fi-ar"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-at"></span> <span >Áustria</span></td>
+            <td style="color:#64748b; font-size:12px;">Dallas Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo J</span></td>
+            <td class="right"><span >Jordânia</span> <span class="flag fi fi-jo"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-dz"></span> <span >Argélia</span></td>
+            <td style="color:#64748b; font-size:12px;">San Francisco Bay Area Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo L</span></td>
+            <td class="right"><span >Inglaterra</span> <span class="flag fi fi-gb-eng"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-gh"></span> <span >Gana</span></td>
+            <td style="color:#64748b; font-size:12px;">Boston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo L</span></td>
+            <td class="right"><span >Panamá</span> <span class="flag fi fi-pa"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-hr"></span> <span >Croácia</span></td>
+            <td style="color:#64748b; font-size:12px;">Toronto Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo K</span></td>
+            <td class="right"><span >Portugal</span> <span class="flag fi fi-pt"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-uz"></span> <span >Uzbequistão</span></td>
+            <td style="color:#64748b; font-size:12px;">Houston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo K</span></td>
+            <td class="right"><span >Colômbia</span> <span class="flag fi fi-co"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-cd"></span> <span >RD Congo</span></td>
+            <td style="color:#64748b; font-size:12px;">Guadalajara Stadium</td>
+        </tr></tbody></table></div></div>
+            <div id="rodada3" class="subtab-content"><div class="table-wrapper"><table><tbody>
+        <tr class='brasil-row'>
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo C</span></td>
+            <td class="right"><span >Escócia</span> <span class="flag fi fi-gb-sct"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-br"></span> <span class='brasil-text'>BRASIL</span></td>
+            <td style="color:#64748b; font-size:12px;">Miami Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo C</span></td>
+            <td class="right"><span >Marrocos</span> <span class="flag fi fi-ma"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-ht"></span> <span >Haiti</span></td>
+            <td style="color:#64748b; font-size:12px;">Atlanta Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo B</span></td>
+            <td class="right"><span >Suíça</span> <span class="flag fi fi-ch"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-ca"></span> <span >Canadá</span></td>
+            <td style="color:#64748b; font-size:12px;">BC Place Vancouver</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo B</span></td>
+            <td class="right"><span >Bósnia</span> <span class="flag fi fi-ba"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-qa"></span> <span >Catar</span></td>
+            <td style="color:#64748b; font-size:12px;">Seattle Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo A</span></td>
+            <td class="right"><span >Tchéquia</span> <span class="flag fi fi-cz"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-mx"></span> <span >México</span></td>
+            <td style="color:#64748b; font-size:12px;">Mexico City Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo A</span></td>
+            <td class="right"><span >África do Sul</span> <span class="flag fi fi-za"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >Korea Republic</span></td>
+            <td style="color:#64748b; font-size:12px;">Monterrey Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo E</span></td>
+            <td class="right"><span >Curaçao</span> <span class="flag fi fi-cw"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >Côte d'Ivoire</span></td>
+            <td style="color:#64748b; font-size:12px;">Philadelphia Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo E</span></td>
+            <td class="right"><span >Equador</span> <span class="flag fi fi-ec"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-de"></span> <span >Alemanha</span></td>
+            <td style="color:#64748b; font-size:12px;">New York/New Jersey Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo F</span></td>
+            <td class="right"><span >Japão</span> <span class="flag fi fi-jp"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-se"></span> <span >Suécia</span></td>
+            <td style="color:#64748b; font-size:12px;">Dallas Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo F</span></td>
+            <td class="right"><span >Tunísia</span> <span class="flag fi fi-tn"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-nl"></span> <span >Países Baixos</span></td>
+            <td style="color:#64748b; font-size:12px;">Kansas City Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo D</span></td>
+            <td class="right"><span >Türkiye</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-us"></span> <span >Estados Unidos</span></td>
+            <td style="color:#64748b; font-size:12px;">Los Angeles Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo D</span></td>
+            <td class="right"><span >Paraguai</span> <span class="flag fi fi-py"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-au"></span> <span >Austrália</span></td>
+            <td style="color:#64748b; font-size:12px;">San Francisco Bay Area Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo I</span></td>
+            <td class="right"><span >Noruega</span> <span class="flag fi fi-no"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-fr"></span> <span >França</span></td>
+            <td style="color:#64748b; font-size:12px;">Boston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo I</span></td>
+            <td class="right"><span >Senegal</span> <span class="flag fi fi-sn"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-iq"></span> <span >Iraque</span></td>
+            <td style="color:#64748b; font-size:12px;">Toronto Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo G</span></td>
+            <td class="right"><span >Egito</span> <span class="flag fi fi-eg"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >IR Iran</span></td>
+            <td style="color:#64748b; font-size:12px;">Seattle Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo G</span></td>
+            <td class="right"><span >Nova Zelândia</span> <span class="flag fi fi-nz"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-be"></span> <span >Bélgica</span></td>
+            <td style="color:#64748b; font-size:12px;">BC Place Vancouver</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo H</span></td>
+            <td class="right"><span >Cabo Verde</span> <span class="flag fi fi-cv"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-sa"></span> <span >Arábia Saudita</span></td>
+            <td style="color:#64748b; font-size:12px;">Houston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo H</span></td>
+            <td class="right"><span >Uruguai</span> <span class="flag fi fi-uy"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-es"></span> <span >Espanha</span></td>
+            <td style="color:#64748b; font-size:12px;">Guadalajara Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo L</span></td>
+            <td class="right"><span >Panamá</span> <span class="flag fi fi-pa"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-gb-eng"></span> <span >Inglaterra</span></td>
+            <td style="color:#64748b; font-size:12px;">New York/New Jersey Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo L</span></td>
+            <td class="right"><span >Croácia</span> <span class="flag fi fi-hr"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-gh"></span> <span >Gana</span></td>
+            <td style="color:#64748b; font-size:12px;">Philadelphia Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo J</span></td>
+            <td class="right"><span >Argélia</span> <span class="flag fi fi-dz"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-at"></span> <span >Áustria</span></td>
+            <td style="color:#64748b; font-size:12px;">Kansas City Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo J</span></td>
+            <td class="right"><span >Jordânia</span> <span class="flag fi fi-jo"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-ar"></span> <span >Argentina</span></td>
+            <td style="color:#64748b; font-size:12px;">Dallas Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo K</span></td>
+            <td class="right"><span >Colômbia</span> <span class="flag fi fi-co"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-pt"></span> <span >Portugal</span></td>
+            <td style="color:#64748b; font-size:12px;">Miami Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge'>Grupo K</span></td>
+            <td class="right"><span >RD Congo</span> <span class="flag fi fi-cd"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-uz"></span> <span >Uzbequistão</span></td>
+            <td style="color:#64748b; font-size:12px;">Atlanta Stadium</td>
+        </tr></tbody></table></div></div>
+        </div>
+
+        <div id="eliminatorias" class="tab-content">
+            <div class="subtabs-container">
+                <button class="subtab-btn active" onclick="switchSubTab('fase-32', event)">Dezesseis-avos</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-16', event)">Oitavas</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-8', event)">Quartas</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-4', event)">Semifinais</button>
+                <button class="subtab-btn" onclick="switchSubTab('fase-finais', event)">Finais 🏆</button>
+            </div>
+            <div id="fase-32" class="subtab-content active"><div class="table-wrapper"><table><tbody>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 73</span></td>
+            <td class="right"><span >2A</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >2B</span></td>
+            <td style="color:#64748b; font-size:12px;">Los Angeles Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 74</span></td>
+            <td class="right"><span >1E</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >3ABCDF</span></td>
+            <td style="color:#64748b; font-size:12px;">Boston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 75</span></td>
+            <td class="right"><span >1F</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >2C</span></td>
+            <td style="color:#64748b; font-size:12px;">Monterrey Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 76</span></td>
+            <td class="right"><span >1C</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >2F</span></td>
+            <td style="color:#64748b; font-size:12px;">Houston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 77</span></td>
+            <td class="right"><span >1I</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >3CDFGH</span></td>
+            <td style="color:#64748b; font-size:12px;">New York/New Jersey Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 78</span></td>
+            <td class="right"><span >2E</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >2I</span></td>
+            <td style="color:#64748b; font-size:12px;">Dallas Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 79</span></td>
+            <td class="right"><span >1A</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >3CEFHI</span></td>
+            <td style="color:#64748b; font-size:12px;">Mexico City Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 80</span></td>
+            <td class="right"><span >1L</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >3EHIJK</span></td>
+            <td style="color:#64748b; font-size:12px;">Atlanta Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 81</span></td>
+            <td class="right"><span >1D</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >3BEFIJ</span></td>
+            <td style="color:#64748b; font-size:12px;">San Francisco Bay Area Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 82</span></td>
+            <td class="right"><span >1G</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >3AEHIJ</span></td>
+            <td style="color:#64748b; font-size:12px;">Seattle Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 83</span></td>
+            <td class="right"><span >2K</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >2L</span></td>
+            <td style="color:#64748b; font-size:12px;">Toronto Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 84</span></td>
+            <td class="right"><span >1H</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >2J</span></td>
+            <td style="color:#64748b; font-size:12px;">Los Angeles Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 85</span></td>
+            <td class="right"><span >1B</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >3EFGIJ</span></td>
+            <td style="color:#64748b; font-size:12px;">BC Place Vancouver</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 86</span></td>
+            <td class="right"><span >1J</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >2H</span></td>
+            <td style="color:#64748b; font-size:12px;">Miami Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 87</span></td>
+            <td class="right"><span >1K</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >3DEIJL</span></td>
+            <td style="color:#64748b; font-size:12px;">Kansas City Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 88</span></td>
+            <td class="right"><span >2D</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >2G</span></td>
+            <td style="color:#64748b; font-size:12px;">Dallas Stadium</td>
+        </tr></tbody></table></div></div>
+            <div id="fase-16" class="subtab-content"><div class="table-wrapper"><table><tbody>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 89</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Philadelphia Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 90</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Houston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 91</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">New York/New Jersey Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 92</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Mexico City Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 93</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Dallas Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 94</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Seattle Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 95</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Atlanta Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 96</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">BC Place Vancouver</td>
+        </tr></tbody></table></div></div>
+            <div id="fase-8" class="subtab-content"><div class="table-wrapper"><table><tbody>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 97</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Boston Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 98</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Los Angeles Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 99</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Miami Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 100</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Kansas City Stadium</td>
+        </tr></tbody></table></div></div>
+            <div id="fase-4" class="subtab-content"><div class="table-wrapper"><table><tbody>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 101</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Dallas Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 102</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Atlanta Stadium</td>
+        </tr></tbody></table></div></div>
+            <div id="fase-finais" class="subtab-content">
+                <h3 style="margin:10px 0; color:#1e3a8a;">Terceiro Lugar</h3>
+                <div class="table-wrapper"><table><tbody>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 103</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Miami Stadium</td>
+        </tr>
+        <tr >
+            <td class="center date-col">A def.<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16h00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 104</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score"></div><span style="color:#94a3b8;">x</span><div class="score"></div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">New York/New Jersey Stadium</td>
+        </tr></tbody></table></div>
+                <h3 style="margin:10px 0; color:#1e3a8a;">Grande Final</h3>
+                <div class="table-wrapper"><table><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando definições da FIFA.</td></tr></tbody></table></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">Oferecimento: RPC - Reinaldo Pinheiro Consultoria - Ajude a ter novos projetos doando no pix: doe@reinaldopinheiro.com.br</div>
+    </footer>
+
+    <script>
+        function switchMainTab(tabId, event) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+        function switchSubTab(subTabId, event) {
+            const pai = document.getElementById(subTabId).parentElement;
+            pai.querySelectorAll('.subtab-content').forEach(el => el.classList.remove('active'));
+            pai.querySelectorAll('.subtab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(subTabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>
