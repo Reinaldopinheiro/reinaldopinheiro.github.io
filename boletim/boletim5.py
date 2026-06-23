@@ -1,6 +1,6 @@
 # =================================================================
 # NOME: Gerador de Boletim Diário (Sem Envio/Interface)
-# VERSÃO: 5.3
+# VERSÃO: 5.4
 # AUTOR: Reinaldo Pinheiro & IA Gemini
 # DESCRIÇÃO: Gera o arquivo boletim5.html variando o signo do dia.
 # =================================================================
@@ -18,7 +18,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # --- CONFIGURAÇÃO DE PASTA ---
 ARQUIVO_NOME = "boletim5.html"
 
-def escribir_log(mensagem):
+# CORRIGIDO: Nome da função ajustado de 'escribir_log' para 'escrever_log'
+def escrever_log(mensagem):
     agora = datetime.now().strftime("%H:%M:%S")
     print(f"[{agora}] {mensagem}")
 
@@ -117,7 +118,7 @@ def gerar_boletim_html():
     noticias_br = processar_noticias("https://news.google.com/rss?hl=pt-BR&gl=BR&ceid=BR:pt-419", 7)
     noticias_esporte = processar_noticias("https://news.google.com/rss/search?q=futebol+brasileirao&hl=pt-BR&gl=BR&ceid=BR:pt-419", 6, "⚽")
     
-    # Chama a nova função rotativa
+    # Chama a função rotativa
     nome_signo, texto_signo = get_horoscopo_rotativo()
 
     html_content = f"""
