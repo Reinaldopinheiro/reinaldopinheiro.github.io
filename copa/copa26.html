@@ -46,7 +46,6 @@
         .placar-wrapper { display: flex; justify-content: center; align-items: center; gap: 6px; }
         .score { background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-weight: bold; }
         
-        /* Estilos do rodapé com caixa de doação */
         footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: #ffffff; padding: 15px 20px; text-align: center; font-size: 13px; font-weight: 500; z-index: 1000; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); }
         footer p { margin-bottom: 8px; color: #e2e8f0; }
         .donate-box { background: rgba(255, 255, 255, 0.1); border: 1px dashed rgba(255, 255, 255, 0.3); border-radius: 6px; padding: 8px; display: inline-block; max-width: 400px; font-size: 11px; }
@@ -68,7 +67,7 @@
             
             <div><span class="flag fi fi-br header-flag-side"></span></div>
         </div>
-        <div class="version-badge">Versão do Sistema: 26.4.0</div>
+        <div class="version-badge">Versão do Sistema: 26.4.1</div>
     </header>
     
     <div class="container">
@@ -79,7 +78,7 @@
         </div>
 
         <div class="status-bar">
-            <div><strong>Última Atualização:</strong> 24/06/2026 às 12:07:13 (Brasília)</div>
+            <div><strong>Última Atualização:</strong> 24/06/2026 às 12:12:19 (Brasília)</div>
             <div style="font-weight: bold; color: #0d9488;">● Dados Oficiais FIFA Atualizados</div>
         </div>
 
@@ -1354,9 +1353,7 @@
                 <button class="subtab-btn" onclick="switchSubTab('fase-4', event)">Semifinais</button>
                 <button class="subtab-btn" onclick="switchSubTab('fase-finais', event)">Finais 🏆</button>
             </div>
-            <div id="fase-32" class="subtab-content active"><div class="table-wrapper"><table><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando definições oficiais da FIFA.</td></tr></tbody></table></div></div>
-            <div id="fase-16" class="subtab-content"><div class="table-wrapper"><table><tbody><tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando definições oficiais da FIFA.</td></tr></tbody></table></div></div>
-            <div id="fase-8" class="subtab-content"><div class="table-wrapper"><table><tbody>
+            <div id="fase-32" class="subtab-content active"><div class="table-wrapper"><table><tbody>
         <tr >
             <td class="center date-col">28/06<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16:00</span></td>
             <td class="center"><span class='group-badge fase'>Jogo 73</span></td>
@@ -1549,7 +1546,7 @@
             <td><span class="flag fi fi-un"></span> <span >2G</span></td>
             <td style="color:#64748b; font-size:12px;">Dallas Stadium</td>
         </tr></tbody></table></div></div>
-            <div id="fase-4" class="subtab-content"><div class="table-wrapper"><table><tbody>
+            <div id="fase-16" class="subtab-content"><div class="table-wrapper"><table><tbody>
         <tr >
             <td class="center date-col">04/07<br><span style="font-size:11px; font-weight:normal; color:#64748b;">18:00</span></td>
             <td class="center"><span class='group-badge fase'>Jogo 89</span></td>
@@ -1646,9 +1643,7 @@
             <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
             <td style="color:#64748b; font-size:12px;">BC Place Vancouver</td>
         </tr></tbody></table></div></div>
-            <div id="fase-finais" class="subtab-content">
-                <h3 style="margin:10px 0; color:#1e3a8a; font-size:15px;">Disputa do Terceiro Lugar</h3>
-                <div class="table-wrapper"><table><tbody>
+            <div id="fase-8" class="subtab-content"><div class="table-wrapper"><table><tbody>
         <tr >
             <td class="center date-col">09/07<br><span style="font-size:11px; font-weight:normal; color:#64748b;">17:00</span></td>
             <td class="center"><span class='group-badge fase'>Jogo 97</span></td>
@@ -1696,9 +1691,8 @@
             </td>
             <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
             <td style="color:#64748b; font-size:12px;">Kansas City Stadium</td>
-        </tr></tbody></table></div>
-                <h3 style="margin:10px 0; color:#1e3a8a; font-size:15px;">Grande Final</h3>
-                <div class="table-wrapper"><table><tbody>
+        </tr></tbody></table></div></div>
+            <div id="fase-4" class="subtab-content"><div class="table-wrapper"><table><tbody>
         <tr >
             <td class="center date-col">14/07<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16:00</span></td>
             <td class="center"><span class='group-badge fase'>Jogo 101</span></td>
@@ -1722,13 +1716,42 @@
             </td>
             <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
             <td style="color:#64748b; font-size:12px;">Atlanta Stadium</td>
+        </tr></tbody></table></div></div>
+            <div id="fase-finais" class="subtab-content">
+                <h3 style="margin:10px 0; color:#1e3a8a; font-size:15px;">Disputa do Terceiro Lugar</h3>
+                <div class="table-wrapper"><table><tbody>
+        <tr >
+            <td class="center date-col">18/07<br><span style="font-size:11px; font-weight:normal; color:#64748b;">18:00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 103</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">-</div><span style="color:#94a3b8;">x</span><div class="score">-</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">Miami Stadium</td>
+        </tr></tbody></table></div>
+                <h3 style="margin:10px 0; color:#1e3a8a; font-size:15px;">Grande Final</h3>
+                <div class="table-wrapper"><table><tbody>
+        <tr >
+            <td class="center date-col">19/07<br><span style="font-size:11px; font-weight:normal; color:#64748b;">16:00</span></td>
+            <td class="center"><span class='group-badge fase'>Jogo 104</span></td>
+            <td class="right"><span >To be announced</span> <span class="flag fi fi-un"></span></td>
+            <td class="center">
+                <div class="placar-wrapper">
+                    <div class="score">-</div><span style="color:#94a3b8;">x</span><div class="score">-</div>
+                </div>
+            </td>
+            <td><span class="flag fi fi-un"></span> <span >To be announced</span></td>
+            <td style="color:#64748b; font-size:12px;">New York/New Jersey Stadium</td>
         </tr></tbody></table></div>
             </div>
         </div>
     </div>
 
     <footer>
-  <p>© 2026 Copyright Reinaldo Pinheiro Consultoria com Gemini - Versão 26.4.0 (Script Automático)</p>
+  <p>© 2026 Copyright Reinaldo Pinheiro Consultoria com Gemini - Versão 26.4.1 (Script Automático)</p>
   <div class="donate-box">
     <strong>🎁 Ajude a criar novos projetos</strong><br>
     Chave PIX: <code>doe@reinaldopinheiro.com.br</code><br>
