@@ -1,7 +1,7 @@
 # ==============================================================================
 # PROGRAMA: Central Real-Time Copa do Mundo 2026 - RPC
-# VERSÃO: v26.4.0 (CORREÇÃO DE PARSING DE DATA COM ESPAÇOS EM BRASÍLIA)
-# DATA: 19/06/2026
+# VERSÃO: v26.4.1 (CORREÇÃO DA EXIBIÇÃO DAS FASES ELIMINATÓRIAS)
+# DATA: 24/06/2026
 # AUTOR: Reinaldo Pinheiro Consultoria com Gemini
 # ==============================================================================
 
@@ -16,7 +16,7 @@ import urllib3
 # Desativa avisos de SSL para evitar falhas no ambiente do GitHub Actions
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-VERSION = "26.4.0"
+VERSION = "26.4.1"
 URL_API_REALTIME = "https://fixturedownload.com/feed/json/fifa-world-cup-2026"
 pix_key = "doe@reinaldopinheiro.com.br"
 qrcode_filename = "qrcode.png"  # Certifique-se de que este arquivo existe na mesma pasta do HTML
@@ -102,7 +102,6 @@ def extrair_data_hora(string_data):
     if not string_data:
         return "A def.", "A def."
     try:
-        # Substitui espaços por 'T' para que a string de data sempre siga o padrão ISO limpo
         data_limpa = string_data.split(".")[0].strip().replace(" ", "T")
         if data_limpa.endswith("Z"):
             data_limpa = data_limpa[:-1] + "+00:00"
@@ -115,7 +114,6 @@ def extrair_data_hora(string_data):
         else:
             dt = datetime.strptime(data_limpa, "%Y-%m-%d").replace(tzinfo=pytz.utc)
             
-        # Converte para o fuso horário oficial de Brasília
         fuso_brasilia = pytz.timezone("America/Sao_Paulo")
         dt_br = dt.astimezone(fuso_brasilia)
         return dt_br.strftime("%d/%m"), dt_br.strftime("%H:%M")
@@ -144,8 +142,8 @@ def buscar_dados_reais():
             g2 = match.get("AwayTeamScore")
             
             data_f, hora_f = extrair_data_hora(match.get("DateUtc"))
-            grupo_raw = match.get("Group", "")
-            grupo_letra = grupo_raw.replace("Group ", "").strip().upper() if grupo_raw else ""
+            grupo_raw = match.get("Group", "") or ""
+            grupo_letra = grupo_raw.replace("Group ", "").strip().upper() if "Group" in grupo_raw else ""
             
             encerrado = (g1 is not None and g2 is not None)
             
@@ -159,16 +157,32 @@ def buscar_dados_reais():
                 "encerrado": encerrado
             }
             
-            stage_number = match.get("RoundNumber", 1)
+            # Identificação robusta do estágio baseado no texto do grupo/estágio da API
+            stage_name = grupo_raw.lower()
             
-            if stage_number == 1 or grupo_letra:
+            if grupo_letra:
                 estrutura_copa["grupos"].append(jogo_dict)
-            elif stage_number == 2: estrutura_copa["r32"].append(jogo_dict)
-            elif stage_number == 3: estrutura_copa["r16"].append(jogo_dict)
-            elif stage_number == 4: estrutura_copa["r8"].append(jogo_dict)
-            elif stage_number == 5: estrutura_copa["r4"].append(jogo_dict)
-            elif stage_number == 6: estrutura_copa["third"].append(jogo_dict)
-            elif stage_number == 7: estrutura_copa["final"].append(jogo_dict)
+            elif "32" in stage_name or "thirty-two" in stage_name or "dezesseis" in stage_name:
+                estrutura_copa["r32"].append(jogo_dict)
+            elif "16" in stage_name or "sixteen" in stage_name or "oitavas" in stage_name:
+                estrutura_copa["r16"].append(jogo_dict)
+            elif "quarter" in stage_name or "quartas" in stage_name:
+                estrutura_copa["r8"].append(jogo_dict)
+            elif "semi" in stage_name:
+                estrutura_copa["r4"].append(jogo_dict)
+            elif "third" in stage_name or "3rd" in stage_name or "terceiro" in stage_name:
+                estrutura_copa["third"].append(jogo_dict)
+            elif "final" in stage_name:
+                estrutura_copa["final"].append(jogo_dict)
+            else:
+                # Fallback de segurança caso a estrutura de texto mude em alguma chave específica
+                if id_jogo <= 72: estrutura_copa["grupos"].append(jogo_dict)
+                elif id_jogo <= 88: estrutura_copa["r32"].append(jogo_dict)
+                elif id_jogo <= 96: estrutura_copa["r16"].append(jogo_dict)
+                elif id_jogo <= 100: estrutura_copa["r8"].append(jogo_dict)
+                elif id_jogo <= 102: estrutura_copa["r4"].append(jogo_dict)
+                elif id_jogo == 103: estrutura_copa["third"].append(jogo_dict)
+                elif id_jogo == 104: estrutura_copa["final"].append(jogo_dict)
 
         return (estrutura_copa, True)
     except Exception as e:
@@ -201,7 +215,7 @@ def atualizar_classificacao(estrutura_copa):
 
 def renderizar_tabela_jogos(lista_jogos):
     if not lista_jogos:
-        return "<tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando definições oficiais da FIFA.</td></tr>"
+        return "<tr><td colspan='6' class='center' style='color:#64748b; padding:20px;'>Aguardando definições oficiais da FIFA para esta fase.</td></tr>"
     html_jogos = ""
     for j in sorted(lista_jogos, key=lambda x: x['num']):
         is_br = (j["t1"] == "BRASIL" or j["t2"] == "BRASIL")
@@ -285,7 +299,6 @@ def compiling_html(classificacao, estrutura_copa, status_conexao):
         .placar-wrapper {{ display: flex; justify-content: center; align-items: center; gap: 6px; }}
         .score {{ background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-weight: bold; }}
         
-        /* Estilos do rodapé com caixa de doação */
         footer {{ position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: #ffffff; padding: 15px 20px; text-align: center; font-size: 13px; font-weight: 500; z-index: 1000; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); }}
         footer p {{ margin-bottom: 8px; color: #e2e8f0; }}
         .donate-box {{ background: rgba(255, 255, 255, 0.1); border: 1px dashed rgba(255, 255, 255, 0.3); border-radius: 6px; padding: 8px; display: inline-block; max-width: 400px; font-size: 11px; }}
@@ -429,7 +442,7 @@ def compiling_html(classificacao, estrutura_copa, status_conexao):
             "jogos": estrutura_copa
         }, f, ensure_ascii=False, indent=4)
         
-    print(f"✨ Pronto! Página gerada com sucesso com fuso corrigido e sem erros de parsing.")
+    print(f"✨ Pronto! Página gerada com sucesso com fuso corrigido e fases eliminatórias mapeadas.")
 
 if __name__ == "__main__":
     estrutura_dados, sucesso = buscar_dados_reais()
