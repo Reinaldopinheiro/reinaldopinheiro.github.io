@@ -13,7 +13,6 @@
         
         input[type="number"] { width: 55px; padding: 10px; margin: 3px; text-align: center; border: 2px solid #ddd; border-radius: 6px; font-weight: bold; }
         
-        /* Cores dos botões */
         button { background: #6a1b9a; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-right: 10px; }
         button:hover { background: #4a148c; }
         .btn-download { background: #00796b; }
@@ -71,12 +70,11 @@
 
 <script>
     let apostas = [];
-    let textoOriginalArquivo = ""; // Guarda o texto bruto para permitir o download
+    let textoOriginalArquivo = ""; 
 
-    // LINK CENTRALIZADO: Altere apenas "SEU_REPO" para o nome real do seu repositório no GitHub
-    const urlArquivo = "https://raw.githubusercontent.com/reinaldopinheiro/reipinaldopinheiro/github.io/main/bolao/quina.txt";
+    // LINK ATUALIZADO: Aponta para o repositório reinaldopinheiro.github.io dentro da pasta bolao
+    const urlArquivo = "https://raw.githubusercontent.com/reinaldopinheiro/reinaldopinheiro.github.io/main/bolao/quina.txt";
 
-    // Busca os dados do seu GitHub
     async function carregarJogos() {
         try {
             const resposta = await fetch(urlArquivo);
@@ -94,11 +92,10 @@
             });
             renderizarTabela();
         } catch (erro) {
-            document.getElementById('tabela-corpo').innerHTML = '<tr><td colspan="7" style="color:red">Erro ao carregar dados. Verifique se o arquivo quina.txt existe no GitHub.</td></tr>';
+            document.getElementById('tabela-corpo').innerHTML = '<tr><td colspan="7" style="color:red">Erro ao carregar dados. Verifique se o arquivo quina.txt está na pasta "bolao" no repositório reinaldopinheiro.github.io.</td></tr>';
         }
     }
 
-    // Função que faz o download do arquivo quina.txt
     function baixarArquivo() {
         if (!textoOriginalArquivo) {
             alert("O arquivo ainda não foi carregado ou está vazio.");
@@ -108,7 +105,7 @@
         const blob = new Blob([textoOriginalArquivo], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'quina.txt'; // Nome com o qual o arquivo será baixado
+        link.download = 'quina.txt'; 
         link.click();
         URL.revokeObjectURL(link.href);
     }
@@ -162,7 +159,6 @@
         });
     }
 
-    // Inicia o carregamento
     carregarJogos();
 </script>
 
