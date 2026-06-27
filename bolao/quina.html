@@ -8,12 +8,16 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; min-height: 400px; }
         
-        h2 { color: #260056; margin-top: 0; } /* Cor roxa característica da Quina */
+        h2 { color: #260056; margin-top: 0; }
         .resultado-input { background: #f3e5f5; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e1bee7; }
         
         input[type="number"] { width: 55px; padding: 10px; margin: 3px; text-align: center; border: 2px solid #ddd; border-radius: 6px; font-weight: bold; }
-        button { background: #6a1b9a; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        
+        /* Cores dos botões */
+        button { background: #6a1b9a; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-right: 10px; }
         button:hover { background: #4a148c; }
+        .btn-download { background: #00796b; }
+        .btn-download:hover { background: #004d40; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
         th, td { border: 1px solid #eee; padding: 12px; text-align: center; }
@@ -22,7 +26,6 @@
         .acerto { background-color: #9c27b0 !important; color: white; font-weight: bold; border-radius: 4px; }
         .pontos-col { font-weight: bold; color: #e74c3c; font-size: 1.1em; }
         
-        /* Estilo do Copyright */
         .footer-copy { 
             position: absolute; 
             bottom: 10px; 
@@ -47,13 +50,15 @@
         <input type="number" class="res-num" placeholder="00" min="1" max="80">
         <br><br>
         <button onclick="conferir()">CONFERIR JOGOS</button>
+        <button onclick="baixarArquivo()" class="btn-download">BAIXAR ARQUIVO DE JOGOS</button>
     </div>
 
     <table id="tabela-bolao">
         <thead>
             <tr>
                 <th>Participante</th>
-                <th colspan="5">Números</th> <th>Acertos</th>
+                <th colspan="5">Números</th>
+                <th>Acertos</th>
             </tr>
         </thead>
         <tbody id="tabela-corpo">
@@ -66,20 +71,22 @@
 
 <script>
     let apostas = [];
+    let textoOriginalArquivo = ""; // Guarda o texto bruto para permitir o download
+
+    // LINK CENTRALIZADO: Altere apenas "SEU_REPO" para o nome real do seu repositório no GitHub
+    const urlArquivo = "https://raw.githubusercontent.com/reinaldopinheiro/SEU_REPO/main/quina.txt";
 
     // Busca os dados do seu GitHub
     async function carregarJogos() {
-        // Lembre-se de ajustar o link abaixo para o seu repositório com o arquivo quina_jogos.txt ou correspondente
-        const url = "https://raw.githubusercontent.com/reinaldopinheiro/SEU_REPO/main/jogos.txt";
-        
         try {
-            const resposta = await fetch(url);
+            const resposta = await fetch(urlArquivo);
             if (!resposta.ok) throw new Error('Erro ao ler arquivo');
-            const texto = await resposta.text();
             
-            const linhas = texto.trim().split("\n");
+            textoOriginalArquivo = await resposta.text();
+            
+            const linhas = textoOriginalArquivo.trim().split("\n");
             apostas = linhas.map((linha) => {
-                const partes = line = linha.split(";");
+                const partes = linha.split(";");
                 return {
                     nome: partes[0].trim(),
                     num: partes[1].split(",").map(n => parseInt(n.trim()))
@@ -87,8 +94,23 @@
             });
             renderizarTabela();
         } catch (erro) {
-            document.getElementById('tabela-corpo').innerHTML = '<tr><td colspan="7" style="color:red">Erro ao carregar dados. Verifique o arquivo no GitHub.</td></tr>';
+            document.getElementById('tabela-corpo').innerHTML = '<tr><td colspan="7" style="color:red">Erro ao carregar dados. Verifique se o arquivo quina.txt existe no GitHub.</td></tr>';
         }
+    }
+
+    // Função que faz o download do arquivo quina.txt
+    function baixarArquivo() {
+        if (!textoOriginalArquivo) {
+            alert("O arquivo ainda não foi carregado ou está vazio.");
+            return;
+        }
+        
+        const blob = new Blob([textoOriginalArquivo], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'quina.txt'; // Nome com o qual o arquivo será baixado
+        link.click();
+        URL.revokeObjectURL(link.href);
     }
 
     function renderizarTabela() {
@@ -109,7 +131,6 @@
         const inputs = document.querySelectorAll('.res-num');
         const resultado = Array.from(inputs).map(i => parseInt(i.value)).filter(n => !isNaN(n));
 
-        // Validação alterada para 5 números
         if (resultado.length < 5) {
             alert("Por favor, preencha os 5 números do resultado.");
             return;
@@ -134,11 +155,10 @@
 
             celulaPontos.innerText = acertos;
             
-            // Destaque de cores adaptado para as faixas de premiação da Quina
-            if (acertos === 3) celulaPontos.style.color = "blue";     // Terno
-            if (acertos === 4) celulaPontos.style.color = "orange";   // Quadra
-            if (acertos === 5) celulaPontos.style.color = "green";    // Quina
-            if (acertos < 3) celulaPontos.style.color = "#e74c3c";    // Sem prêmio (Vermelho)
+            if (acertos === 3) celulaPontos.style.color = "blue";     
+            if (acertos === 4) celulaPontos.style.color = "orange";   
+            if (acertos === 5) celulaPontos.style.color = "green";    
+            if (acertos < 3) celulaPontos.style.color = "#e74c3c";    
         });
     }
 
