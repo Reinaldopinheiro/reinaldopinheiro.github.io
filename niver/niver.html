@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NIVER v2.0 - Controle de Aniversários por Agenda</title>
+  <title>NIVER v2.1 - Controle de Aniversários por Agenda</title>
   <style>
     :root {
       --primary: #ff4757;
@@ -144,22 +144,6 @@
     .btn-github { background-color: #2f3542; flex: 1; }
     .btn-clear { background-color: #747d8c; flex: 1; }
 
-    /* Configuração do GitHub Token */
-    .github-config {
-      background: #eccc681a;
-      border: 1px dashed #ffa502;
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 20px;
-      font-size: 13px;
-    }
-
-    .github-config input {
-      width: 100%;
-      margin-top: 5px;
-      font-family: monospace;
-    }
-
     .search-bar { width: 100%; margin-bottom: 15px; }
 
     table {
@@ -231,7 +215,7 @@
     <img src="logo.png" alt="Logo Reinaldo Pinheiro" class="logo" onerror="this.style.display='none'">
     <div class="festive-decor">🎈 🎂 🎁 🥳 🎉</div>
     <h1>NIVER</h1>
-    <small>Versão 2.0 | Data: 29/07/2026</small>
+    <small>Versão 2.1 | Data: 29/07/2026</small>
   </div>
 
   <!-- Seleção e Criação de Agendas -->
@@ -256,13 +240,6 @@
     <button class="btn-export" onclick="exportarICS()">📅 Exportar p/ Calendário (.ics)</button>
     <button class="btn-export" style="background-color: #9b59b6;" onclick="exportarBackupJSON()">📥 Baixar JSON Local</button>
     <button class="btn-github" onclick="salvarNoGitHubDirect()">🚀 Salvar Direto no GitHub</button>
-  </div>
-
-  <!-- Configuração para Token do GitHub (Auto-Save) -->
-  <div class="github-config">
-    <strong>⚙️ Sincronização Automática com GitHub (Opcional):</strong><br>
-    <small>Insira seu Personal Access Token do GitHub para salvar o <code>dados_niver.json</code> diretamente no repositório sem baixar o arquivo manualmente.</small>
-    <input type="password" id="githubToken" placeholder="ghp_seuTokenAqui..." onchange="salvarTokenLocal(this.value)">
   </div>
 
   <!-- Campo de Busca -->
@@ -300,16 +277,30 @@
 </div>
 
 <script>
-  let baseAgendas = { "Geral": [] };
-  let agendaAtual = "Geral";
+  // -------------------------------------------------------------
+  // CONFIGURAÇÃO DO TOKEN OFUSCADO (BASE64)
+  // -------------------------------------------------------------
+  // Cole o seu token do GitHub codificado em Base64 entre as aspas abaixo:
+  const TOKEN_BASE64 = "Z2l0aHViX3BhdF8xMUJPWklVRUkwZUFyWG85NmxhTmpnXzN1cEpFU0MyUGh2UnF6Wnd1ZEIycko3eFVGdllMRVVqTkZPVWRQTldiWktQQ0lXUDJMNzh3b1ZkbjRY"; 
+
+  function obterToken() {
+    try {
+      return atob(TOKEN_BASE64);
+    } catch(e) {
+      console.error("Erro ao decodificar token", e);
+      return "";
+    }
+  }
+
+  // Configurações do Repositório
   const REPO_OWNER = "reinaldopinheiro";
   const REPO_NAME = "reinaldopinheiro.github.io";
   const FILE_PATH = "niver/dados_niver.json";
 
-  async function inicializar() {
-    const savedToken = localStorage.getItem('gh_token_niver');
-    if (savedToken) document.getElementById('githubToken').value = savedToken;
+  let baseAgendas = { "Geral": [] };
+  let agendaAtual = "Geral";
 
+  async function inicializar() {
     try {
       const resp = await fetch('dados_niver.json?v=' + new Date().getTime());
       if (resp.ok) {
@@ -327,10 +318,6 @@
 
     atualizarSelectAgendas();
     renderizarTabela();
-  }
-
-  function salvarTokenLocal(token) {
-    localStorage.setItem('gh_token_niver', token.trim());
   }
 
   function atualizarSelectAgendas() {
@@ -377,7 +364,33 @@
       alert("Você deve ter pelo menos uma agenda!");
       return;
     }
+
     if (confirm(`Tem certeza que deseja excluir a agenda "${agendaAtual}"?`)) {
+      // BACKUP SILENCIOSO DA AGENDA ANTES DA EXCLUSÃO
+      try {
+        const agora = new Date();
+        const dd = String(agora.getDate()).padStart(2, '0');
+        const mm = String(agora.getMonth() + 1).padStart(2, '0');
+        const aa = String(agora.getFullYear()).slice(-2);
+        const hh = String(agora.getHours()).padStart(2, '0');
+        const min = String(agora.getMinutes()).padStart(2, '0');
+        const ss = String(agora.getSeconds()).padStart(2, '0');
+        
+        const timestamp = `${dd}${mm}${aa}${hh}${min}${ss}`;
+        const nomeBackup = `backup_${agendaAtual.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}`;
+
+        const backupsExistentes = JSON.parse(localStorage.getItem('niver_backups_ocultos') || '{}');
+        backupsExistentes[nomeBackup] = {
+          dataExclusao: agora.toISOString(),
+          agenda: agendaAtual,
+          dados: baseAgendas[agendaAtual]
+        };
+        localStorage.setItem('niver_backups_ocultos', JSON.stringify(backupsExistentes));
+      } catch (err) {
+        console.error("Erro no backup silencioso", err);
+      }
+
+      // Exclusão normal da agenda
       delete baseAgendas[agendaAtual];
       agendaAtual = Object.keys(baseAgendas)[0];
       atualizarStorageLocal();
@@ -520,11 +533,12 @@
     link.click();
   }
 
-  // Sincronização direta via API do GitHub
+  // Sincronização direta via API do GitHub usando o Token decodificado
   async function salvarNoGitHubDirect() {
-    const token = document.getElementById('githubToken').value.trim();
-    if (!token) {
-      alert("Insira seu Personal Access Token do GitHub para salvar diretamente no repositório.\n\nAlternativamente, use '📥 Baixar JSON Local' e substitua o arquivo dados_niver.json no repositório.");
+    const token = obterToken();
+
+    if (!token || token === "COLE_AQUI_SEU_TOKEN_EM_BASE64") {
+      alert("Erro: O Token do GitHub não foi configurado corretamente no código Base64!");
       return;
     }
 
@@ -547,7 +561,10 @@
 
       const putResp = await fetch(url, {
         method: "PUT",
-        headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+        headers: { 
+          "Authorization": `token ${token}`, 
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify(body)
       });
 
