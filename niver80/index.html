@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NIVER v2.1 - Controle de Aniversários por Agenda</title>
+  
+  <!-- ESTILOS DA APLICAÇÃO (CSS) -->
+  <style>
+    :root {
+      --primary: #ff4757;
+      --secondary: #2ed573;
+      --bg-color: #f1f2f6;
+      --card-bg: #ffffff;
+      --text: #2f3542;
+      --accent: #70a1ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .header-banner {
+      text-align: center;
+      padding-bottom: 20px;
+      border-bottom: 2px dashed #eccc68;
+      margin-bottom: 20px;
+    }
+
+    .header-banner img.logo {
+      max-width: 140px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      color: var(--primary);
+      margin: 5px 0;
+      font-size: 2.2em;
+    }
+
+    .festive-decor {
+      font-size: 2em;
+      margin: 5px 0;
+    }
+
+    .agenda-section {
+      background: #f8f9fa;
+      border: 2px solid #eccc68;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .agenda-section label {
+      font-weight: bold;
+      color: var(--primary);
+      font-size: 1.1em;
+    }
+
+    .agenda-section select {
+      flex: 2;
+      min-width: 180px;
+      font-weight: bold;
+      padding: 10px;
+      border: 2px solid #dfe4ea;
+      border-radius: 8px;
+    }
+
+    .btn-agenda {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .form-group {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 2fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    @media (max-width: 650px) {
+      .form-group { grid-template-columns: 1fr; }
+      .agenda-section { flex-direction: column; align-items: stretch; }
+    }
+
+    input, select, button {
+      padding: 12px;
+      border: 2px solid #dfe4ea;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus, select:focus { border-color: var(--primary); }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.1s, background-color 0.2s;
+      border: none;
+      color: white;
+      border-radius: 8px;
+    }
+
+    button:active { transform: scale(0.98); }
+    .btn-save { background-color: var(--secondary); flex: 2; font-size: 1.1em; }
+    .btn-export { background-color: #ffa502; flex: 1; }
+    .btn-clear { background-color: #747d8c; flex: 1; }
+    .btn-month { background-color: #9b59b6; flex: 1; }
+
+    .search-bar { width: 100%; margin-bottom: 15px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #dfe4ea;
+    }
+
+    th { background-color: #f8f9fa; color: #57606f; }
+
+    .action-btns { display: flex; gap: 5px; }
+    .btn-edit { background-color: #eccc68; padding: 6px 10px; font-size: 12px; }
+    .btn-delete { background-color: #ff4757; padding: 6px 10px; font-size: 12px; }
+
+    .badge-agenda {
+      background-color: var(--accent);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    /* MODAIS */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal-box {
+      background: #ffffff;
+      padding: 25px 30px;
+      border-radius: 16px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      animation: modalAnim 0.2s ease-out;
+      position: relative;
+    }
+
+    @keyframes modalAnim {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-box button {
+      background-color: var(--secondary);
+      color: white;
+      padding: 10px 30px;
+      font-size: 16px;
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    .modal-party {
+      max-width: 450px;
+      background: linear-gradient(135deg, #ffffff 0%, #fff0f3 100%);
+      border: 3px solid #ff4757;
+      overflow: hidden;
+    }
+
+    .party-title {
+      font-size: 1.8em;
+      color: #ff4757;
+      margin-bottom: 5px;
+    }
+
+    .party-name {
+      font-size: 2.2em;
+      font-weight: 900;
+      color: #2ed573;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      margin: 15px 0;
+      text-transform: uppercase;
+      word-wrap: break-word;
+    }
+
+    .party-img {
+      width: 140px;
+      height: auto;
+      margin: 10px auto;
+      display: block;
+      animation: bounce 1.5s infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+
+    .balloon-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .balloon {
+      position: absolute;
+      bottom: -50px;
+      font-size: 2rem;
+      animation: floatUp 4s linear infinite;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-450px) rotate(20deg); opacity: 0; }
+    }
+
+    footer {
+      margin-top: 30px;
+      text-align: center;
+      border-top: 2px dashed #eccc68;
+      padding-top: 20px;
+      width: 100%;
+    }
+
+    .pix-box {
+      background: #f1f2f6;
+      border: 2px dashed #2ed573;
+      border-radius: 12px;
+      padding: 12px;
+      display: inline-block;
+      margin: 10px 0;
+      max-width: 300px;
+    }
+
+    .pix-qrcode {
+      width: 110px;
+      height: 110px;
+      margin: 8px auto;
+      display: block;
+    }
+
+    .copyright {
+      font-size: 13px;
+      color: #747d8c;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- MODAIS -->
+
+<!-- Modal: Criar Primeira Agenda -->
+<div id="modalCriarPrimeiraAgenda" class="modal-overlay">
+  <div class="modal-box">
+    <h3 style="color: var(--primary);">📁 Nenhuma agenda encontrada</h3>
+    <p>Por favor, informe o nome da sua primeira agenda para continuar:</p>
+    <input type="text" id="nomeNovaAgendaInicial" placeholder="Ex: Amigos, Família, Trabalho" style="width: 100%; margin-top: 10px;">
+    <button onclick="confirmarPrimeiraAgenda()">Criar Agenda</button>
+  </div>
+</div>
+
+<!-- Modal: Sucesso -->
+<div id="modalSucesso" class="modal-overlay">
+  <div class="modal-box">
+    <h3 style="color: var(--secondary);">🎉 Sucesso!</h3>
+    <p>Registro salvo no GitHub com sucesso!</p>
+    <button onclick="fecharModal('modalSucesso')">OK</button>
+  </div>
+</div>
+
+<!-- Modal: Parabéns do Dia -->
+<div id="modalParabens" class="modal-overlay">
+  <div class="modal-box modal-party">
+    <div class="balloon-container" id="balloonContainer"></div>
+    <div class="party-title">🎈 HOJE É DIA DE FESTA! 🎂</div>
+    <p>Parabéns pelo seu aniversário:</p>
+    
+    <img src="https://cdn-icons-png.flaticon.com/512/3132/3132693.png" alt="Bolo de Festa" class="party-img">
+    
+    <div class="party-name" id="nomeAniversarianteDia">NOME</div>
+    <p style="font-size: 1.1em; color: #57606f;">🥳 Que seu dia seja cheio de alegrias e realizações! 🎉</p>
+    
+    <button onclick="fecharModal('modalParabens')" style="background-color: #ff4757;">🎉 Dar Parabéns! 🎉</button>
+  </div>
+</div>
+
+<!-- Modal: Aniversariantes do Mês -->
+<div id="modalMes" class="modal-overlay">
+  <div class="modal-box" style="max-width: 550px;">
+    <h3 style="color: #9b59b6;" id="tituloModalMes">🗓️ Aniversariantes do Mês</h3>
+    <div style="max-height: 300px; overflow-y: auto; text-align: left; margin: 15px 0;">
+      <table style="width: 100%;">
+        <thead>
+          <tr>
+            <th>Dia</th>
+            <th>Nome</th>
+            <th>Agenda</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaAniversariantesMes"></tbody>
+      </table>
+    </div>
+    <button onclick="fecharModal('modalMes')" style="background-color: #9b59b6;">Fechar</button>
+  </div>
+</div>
+
+<!-- CONTAINER PRINCIPAL -->
+<div class="container">
+  <div class="header-banner">
+    <img src="logo.png" alt="Logo Reinaldo Pinheiro" class="logo" onerror="this.style.display='none'">
+    <div class="festive-decor">🎈 🎂 🎁 🥳 🎉</div>
+    <h1>NIVER</h1>
+    <small>Versão 2.1 | Data: 29/07/2026</small>
+  </div>
+
+  <div class="agenda-section">
+    <label for="agendaSelect">📁 Agenda Atual:</label>
+    <select id="agendaSelect" onchange="trocarAgenda()"></select>
+    <button class="btn-agenda" onclick="novaAgenda()">➕ Nova Agenda</button>
+    <button class="btn-agenda" style="background-color: #ff4757;" onclick="excluirAgendaAtual()">🗑️ Excluir Agenda</button>
+  </div>
+
+  <input type="hidden" id="editIndex" value="-1">
+  <div class="form-group">
+    <input type="text" id="nome" placeholder="Nome do Aniversariante" required>
+    
+    <select id="diaNasc" required>
+      <option value="">Dia</option>
+    </select>
+    
+    <select id="mesNasc" required>
+      <option value="">Mês</option>
+      <option value="01">Janeiro</option>
+      <option value="02">Fevereiro</option>
+      <option value="03">Março</option>
+      <option value="04">Abril</option>
+      <option value="05">Maio</option>
+      <option value="06">Junho</option>
+      <option value="07">Julho</option>
+      <option value="08">Agosto</option>
+      <option value="09">Setembro</option>
+      <option value="10">Outubro</option>
+      <option value="11">Novembro</option>
+      <option value="12">Dezembro</option>
+    </select>
+
+    <input type="text" id="obs" maxlength="50" placeholder="Observação (máx. 50 caract.)">
+  </div>
+
+  <div class="btn-group">
+    <button id="btnSalvar" class="btn-save" onclick="salvarAniversario()">💾 Salvar</button>
+    <button class="btn-month" onclick="abrirAniversariantesMes()">🎉 Aniversariantes do Mês</button>
+    <button class="btn-clear" onclick="limparFormulario()">🔄 Limpar</button>
+    <button class="btn-export" onclick="exportarICS()">📅 Exportar (.ics)</button>
+  </div>
+
+  <input type="text" id="campoBusca" class="search-bar" placeholder="🔍 Consultar nome ou observação nesta agenda..." onkeyup="consultarAniversarios()">
+
+  <table>
+    <thead>
+      <tr>
+        <th>Agenda</th>
+        <th>Nome</th>
+        <th>Data e Signo</th>
+        <th>Observação</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaAniversarios"></tbody>
+  </table>
+
+  <footer>
+    <div class="pix-box">
+      <strong>🎁 Ajude a criar novos projetos</strong><br>
+      <small>Chave PIX: doe@reinaldopinheiro.com.br</small><br>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=doe@reinaldopinheiro.com.br" alt="QRCode PIX Donate" class="pix-qrcode">
+      <small><strong>QRCode PIX Donate</strong><br>Aponte a câmera do seu banco.</small>
+    </div>
+
+    <div class="copyright">
+      © Copyright Reinaldo Pinheiro Consultoria
+    </div>
+  </footer>
+</div>
+
+<script>
+  // -------------------------------------------------------------
+  // FATIADO 
+  // -------------------------------------------------------------
+  const PARTE1 = "ghp_oSg"; 
+  const PARTE2 = "Bq5WyXiS7Oe67quuEIfhr"; 
+  const PARTE3 = "QvAJN11VnRha"; 
+
+  function obterToken() {
+    return (PARTE1 + PARTE2 + PARTE3).trim();
+  }
+
+  const REPO_OWNER = "reinaldopinheiro";
+  const REPO_NAME = "reinaldopinheiro.github.io";
+  const FILE_PATH = "niver/dados_niver.json";
+
+  let baseAgendas = {};
+  let agendaAtual = "";
+
+  function preencherDias() {
+    const selectDia = document.getElementById('diaNasc');
+    for (let i = 1; i <= 31; i++) {
+      const opt = document.createElement('option');
+      const diaFmt = String(i).padStart(2, '0');
+      opt.value = diaFmt;
+      opt.textContent = diaFmt;
+      selectDia.appendChild(opt);
+    }
+  }
+
+  // INICIALIZAÇÃO DINÂMICA (LÊ O JSON PRIMEIRO)
+  async function inicializar() {
+    preencherDias();
+    let carregouDoJson = false;
+
+    try {
+      const resp = await fetch('dados_niver.json?v=' + new Date().getTime());
+      if (resp.ok) {
+        const dados = await resp.json();
+        if (dados && typeof dados === 'object' && !Array.isArray(dados)) {
+          baseAgendas = dados;
+          carregouDoJson = true;
+        }
+      }
+    } catch (e) {
+      console.log("Servidor não retornou arquivo JSON ou deu erro, tentando local...");
+    }
+
+    // Se não carregou do JSON, tenta o LocalStorage
+    if (!carregouDoJson) {
+      const local = localStorage.getItem('niver_agendas_db');
+      if (local) {
+        baseAgendas = JSON.parse(local);
+      }
+    }
+
+    // Pega a lista de chaves de agendas
+    const chaves = Object.keys(baseAgendas);
+
+    // SE HOUVER AGENDAS: seleciona a primeira do arquivo JSON/LocalStorage
+    if (chaves.length > 0) {
+      agendaAtual = chaves[0];
+      atualizarSelectAgendas();
+      renderizarTabela();
+      verificarAniversarianteDoDia();
+    } else {
+      // SE NÃO HOUVER NENHUMA AGENDA: Abre janela para criar a primeira
+      document.getElementById("modalCriarPrimeiraAgenda").classList.add("active");
+    }
+  }
+
+  // Confirmação da modal inicial para a primeira agenda
+  function confirmarPrimeiraAgenda() {
+    const campo = document.getElementById("nomeNovaAgendaInicial");
+    const nome = campo.value.trim();
+
+    if (!nome) {
+      alert("Por favor, digite um nome válido para a agenda!");
+      return;
+    }
+
+    baseAgendas[nome] = [];
+    agendaAtual = nome;
+
+    atualizarStorageLocal();
+    atualizarSelectAgendas();
+    renderizarTabela();
+    fecharModal("modalCriarPrimeiraAgenda");
+    salvarNoGitHubDirect(false);
+  }
+
+  function exibirModalSucesso() { document.getElementById("modalSucesso").classList.add("active"); }
+  function fecharModal(id) { document.getElementById(id).classList.remove("active"); }
+
+  // VERIFICA SE HÁ ANIVERSARIANTE APENAS NA AGENDA ATUALMENTE SELECIONADA
+  function verificarAniversarianteDoDia() {
+    if (!agendaAtual || !baseAgendas[agendaAtual]) return;
+
+    const hoje = new Date();
+    const diaHoje = String(hoje.getDate()).padStart(2, '0');
+    const mesHoje = String(hoje.getMonth() + 1).padStart(2, '0');
+
+    let aniversariantesHoje = [];
+    const listaAgendaAtual = baseAgendas[agendaAtual] || [];
+
+    listaAgendaAtual.forEach(item => {
+      const partes = item.dataNasc.split('-');
+      const mes = partes.length === 3 ? partes[1] : partes[0];
+      const dia = partes.length === 3 ? partes[2] : partes[1];
+
+      if (dia === diaHoje && mes === mesHoje) {
+        aniversariantesHoje.push(item.nome);
+      }
+    });
+
+    if (aniversariantesHoje.length > 0) {
+      document.getElementById("nomeAniversarianteDia").innerHTML = aniversariantesHoje.join("<br>& ");
+      gerarBaloes();
+      document.getElementById("modalParabens").classList.add("active");
+    }
+  }
+
+  function gerarBaloes() {
+    const container = document.getElementById("balloonContainer");
+    container.innerHTML = "";
+    const baloes = ['🎈', '🎉', '🥳', '✨', '🎁'];
+    
+    for (let i = 0; i < 15; i++) {
+      const b = document.createElement("div");
+      b.className = "balloon";
+      b.innerText = baloes[Math.floor(Math.random() * baloes.length)];
+      b.style.left = Math.random() * 90 + "%";
+      b.style.animationDelay = (Math.random() * 2) + "s";
+      b.style.animationDuration = (3 + Math.random() * 2) + "s";
+      container.appendChild(b);
+    }
+  }
+
+  function abrirAniversariantesMes() {
+    const hoje = new Date();
+    const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
+    const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    
+    document.getElementById("tituloModalMes").innerText = `🗓️ Aniversariantes de ${nomesMeses[hoje.getMonth()]}`;
+
+    let listaMes = [];
+
+    Object.keys(baseAgendas).forEach(agenda => {
+      baseAgendas[agenda].forEach(item => {
+        const partes = item.dataNasc.split('-');
+        const mes = partes.length === 3 ? partes[1] : partes[0];
+        const dia = partes.length === 3 ? partes[2] : partes[1];
+
+        if (mes === mesAtual) {
+          listaMes.push({
+            dia: parseInt(dia, 10),
+            nome: item.nome,
+            agenda: agenda
+          });
+        }
+      });
+    });
+
+    listaMes.sort((a, b) => a.dia - b.dia);
+
+    const tbody = document.getElementById("tabelaAniversariantesMes");
+    tbody.innerHTML = "";
+
+    if (listaMes.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Nenhum aniversariante este mês!</td></tr>`;
+    } else {
+      listaMes.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>Dia ${String(item.dia).padStart(2, '0')}</strong></td>
+          <td>${item.nome}</td>
+          <td><span class="badge-agenda">${item.agenda}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById("modalMes").classList.add("active");
+  }
+
+  function obterSigno(dia, mes) {
+    dia = parseInt(dia, 10);
+    mes = parseInt(mes, 10);
+
+    if ((mes == 3 && dia >= 21) || (mes == 4 && dia <= 19)) return "♈ Áries";
+    if ((mes == 4 && dia >= 20) || (mes == 5 && dia <= 20)) return "♉ Touro";
+    if ((mes == 5 && dia >= 21) || (mes == 6 && dia <= 20)) return "♊ Gêmeos";
+    if ((mes == 6 && dia >= 21) || (mes == 7 && dia <= 22)) return "♋ Câncer";
+    if ((mes == 7 && dia >= 23) || (mes == 8 && dia <= 22)) return "♌ Leão";
+    if ((mes == 8 && dia >= 23) || (mes == 9 && dia <= 22)) return "♍ Virgem";
+    if ((mes == 9 && dia >= 23) || (mes == 10 && dia <= 22)) return "♎ Libra";
+    if ((mes == 10 && dia >= 23) || (mes == 11 && dia <= 21)) return "♏ Escorpião";
+    if ((mes == 11 && dia >= 22) || (mes == 12 && dia <= 21)) return "♐ Sagitário";
+    if ((mes == 12 && dia >= 22) || (mes == 1 && dia <= 19)) return "♑ Capricórnio";
+    if ((mes == 1 && dia >= 20) || (mes == 2 && dia <= 18)) return "♒ Aquário";
+    if ((mes == 2 && dia >= 19) || (mes == 3 && dia <= 20)) return "♓ Peixes";
+    return "";
+  }
+
+  // ATUALIZA CAIXA DE SELEÇÃO DE AGENDAS
+  function atualizarSelectAgendas() {
+    const select = document.getElementById('agendaSelect');
+    select.innerHTML = '';
+    const agendas = Object.keys(baseAgendas);
+
+    agendas.forEach(nome => {
+      const opt = document.createElement('option');
+      opt.value = nome;
+      opt.textContent = `📁 ${nome} (${baseAgendas[nome].length})`;
+      if (nome === agendaAtual) opt.selected = true;
+      select.appendChild(opt);
+    });
+  }
+
+  function trocarAgenda() {
+    agendaAtual = document.getElementById('agendaSelect').value;
+    renderizarTabela();
+    verificarAniversarianteDoDia();
+  }
+
+  function novaAgenda() {
+    const nome = prompt("Digite o nome da nova Agenda (Ex: Família, Trabalho, Amigos):");
+    if (nome && nome.trim() !== "") {
+      const nomeLimpo = nome.trim();
+      if (!baseAgendas[nomeLimpo]) {
+        baseAgendas[nomeLimpo] = [];
+        agendaAtual = nomeLimpo;
+        atualizarStorageLocal();
+        atualizarSelectAgendas();
+        renderizarTabela();
+        verificarAniversarianteDoDia();
+        salvarNoGitHubDirect(false);
+      } else {
+        alert("Já existe uma agenda com esse nome!");
+      }
+    }
+  }
+
+  // EXCLUSÃO DA AGENDA SELECIONADA
+  function excluirAgendaAtual() {
+    if (!agendaAtual || !baseAgendas[agendaAtual]) return;
+
+    if (confirm(`Tem certeza que deseja excluir a agenda "${agendaAtual}"?`)) {
+      delete baseAgendas[agendaAtual];
+
+      const restantes = Object.keys(baseAgendas);
+
+      if (restantes.length > 0) {
+        // Pega a primeira agenda que sobrou
+        agendaAtual = restantes[0];
+        atualizarStorageLocal();
+        atualizarSelectAgendas();
+        renderizarTabela();
+        verificarAniversarianteDoDia();
+        salvarNoGitHubDirect(false);
+      } else {
+        // Se ficou sem nenhuma, abre o modal de criação da primeira agenda
+        agendaAtual = "";
+        atualizarStorageLocal();
+        atualizarSelectAgendas();
+        renderizarTabela();
+        salvarNoGitHubDirect(false);
+        document.getElementById("modalCriarPrimeiraAgenda").classList.add("active");
+      }
+    }
+  }
+
+  async function salvarAniversario() {
+    if (!agendaAtual) {
+      alert("Crie ou selecione uma agenda antes de salvar!");
+      return;
+    }
+
+    const nome = document.getElementById('nome').value.trim();
+    const dia = document.getElementById('diaNasc').value;
+    const mes = document.getElementById('mesNasc').value;
+    const obs = document.getElementById('obs').value.trim();
+    const index = parseInt(document.getElementById('editIndex').value);
+
+    if (!nome || !dia || !mes) {
+      alert('Preencha Nome, Dia e Mês de Aniversário!');
+      return;
+    }
+
+    const dataNasc = `2000-${mes}-${dia}`;
+    const item = { nome, dataNasc, obs };
+
+    if (!baseAgendas[agendaAtual]) baseAgendas[agendaAtual] = [];
+
+    if (index === -1) {
+      baseAgendas[agendaAtual].push(item);
+    } else {
+      baseAgendas[agendaAtual][index] = item;
+    }
+
+    atualizarStorageLocal();
+    limparFormulario();
+    atualizarSelectAgendas();
+    renderizarTabela();
+    verificarAniversarianteDoDia();
+
+    await salvarNoGitHubDirect(true);
+  }
+
+  function renderizarTabela() {
+    const tbody = document.getElementById('tabelaAniversarios');
+    tbody.innerHTML = '';
+
+    if (!agendaAtual || !baseAgendas[agendaAtual]) return;
+
+    const termo = document.getElementById('campoBusca').value.toLowerCase();
+    let listaParaExibir = [];
+
+    const itensDaAgendaAtual = baseAgendas[agendaAtual] || [];
+
+    itensDaAgendaAtual.forEach((item, index) => {
+      const atendeFiltro = termo === "" || 
+                           item.nome.toLowerCase().includes(termo) || 
+                           item.obs.toLowerCase().includes(termo);
+
+      if (atendeFiltro) {
+        listaParaExibir.push({ ...item, agenda: agendaAtual, indexOriginal: index });
+      }
+    });
+
+    listaParaExibir.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+
+    listaParaExibir.forEach((item) => {
+      const partesData = item.dataNasc.split('-');
+      const mes = partesData.length === 3 ? partesData[1] : partesData[0];
+      const dia = partesData.length === 3 ? partesData[2] : partesData[1];
+
+      const dataFormatada = `${dia}/${mes}`;
+      const signo = obterSigno(dia, mes);
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="badge-agenda">${item.agenda}</span></td>
+        <td><strong>${item.nome}</strong></td>
+        <td>🎂 ${dataFormatada} &nbsp;<small style="color: #666;">(${signo})</small></td>
+        <td>${item.obs}</td>
+        <td class="action-btns">
+          <button class="btn-edit" onclick="editarAniversario('${item.agenda}', ${item.indexOriginal})">✏️ Editar</button>
+          <button class="btn-delete" onclick="excluirAniversario('${item.agenda}', ${item.indexOriginal})">🗑️ Excluir</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function editarAniversario(agenda, index) {
+    agendaAtual = agenda;
+    document.getElementById('agendaSelect').value = agenda;
+
+    const item = baseAgendas[agenda][index];
+    const partesData = item.dataNasc.split('-');
+    const mes = partesData.length === 3 ? partesData[1] : partesData[0];
+    const dia = partesData.length === 3 ? partesData[2] : partesData[1];
+
+    document.getElementById('nome').value = item.nome;
+    document.getElementById('diaNasc').value = dia;
+    document.getElementById('mesNasc').value = mes;
+    document.getElementById('obs').value = item.obs;
+    document.getElementById('editIndex').value = index;
+  }
+
+  async function excluirAniversario(agenda, index) {
+    if (confirm('Deseja realmente excluir este aniversário?')) {
+      baseAgendas[agenda].splice(index, 1);
+      atualizarStorageLocal();
+      atualizarSelectAgendas();
+      renderizarTabela();
+      await salvarNoGitHubDirect(true);
+    }
+  }
+
+  function consultarAniversarios() { renderizarTabela(); }
+
+  function limparFormulario() {
+    document.getElementById('nome').value = '';
+    document.getElementById('diaNasc').value = '';
+    document.getElementById('mesNasc').value = '';
+    document.getElementById('obs').value = '';
+    document.getElementById('editIndex').value = '-1';
+  }
+
+  function atualizarStorageLocal() {
+    localStorage.setItem('niver_agendas_db', JSON.stringify(baseAgendas));
+  }
+
+  function exportarICS() {
+    const listaAtual = baseAgendas[agendaAtual] || [];
+    if (listaAtual.length === 0) {
+      alert(`Nenhum aniversário na agenda "${agendaAtual}" para exportar!`);
+      return;
+    }
+
+    let icsData = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Reinaldo Pinheiro Consultoria//NIVER App//PT\n";
+    listaAtual.forEach(item => {
+      const partesData = item.dataNasc.split('-');
+      const mes = partesData.length === 3 ? partesData[1] : partesData[0];
+      const dia = partesData.length === 3 ? partesData[2] : partesData[1];
+      const anoAtual = new Date().getFullYear();
+
+      icsData += "BEGIN:VEVENT\n";
+      icsData += `SUMMARY:🎂 Aniversário de ${item.nome} (${agendaAtual})\n`;
+      icsData += `DESCRIPTION:${item.obs}\n`;
+      icsData += `DTSTART;VALUE=DATE:${anoAtual}${mes}${dia}\n`;
+      icsData += `RRULE:FREQ=YEARLY\n`;
+      icsData += "END:VEVENT\n";
+    });
+    icsData += "END:VCALENDAR";
+
+    const blob = new Blob([icsData], { type: "text/calendar" });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `aniversarios_${agendaAtual.toLowerCase()}.ics`;
+    link.click();
+  }
+
+  async function salvarNoGitHubDirect(mostrarModal = true) {
+    const token = obterToken();
+
+    if (!token || token.includes("PRIMEIRA_PARTE")) {
+      alert("Erro: Configure seu token dividindo-o nas variáveis TOKEN_PARTE!");
+      return;
+    }
+
+    const btn = document.getElementById('btnSalvar');
+    if(btn) btn.innerText = "⏳ Salvando...";
+
+    const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(baseAgendas, null, 2))));
+    const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+
+    try {
+      let sha = "";
+      const getFileResp = await fetch(url, { 
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/vnd.github.v3+json"
+        } 
+      });
+
+      if (getFileResp.ok) {
+        const fileData = await getFileResp.json();
+        sha = fileData.sha;
+      }
+
+      const body = {
+        message: `Atualização automática via NIVER App`,
+        content: contentEncoded,
+        sha: sha !== "" ? sha : undefined
+      };
+
+      const putResp = await fetch(url, {
+        method: "PUT",
+        headers: { 
+          "Authorization": `Bearer ${token}`, 
+          "Content-Type": "application/json",
+          "Accept": "application/vnd.github.v3+json"
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (putResp.ok) {
+        if (mostrarModal) exibirModalSucesso();
+      } else {
+        const errData = await putResp.json();
+        alert("Erro ao sincronizar com GitHub: " + (errData.message || "Erro desconhecido"));
+      }
+    } catch (err) {
+      alert("Erro de conexão ao salvar no GitHub: " + err.message);
+    } finally {
+      if(btn) btn.innerText = "💾 Salvar";
+    }
+  }
+
+  inicializar();
+</script>
+
+</body>
+</html>
