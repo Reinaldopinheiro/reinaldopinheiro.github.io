@@ -45,7 +45,7 @@
     }
 
     .header-banner img.logo {
-      max-width: 180px;
+      max-width: 140px;
       height: auto;
       margin-bottom: 10px;
     }
@@ -173,7 +173,7 @@
       font-weight: bold;
     }
 
-    /* Modal Generico */
+    /* Modais */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -252,7 +252,6 @@
       to { transform: translateY(-10px); }
     }
 
-    /* Animação de Balões Nativos CSS */
     .balloon-container {
       position: absolute;
       width: 100%;
@@ -283,22 +282,21 @@
       width: 100%;
     }
 
-    .footer-logo { max-width: 120px; margin-bottom: 10px; }
-
+    /* Ajuste do tamanho do QRCode do PIX */
     .pix-box {
       background: #f1f2f6;
       border: 2px dashed #2ed573;
       border-radius: 12px;
-      padding: 15px;
+      padding: 12px;
       display: inline-block;
-      margin: 15px 0;
-      max-width: 340px;
+      margin: 10px 0;
+      max-width: 300px;
     }
 
     .pix-qrcode {
-      width: 160px;
-      height: 160px;
-      margin: 10px auto;
+      width: 110px;
+      height: 110px;
+      margin: 8px auto;
       display: block;
     }
 
@@ -327,7 +325,6 @@
     <div class="party-title">🎈 HOJE É DIA DE FESTA! 🎂</div>
     <p>Parabéns pelo seu aniversário:</p>
     
-    <!-- Imagem de Festa -->
     <img src="https://cdn-icons-png.flaticon.com/512/3132/3132693.png" alt="Bolo de Festa" class="party-img">
     
     <div class="party-name" id="nomeAniversarianteDia">NOME</div>
@@ -358,7 +355,7 @@
 </div>
 
 <div class="container">
-  <!-- Cabeçalho -->
+  <!-- Cabeçalho (Com o logo do rodapé no topo) -->
   <div class="header-banner">
     <img src="logo.png" alt="Logo Reinaldo Pinheiro" class="logo" onerror="this.style.display='none'">
     <div class="festive-decor">🎈 🎂 🎁 🥳 🎉</div>
@@ -390,7 +387,7 @@
   </div>
 
   <!-- Campo de Busca -->
-  <input type="text" id="campoBusca" class="search-bar" placeholder="🔍 Consultar nome, observação ou agenda..." onkeyup="consultarAniversarios()">
+  <input type="text" id="campoBusca" class="search-bar" placeholder="🔍 Consultar nome ou observação nesta agenda..." onkeyup="consultarAniversarios()">
 
   <!-- Tabela -->
   <table>
@@ -406,15 +403,13 @@
     <tbody id="tabelaAniversarios"></tbody>
   </table>
 
-  <!-- Rodapé -->
+  <!-- Rodapé (Sem logo) -->
   <footer>
-    <img src="logo.png" alt="Logo Reinaldo Pinheiro" class="footer-logo" onerror="this.style.display='none'">
-    
     <div class="pix-box">
       <strong>🎁 Ajude a criar novos projetos</strong><br>
       <small>Chave PIX: doe@reinaldopinheiro.com.br</small><br>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=doe@reinaldopinheiro.com.br" alt="QRCode PIX Donate" class="pix-qrcode">
-      <small><strong>QRCode PIX Donate</strong><br>Aponte a câmera do seu banco para o QRCode.</small>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=doe@reinaldopinheiro.com.br" alt="QRCode PIX Donate" class="pix-qrcode">
+      <small><strong>QRCode PIX Donate</strong><br>Aponte a câmera do seu banco.</small>
     </div>
 
     <div class="copyright">
@@ -464,11 +459,9 @@
     verificarAniversarianteDoDia();
   }
 
-  // Modais
   function exibirModalSucesso() { document.getElementById("modalSucesso").classList.add("active"); }
   function fecharModal(id) { document.getElementById(id).classList.remove("active"); }
 
-  // Verificar Aniversariante do Dia
   function verificarAniversarianteDoDia() {
     const hoje = new Date();
     const diaHoje = String(hoje.getDate()).padStart(2, '0');
@@ -492,7 +485,6 @@
     }
   }
 
-  // Animação de Balões
   function gerarBaloes() {
     const container = document.getElementById("balloonContainer");
     container.innerHTML = "";
@@ -509,7 +501,6 @@
     }
   }
 
-  // Consulta do Mês
   function abrirAniversariantesMes() {
     const hoje = new Date();
     const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
@@ -532,7 +523,6 @@
       });
     });
 
-    // Ordenar por Dia do Mês
     listaMes.sort((a, b) => a.dia - b.dia);
 
     const tbody = document.getElementById("tabelaAniversariantesMes");
@@ -555,7 +545,6 @@
     document.getElementById("modalMes").classList.add("active");
   }
 
-  // Calculadora de Signo
   function obterSigno(dia, mes) {
     dia = parseInt(dia, 10);
     mes = parseInt(mes, 10);
@@ -659,25 +648,24 @@
     await salvarNoGitHubDirect(true);
   }
 
+  // Renderização e Filtro restrito à Agenda Selecionada
   function renderizarTabela() {
     const tbody = document.getElementById('tabelaAniversarios');
     tbody.innerHTML = '';
     const termo = document.getElementById('campoBusca').value.toLowerCase();
     let listaParaExibir = [];
 
-    if (termo !== "") {
-      Object.keys(baseAgendas).forEach(nomeAgenda => {
-        baseAgendas[nomeAgenda].forEach((item, index) => {
-          if (item.nome.toLowerCase().includes(termo) || item.obs.toLowerCase().includes(termo) || nomeAgenda.toLowerCase().includes(termo)) {
-            listaParaExibir.push({ ...item, agenda: nomeAgenda, indexOriginal: index });
-          }
-        });
-      });
-    } else {
-      (baseAgendas[agendaAtual] || []).forEach((item, index) => {
+    const itensDaAgendaAtual = baseAgendas[agendaAtual] || [];
+
+    itensDaAgendaAtual.forEach((item, index) => {
+      const atendeFiltro = termo === "" || 
+                           item.nome.toLowerCase().includes(termo) || 
+                           item.obs.toLowerCase().includes(termo);
+
+      if (atendeFiltro) {
         listaParaExibir.push({ ...item, agenda: agendaAtual, indexOriginal: index });
-      });
-    }
+      }
+    });
 
     // Ordenação Alfabética A-Z
     listaParaExibir.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
