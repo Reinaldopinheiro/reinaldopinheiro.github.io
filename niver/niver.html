@@ -139,9 +139,8 @@
     }
 
     button:active { transform: scale(0.98); }
-    .btn-save { background-color: var(--secondary); flex: 2; }
+    .btn-save { background-color: var(--secondary); flex: 2; font-size: 1.1em; }
     .btn-export { background-color: #ffa502; flex: 1; }
-    .btn-github { background-color: #2f3542; flex: 1; }
     .btn-clear { background-color: #747d8c; flex: 1; }
 
     .search-bar { width: 100%; margin-bottom: 15px; }
@@ -171,6 +170,32 @@
       border-radius: 12px;
       font-size: 11px;
       font-weight: bold;
+    }
+
+    /* Mensagem Flutuante de Sucesso (Toast) */
+    .toast-notification {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #2ed573;
+      color: #fff;
+      text-align: center;
+      border-radius: 8px;
+      padding: 16px;
+      position: fixed;
+      z-index: 999;
+      top: 30px;
+      right: 30px;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      opacity: 0;
+      transition: opacity 0.3s, top 0.3s;
+    }
+
+    .toast-notification.show {
+      visibility: visible;
+      opacity: 1;
+      top: 40px;
     }
 
     footer {
@@ -209,6 +234,9 @@
 </head>
 <body>
 
+<!-- Notificação Flutuante (Toast) -->
+<div id="toast" class="toast-notification">🎉 Salvo com sucesso!</div>
+
 <div class="container">
   <!-- Cabeçalho -->
   <div class="header-banner">
@@ -235,11 +263,9 @@
   </div>
 
   <div class="btn-group">
-    <button class="btn-save" onclick="salvarAniversario()">💾 Salvar</button>
+    <button id="btnSalvar" class="btn-save" onclick="salvarAniversario()">💾 Salvar</button>
     <button class="btn-clear" onclick="limparFormulario()">🔄 Limpar</button>
     <button class="btn-export" onclick="exportarICS()">📅 Exportar p/ Calendário (.ics)</button>
-    <button class="btn-export" style="background-color: #9b59b6;" onclick="exportarBackupJSON()">📥 Baixar JSON Local</button>
-    <button class="btn-github" onclick="salvarNoGitHubDirect()">🚀 Salvar Direto no GitHub</button>
   </div>
 
   <!-- Campo de Busca -->
@@ -278,9 +304,8 @@
 
 <script>
   // -------------------------------------------------------------
-  // CONFIGURAÇÃO DO TOKEN OFUSCADO (BASE64)
+  // TOKEN DO GITHUB (BASE64)
   // -------------------------------------------------------------
-  // Cole o seu token do GitHub codificado em Base64 entre as aspas abaixo:
   const TOKEN_BASE64 = "Z2l0aHViX3BhdF8xQk9aSVVFSTBlQXJYbzk2bGFOamdfdXBKRVNDMlBodlJxelp3dWRCMnJKN3hVRnZZTEVVak5GT1VkUE5XYlpLUENJV1AyTDc4d29WZG40WA=="; 
 
   function obterToken() {
@@ -320,6 +345,14 @@
     renderizarTabela();
   }
 
+  function exibirToastSucesso() {
+    const toast = document.getElementById("toast");
+    toast.className = "toast-notification show";
+    setTimeout(() => {
+      toast.className = toast.className.replace("show", "");
+    }, 2000); // 2 Segundos exatos
+  }
+
   function atualizarSelectAgendas() {
     const select = document.getElementById('agendaSelect');
     select.innerHTML = '';
@@ -353,6 +386,7 @@
         atualizarStorageLocal();
         atualizarSelectAgendas();
         renderizarTabela();
+        salvarNoGitHubDirect(false); // Sincroniza criação de agenda no GitHub
       } else {
         alert("Já existe uma agenda com esse nome!");
       }
@@ -390,16 +424,16 @@
         console.error("Erro no backup silencioso", err);
       }
 
-      // Exclusão normal da agenda
       delete baseAgendas[agendaAtual];
       agendaAtual = Object.keys(baseAgendas)[0];
       atualizarStorageLocal();
       atualizarSelectAgendas();
       renderizarTabela();
+      salvarNoGitHubDirect(false); // Sincroniza a exclusão no GitHub
     }
   }
 
-  function salvarAniversario() {
+  async function salvarAniversario() {
     const nome = document.getElementById('nome').value.trim();
     const dataNasc = document.getElementById('dataNasc').value;
     const obs = document.getElementById('obs').value.trim();
@@ -423,6 +457,9 @@
     limparFormulario();
     atualizarSelectAgendas();
     renderizarTabela();
+
+    // Envia direto para o GitHub e exibe a tela de 2s
+    await salvarNoGitHubDirect(true);
   }
 
   function renderizarTabela() {
@@ -475,12 +512,13 @@
     document.getElementById('editIndex').value = index;
   }
 
-  function excluirAniversario(agenda, index) {
+  async function excluirAniversario(agenda, index) {
     if (confirm('Deseja realmente excluir este aniversário?')) {
       baseAgendas[agenda].splice(index, 1);
       atualizarStorageLocal();
       atualizarSelectAgendas();
       renderizarTabela();
+      await salvarNoGitHubDirect(true);
     }
   }
 
@@ -517,44 +555,44 @@
     });
     icsData += "END:VCALENDAR";
 
-    downloadArquivo(icsData, `aniversarios_${agendaAtual.toLowerCase()}.ics`, "text/calendar");
-  }
-
-  function exportarBackupJSON() {
-    const dataStr = JSON.stringify(baseAgendas, null, 2);
-    downloadArquivo(dataStr, "dados_niver.json", "application/json");
-  }
-
-  function downloadArquivo(conteudo, nomeArquivo, tipo) {
-    const blob = new Blob([conteudo], { type: tipo });
+    const blob = new Blob([icsData], { type: "text/calendar" });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = nomeArquivo;
+    link.download = `aniversarios_${agendaAtual.toLowerCase()}.ics`;
     link.click();
   }
 
-  // Sincronização direta via API do GitHub usando o Token decodificado
-  async function salvarNoGitHubDirect() {
+  // Função interna de salvamento automático no GitHub
+  async function salvarNoGitHubDirect(mostrarNotificacao = true) {
     const token = obterToken();
 
     if (!token || token === "COLE_AQUI_SEU_TOKEN_EM_BASE64") {
-      alert("Erro: O Token do GitHub não foi configurado corretamente no código Base64!");
+      console.warn("Token não configurado para envio ao GitHub.");
       return;
     }
+
+    const btn = document.getElementById('btnSalvar');
+    if(btn) btn.innerText = "⏳ Salvando...";
 
     const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(baseAgendas, null, 2))));
     const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
 
     try {
       let sha = "";
-      const getFileResp = await fetch(url, { headers: { "Authorization": `token ${token}` } });
+      const getFileResp = await fetch(url, { 
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/vnd.github.v3+json"
+        } 
+      });
+
       if (getFileResp.ok) {
         const fileData = await getFileResp.json();
         sha = fileData.sha;
       }
 
       const body = {
-        message: `Atualização de aniversários via NIVER App`,
+        message: `Atualização automática via NIVER App`,
         content: contentEncoded,
         sha: sha !== "" ? sha : undefined
       };
@@ -562,20 +600,23 @@
       const putResp = await fetch(url, {
         method: "PUT",
         headers: { 
-          "Authorization": `token ${token}`, 
-          "Content-Type": "application/json" 
+          "Authorization": `Bearer ${token}`, 
+          "Content-Type": "application/json",
+          "Accept": "application/vnd.github.v3+json"
         },
         body: JSON.stringify(body)
       });
 
       if (putResp.ok) {
-        alert("🎉 Sucesso! As agendas e aniversários foram salvos no repositório GitHub!");
+        if (mostrarNotificacao) exibirToastSucesso();
       } else {
         const errData = await putResp.json();
-        alert("Erro ao salvar no GitHub: " + (errData.message || "Verifique o token informado"));
+        alert("Erro ao sincronizar com GitHub: " + (errData.message || "Erro desconhecido"));
       }
     } catch (err) {
-      alert("Erro de conexão ao salvar no GitHub: " + err.message);
+      console.error("Erro de conexão ao salvar no GitHub:", err);
+    } finally {
+      if(btn) btn.innerText = "💾 Salvar";
     }
   }
 
@@ -584,3 +625,4 @@
 
 </body>
 </html>
+  
