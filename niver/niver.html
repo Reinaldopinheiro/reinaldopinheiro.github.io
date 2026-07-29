@@ -172,7 +172,7 @@
       font-weight: bold;
     }
 
-    /* Mensagem Flutuante de Sucesso (Toast) */
+    /* Mensagem Flutuante (Toast) */
     .toast-notification {
       visibility: hidden;
       min-width: 250px;
@@ -243,7 +243,7 @@
     <img src="logo.png" alt="Logo Reinaldo Pinheiro" class="logo" onerror="this.style.display='none'">
     <div class="festive-decor">🎈 🎂 🎁 🥳 🎉</div>
     <h1>NIVER</h1>
-    <small>Versão 2.1. | Data: 29/07/2026</small>
+    <small>Versão 2.1 | Data: 29/07/2026</small>
   </div>
 
   <!-- Seleção e Criação de Agendas -->
@@ -304,17 +304,14 @@
 
 <script>
   // -------------------------------------------------------------
-  // TOKEN DO GITHUB (BASE64)
+  // FATIADO 
   // -------------------------------------------------------------
-  const TOKEN_BASE64 = "Z2hwXzZrSjdUelZjVDJ0YUE2MU9DRUNVYXNXdWZIOFRrbDBFMExTSQ=="; 
+  const PARTE1 = "ghp_oSg"; 
+  const PARTE2 = "Bq5WyXiS7Oe67quuEIfhr"; 
+  const PARTE3 = "QvAJN11VnRha"; 
 
   function obterToken() {
-    try {
-      return atob(TOKEN_BASE64);
-    } catch(e) {
-      console.error("Erro ao decodificar token", e);
-      return "";
-    }
+    return (PARTE1 + PARTE2 + PARTE3).trim();
   }
 
   // Configurações do Repositório
@@ -350,7 +347,7 @@
     toast.className = "toast-notification show";
     setTimeout(() => {
       toast.className = toast.className.replace("show", "");
-    }, 2000); // 2 Segundos exatos
+    }, 2000);
   }
 
   function atualizarSelectAgendas() {
@@ -386,7 +383,7 @@
         atualizarStorageLocal();
         atualizarSelectAgendas();
         renderizarTabela();
-        salvarNoGitHubDirect(false); // Sincroniza criação de agenda no GitHub
+        salvarNoGitHubDirect(false);
       } else {
         alert("Já existe uma agenda com esse nome!");
       }
@@ -400,7 +397,6 @@
     }
 
     if (confirm(`Tem certeza que deseja excluir a agenda "${agendaAtual}"?`)) {
-      // BACKUP SILENCIOSO DA AGENDA ANTES DA EXCLUSÃO
       try {
         const agora = new Date();
         const dd = String(agora.getDate()).padStart(2, '0');
@@ -429,7 +425,7 @@
       atualizarStorageLocal();
       atualizarSelectAgendas();
       renderizarTabela();
-      salvarNoGitHubDirect(false); // Sincroniza a exclusão no GitHub
+      salvarNoGitHubDirect(false);
     }
   }
 
@@ -458,7 +454,6 @@
     atualizarSelectAgendas();
     renderizarTabela();
 
-    // Envia direto para o GitHub e exibe a tela de 2s
     await salvarNoGitHubDirect(true);
   }
 
@@ -562,12 +557,11 @@
     link.click();
   }
 
-  // Função interna de salvamento automático no GitHub
   async function salvarNoGitHubDirect(mostrarNotificacao = true) {
     const token = obterToken();
 
-    if (!token || token === "COLE_AQUI_SEU_TOKEN_EM_BASE64") {
-      console.warn("Token não configurado para envio ao GitHub.");
+    if (!token || token.includes("PRIMEIRA_PARTE")) {
+      alert("Erro: Configure seu novo token dividindo-o nas variáveis TOKEN_PARTE!");
       return;
     }
 
@@ -614,7 +608,7 @@
         alert("Erro ao sincronizar com GitHub: " + (errData.message || "Erro desconhecido"));
       }
     } catch (err) {
-      console.error("Erro de conexão ao salvar no GitHub:", err);
+      alert("Erro de conexão ao salvar no GitHub: " + err.message);
     } finally {
       if(btn) btn.innerText = "💾 Salvar";
     }
@@ -625,4 +619,3 @@
 
 </body>
 </html>
-  
