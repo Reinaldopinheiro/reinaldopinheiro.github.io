@@ -1,11 +1,5 @@
 {
-  "Geral": [
-    {
-      "nome": "Reinaldo teste",
-      "dataNasc": "2000-02-27",
-      "obs": "eba deu certo"
-    }
-  ],
+  "Geral": [],
   "Amigos da Vila": [
     {
       "nome": "Reinaldo",
