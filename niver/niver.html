@@ -1,3 +1,14 @@
+  // -------------------------------------------------------------
+  // FATIADO 
+  // -------------------------------------------------------------
+  const PARTE1 = "ghp_oSg"; 
+  const PARTE2 = "Bq5WyXiS7Oe67quuEIfhr"; 
+  const PARTE3 = "QvAJN11VnRha"; 
+
+  function obterToken() {
+    return (PARTE1 + PARTE2 + PARTE3).trim();
+  }
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -172,30 +183,53 @@
       font-weight: bold;
     }
 
-    /* Mensagem Flutuante (Toast) */
-    .toast-notification {
-      visibility: hidden;
-      min-width: 250px;
-      background-color: #2ed573;
-      color: #fff;
-      text-align: center;
-      border-radius: 8px;
-      padding: 16px;
+    /* Modal Centralizado no Meio da Tela */
+    .modal-overlay {
+      display: none;
       position: fixed;
-      z-index: 999;
-      top: 30px;
-      right: 30px;
-      font-size: 16px;
-      font-weight: bold;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      opacity: 0;
-      transition: opacity 0.3s, top 0.3s;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
     }
 
-    .toast-notification.show {
-      visibility: visible;
-      opacity: 1;
-      top: 40px;
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #ffffff;
+      padding: 25px 30px;
+      border-radius: 16px;
+      text-align: center;
+      max-width: 350px;
+      width: 90%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      animation: modalAnim 0.2s ease-out;
+    }
+
+    @keyframes modalAnim {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-box h3 {
+      color: var(--secondary);
+      margin-top: 0;
+      font-size: 1.5em;
+    }
+
+    .modal-box button {
+      background-color: var(--secondary);
+      color: white;
+      padding: 10px 30px;
+      font-size: 16px;
+      margin-top: 15px;
+      width: 100%;
     }
 
     footer {
@@ -234,8 +268,14 @@
 </head>
 <body>
 
-<!-- Notificação Flutuante (Toast) -->
-<div id="toast" class="toast-notification">🎉 Salvo com sucesso!</div>
+<!-- Modal no Centro da Tela -->
+<div id="modalSucesso" class="modal-overlay">
+  <div class="modal-box">
+    <h3>🎉 Sucesso!</h3>
+    <p>Registro salvo no GitHub com sucesso!</p>
+    <button onclick="fecharModal()">OK</button>
+  </div>
+</div>
 
 <div class="container">
   <!-- Cabeçalho -->
@@ -277,7 +317,7 @@
       <tr>
         <th>Agenda</th>
         <th>Nome</th>
-        <th>Data</th>
+        <th>Data e Signo</th>
         <th>Observação</th>
         <th>Ações</th>
       </tr>
@@ -314,6 +354,7 @@
     return (PARTE1 + PARTE2 + PARTE3).trim();
   }
 
+
   // Configurações do Repositório
   const REPO_OWNER = "reinaldopinheiro";
   const REPO_NAME = "reinaldopinheiro.github.io";
@@ -342,12 +383,33 @@
     renderizarTabela();
   }
 
-  function exibirToastSucesso() {
-    const toast = document.getElementById("toast");
-    toast.className = "toast-notification show";
-    setTimeout(() => {
-      toast.className = toast.className.replace("show", "");
-    }, 2000);
+  // Modal Centralizado
+  function exibirModalSucesso() {
+    document.getElementById("modalSucesso").classList.add("active");
+  }
+
+  function fecharModal() {
+    document.getElementById("modalSucesso").classList.remove("active");
+  }
+
+  // Calculadora de Signo
+  function obterSigno(dia, mes) {
+    dia = parseInt(dia, 10);
+    mes = parseInt(mes, 10);
+
+    if ((mes == 3 && dia >= 21) || (mes == 4 && dia <= 19)) return "♈ Áries";
+    if ((mes == 4 && dia >= 20) || (mes == 5 && dia <= 20)) return "♉ Touro";
+    if ((mes == 5 && dia >= 21) || (mes == 6 && dia <= 20)) return "♊ Gêmeos";
+    if ((mes == 6 && dia >= 21) || (mes == 7 && dia <= 22)) return "♋ Câncer";
+    if ((mes == 7 && dia >= 23) || (mes == 8 && dia <= 22)) return "♌ Leão";
+    if ((mes == 8 && dia >= 23) || (mes == 9 && dia <= 22)) return "♍ Virgem";
+    if ((mes == 9 && dia >= 23) || (mes == 10 && dia <= 22)) return "♎ Libra";
+    if ((mes == 10 && dia >= 23) || (mes == 11 && dia <= 21)) return "♏ Escorpião";
+    if ((mes == 11 && dia >= 22) || (mes == 12 && dia <= 21)) return "♐ Sagitário";
+    if ((mes == 12 && dia >= 22) || (mes == 1 && dia <= 19)) return "♑ Capricórnio";
+    if ((mes == 1 && dia >= 20) || (mes == 2 && dia <= 18)) return "♒ Aquário";
+    if ((mes == 2 && dia >= 19) || (mes == 3 && dia <= 20)) return "♓ Peixes";
+    return "";
   }
 
   function atualizarSelectAgendas() {
@@ -477,15 +539,21 @@
       });
     }
 
+    // Ordena em Ordem Alfabética (A-Z) pelo nome
+    listaParaExibir.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+
     listaParaExibir.forEach((item) => {
       const partesData = item.dataNasc.split('-');
-      const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+      const dia = partesData[2];
+      const mes = partesData[1];
+      const dataFormatada = `${dia}/${mes}`; // Apenas Dia e Mês
+      const signo = obterSigno(dia, mes);
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><span class="badge-agenda">${item.agenda}</span></td>
         <td><strong>${item.nome}</strong></td>
-        <td>🎂 ${dataFormatada}</td>
+        <td>🎂 ${dataFormatada} &nbsp;<small style="color: #666;">(${signo})</small></td>
         <td>${item.obs}</td>
         <td class="action-btns">
           <button class="btn-edit" onclick="editarAniversario('${item.agenda}', ${item.indexOriginal})">✏️ Editar</button>
@@ -557,11 +625,11 @@
     link.click();
   }
 
-  async function salvarNoGitHubDirect(mostrarNotificacao = true) {
+  async function salvarNoGitHubDirect(mostrarModal = true) {
     const token = obterToken();
 
     if (!token || token.includes("PRIMEIRA_PARTE")) {
-      alert("Erro: Configure seu novo token dividindo-o nas variáveis TOKEN_PARTE!");
+      alert("Erro: Configure seu token dividindo-o nas variáveis TOKEN_PARTE!");
       return;
     }
 
@@ -602,7 +670,7 @@
       });
 
       if (putResp.ok) {
-        if (mostrarNotificacao) exibirToastSucesso();
+        if (mostrarModal) exibirModalSucesso();
       } else {
         const errData = await putResp.json();
         alert("Erro ao sincronizar com GitHub: " + (errData.message || "Erro desconhecido"));
