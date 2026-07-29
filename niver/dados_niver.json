@@ -1,4 +1,10 @@
 {
   "Geral": [],
-  "Amigos": []
+  "Amigos": [
+    {
+      "nome": "Reinaldo",
+      "dataNasc": "1967-02-27",
+      "obs": ""
+    }
+  ]
 }
