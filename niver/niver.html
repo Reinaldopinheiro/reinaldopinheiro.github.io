@@ -142,6 +142,7 @@
     .btn-save { background-color: var(--secondary); flex: 2; font-size: 1.1em; }
     .btn-export { background-color: #ffa502; flex: 1; }
     .btn-clear { background-color: #747d8c; flex: 1; }
+    .btn-month { background-color: #9b59b6; flex: 1; }
 
     .search-bar { width: 100%; margin-bottom: 15px; }
 
@@ -172,7 +173,7 @@
       font-weight: bold;
     }
 
-    /* Modal Centralizado no Meio da Tela */
+    /* Modal Generico */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -180,36 +181,29 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.6);
       z-index: 1000;
       justify-content: center;
       align-items: center;
     }
 
-    .modal-overlay.active {
-      display: flex;
-    }
+    .modal-overlay.active { display: flex; }
 
     .modal-box {
       background: #ffffff;
       padding: 25px 30px;
       border-radius: 16px;
       text-align: center;
-      max-width: 350px;
+      max-width: 400px;
       width: 90%;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
       animation: modalAnim 0.2s ease-out;
+      position: relative;
     }
 
     @keyframes modalAnim {
       from { transform: scale(0.8); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
-    }
-
-    .modal-box h3 {
-      color: var(--secondary);
-      margin-top: 0;
-      font-size: 1.5em;
     }
 
     .modal-box button {
@@ -219,6 +213,66 @@
       font-size: 16px;
       margin-top: 15px;
       width: 100%;
+    }
+
+    /* Tela Festa de Aniversario do Dia */
+    .modal-party {
+      max-width: 450px;
+      background: linear-gradient(135deg, #ffffff 0%, #fff0f3 100%);
+      border: 3px solid #ff4757;
+      overflow: hidden;
+    }
+
+    .party-title {
+      font-size: 1.8em;
+      color: #ff4757;
+      margin-bottom: 5px;
+    }
+
+    .party-name {
+      font-size: 2.2em;
+      font-weight: 900;
+      color: #2ed573;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      margin: 15px 0;
+      text-transform: uppercase;
+      word-wrap: break-word;
+    }
+
+    .party-img {
+      width: 140px;
+      height: auto;
+      margin: 10px auto;
+      display: block;
+      animation: bounce 1.5s infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+
+    /* Animação de Balões Nativos CSS */
+    .balloon-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .balloon {
+      position: absolute;
+      bottom: -50px;
+      font-size: 2rem;
+      animation: floatUp 4s linear infinite;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-450px) rotate(20deg); opacity: 0; }
     }
 
     footer {
@@ -257,12 +311,49 @@
 </head>
 <body>
 
-<!-- Modal no Centro da Tela -->
+<!-- Modal Sucesso ao Salvar -->
 <div id="modalSucesso" class="modal-overlay">
   <div class="modal-box">
-    <h3>🎉 Sucesso!</h3>
+    <h3 style="color: var(--secondary);">🎉 Sucesso!</h3>
     <p>Registro salvo no GitHub com sucesso!</p>
-    <button onclick="fecharModal()">OK</button>
+    <button onclick="fecharModal('modalSucesso')">OK</button>
+  </div>
+</div>
+
+<!-- Modal Festa (Aniversariante do Dia) -->
+<div id="modalParabens" class="modal-overlay">
+  <div class="modal-box modal-party">
+    <div class="balloon-container" id="balloonContainer"></div>
+    <div class="party-title">🎈 HOJE É DIA DE FESTA! 🎂</div>
+    <p>Parabéns pelo seu aniversário:</p>
+    
+    <!-- Imagem de Festa -->
+    <img src="https://cdn-icons-png.flaticon.com/512/3132/3132693.png" alt="Bolo de Festa" class="party-img">
+    
+    <div class="party-name" id="nomeAniversarianteDia">NOME</div>
+    <p style="font-size: 1.1em; color: #57606f;">🥳 Que seu dia seja cheio de alegrias e realizações! 🎉</p>
+    
+    <button onclick="fecharModal('modalParabens')" style="background-color: #ff4757;">🎉 Dar Parabéns! 🎉</button>
+  </div>
+</div>
+
+<!-- Modal Aniversariantes do Mês -->
+<div id="modalMes" class="modal-overlay">
+  <div class="modal-box" style="max-width: 550px;">
+    <h3 style="color: #9b59b6;" id="tituloModalMes">🗓️ Aniversariantes do Mês</h3>
+    <div style="max-height: 300px; overflow-y: auto; text-align: left; margin: 15px 0;">
+      <table style="width: 100%;">
+        <thead>
+          <tr>
+            <th>Dia</th>
+            <th>Nome</th>
+            <th>Agenda</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaAniversariantesMes"></tbody>
+      </table>
+    </div>
+    <button onclick="fecharModal('modalMes')" style="background-color: #9b59b6;">Fechar</button>
   </div>
 </div>
 
@@ -293,8 +384,9 @@
 
   <div class="btn-group">
     <button id="btnSalvar" class="btn-save" onclick="salvarAniversario()">💾 Salvar</button>
+    <button class="btn-month" onclick="abrirAniversariantesMes()">🎉 Aniversariantes do Mês</button>
     <button class="btn-clear" onclick="limparFormulario()">🔄 Limpar</button>
-    <button class="btn-export" onclick="exportarICS()">📅 Exportar p/ Calendário (.ics)</button>
+    <button class="btn-export" onclick="exportarICS()">📅 Exportar (.ics)</button>
   </div>
 
   <!-- Campo de Busca -->
@@ -369,15 +461,98 @@
 
     atualizarSelectAgendas();
     renderizarTabela();
+    verificarAniversarianteDoDia();
   }
 
-  // Modal Centralizado
-  function exibirModalSucesso() {
-    document.getElementById("modalSucesso").classList.add("active");
+  // Modais
+  function exibirModalSucesso() { document.getElementById("modalSucesso").classList.add("active"); }
+  function fecharModal(id) { document.getElementById(id).classList.remove("active"); }
+
+  // Verificar Aniversariante do Dia
+  function verificarAniversarianteDoDia() {
+    const hoje = new Date();
+    const diaHoje = String(hoje.getDate()).padStart(2, '0');
+    const mesHoje = String(hoje.getMonth() + 1).padStart(2, '0');
+
+    let aniversariantesHoje = [];
+
+    Object.keys(baseAgendas).forEach(agenda => {
+      baseAgendas[agenda].forEach(item => {
+        const partes = item.dataNasc.split('-');
+        if (partes[2] === diaHoje && partes[1] === mesHoje) {
+          aniversariantesHoje.push(item.nome);
+        }
+      });
+    });
+
+    if (aniversariantesHoje.length > 0) {
+      document.getElementById("nomeAniversarianteDia").innerHTML = aniversariantesHoje.join("<br>& ");
+      gerarBaloes();
+      document.getElementById("modalParabens").classList.add("active");
+    }
   }
 
-  function fecharModal() {
-    document.getElementById("modalSucesso").classList.remove("active");
+  // Animação de Balões
+  function gerarBaloes() {
+    const container = document.getElementById("balloonContainer");
+    container.innerHTML = "";
+    const baloes = ['🎈', '🎉', '🥳', '✨', '🎁'];
+    
+    for (let i = 0; i < 15; i++) {
+      const b = document.createElement("div");
+      b.className = "balloon";
+      b.innerText = baloes[Math.floor(Math.random() * baloes.length)];
+      b.style.left = Math.random() * 90 + "%";
+      b.style.animationDelay = (Math.random() * 2) + "s";
+      b.style.animationDuration = (3 + Math.random() * 2) + "s";
+      container.appendChild(b);
+    }
+  }
+
+  // Consulta do Mês
+  function abrirAniversariantesMes() {
+    const hoje = new Date();
+    const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
+    const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    
+    document.getElementById("tituloModalMes").innerText = `🗓️ Aniversariantes de ${nomesMeses[hoje.getMonth()]}`;
+
+    let listaMes = [];
+
+    Object.keys(baseAgendas).forEach(agenda => {
+      baseAgendas[agenda].forEach(item => {
+        const partes = item.dataNasc.split('-');
+        if (partes[1] === mesAtual) {
+          listaMes.push({
+            dia: parseInt(partes[2], 10),
+            nome: item.nome,
+            agenda: agenda
+          });
+        }
+      });
+    });
+
+    // Ordenar por Dia do Mês
+    listaMes.sort((a, b) => a.dia - b.dia);
+
+    const tbody = document.getElementById("tabelaAniversariantesMes");
+    tbody.innerHTML = "";
+
+    if (listaMes.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Nenhum aniversariante este mês!</td></tr>`;
+    } else {
+      listaMes.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>Dia ${String(item.dia).padStart(2, '0')}</strong></td>
+          <td>${item.nome}</td>
+          <td><span class="badge-agenda">${item.agenda}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById("modalMes").classList.add("active");
   }
 
   // Calculadora de Signo
@@ -447,29 +622,6 @@
     }
 
     if (confirm(`Tem certeza que deseja excluir a agenda "${agendaAtual}"?`)) {
-      try {
-        const agora = new Date();
-        const dd = String(agora.getDate()).padStart(2, '0');
-        const mm = String(agora.getMonth() + 1).padStart(2, '0');
-        const aa = String(agora.getFullYear()).slice(-2);
-        const hh = String(agora.getHours()).padStart(2, '0');
-        const min = String(agora.getMinutes()).padStart(2, '0');
-        const ss = String(agora.getSeconds()).padStart(2, '0');
-        
-        const timestamp = `${dd}${mm}${aa}${hh}${min}${ss}`;
-        const nomeBackup = `backup_${agendaAtual.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}`;
-
-        const backupsExistentes = JSON.parse(localStorage.getItem('niver_backups_ocultos') || '{}');
-        backupsExistentes[nomeBackup] = {
-          dataExclusao: agora.toISOString(),
-          agenda: agendaAtual,
-          dados: baseAgendas[agendaAtual]
-        };
-        localStorage.setItem('niver_backups_ocultos', JSON.stringify(backupsExistentes));
-      } catch (err) {
-        console.error("Erro no backup silencioso", err);
-      }
-
       delete baseAgendas[agendaAtual];
       agendaAtual = Object.keys(baseAgendas)[0];
       atualizarStorageLocal();
@@ -527,14 +679,14 @@
       });
     }
 
-    // Ordena em Ordem Alfabética (A-Z) pelo nome
+    // Ordenação Alfabética A-Z
     listaParaExibir.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
 
     listaParaExibir.forEach((item) => {
       const partesData = item.dataNasc.split('-');
       const dia = partesData[2];
       const mes = partesData[1];
-      const dataFormatada = `${dia}/${mes}`; // Apenas Dia e Mês
+      const dataFormatada = `${dia}/${mes}`;
       const signo = obterSigno(dia, mes);
 
       const tr = document.createElement('tr');
