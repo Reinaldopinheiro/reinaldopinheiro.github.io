@@ -7,7 +7,6 @@
   
   <!-- ESTILOS DA APLICAÇÃO (CSS) -->
   <style>
-    /* Variáveis Globais de Cores */
     :root {
       --primary: #ff4757;
       --secondary: #2ed573;
@@ -30,7 +29,6 @@
       align-items: center;
     }
 
-    /* Container Principal da Aplicação */
     .container {
       max-width: 900px;
       width: 100%;
@@ -41,7 +39,6 @@
       position: relative;
     }
 
-    /* Estilização do Cabeçalho e Logotipo */
     .header-banner {
       text-align: center;
       padding-bottom: 20px;
@@ -66,7 +63,6 @@
       margin: 5px 0;
     }
 
-    /* Bloco Superior: Seletor de Agendas */
     .agenda-section {
       background: #f8f9fa;
       border: 2px solid #eccc68;
@@ -104,7 +100,6 @@
       cursor: pointer;
     }
 
-    /* Formulário de Cadastro (Dia, Mês, Nome, Obs) */
     .form-group {
       display: grid;
       grid-template-columns: 2fr 1fr 1fr 2fr;
@@ -127,7 +122,6 @@
 
     input:focus, select:focus { border-color: var(--primary); }
 
-    /* Grupo de Botões Principais */
     .btn-group {
       display: flex;
       gap: 10px;
@@ -150,7 +144,6 @@
     .btn-clear { background-color: #747d8c; flex: 1; }
     .btn-month { background-color: #9b59b6; flex: 1; }
 
-    /* Barra de Busca e Tabela */
     .search-bar { width: 100%; margin-bottom: 15px; }
 
     table {
@@ -180,7 +173,7 @@
       font-weight: bold;
     }
 
-    /* Estilizações de Modais / Janelas Overlay */
+    /* MODAIS */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -222,7 +215,6 @@
       width: 100%;
     }
 
-    /* Modal Festivo de Parabéns */
     .modal-party {
       max-width: 450px;
       background: linear-gradient(135deg, #ffffff 0%, #fff0f3 100%);
@@ -259,7 +251,6 @@
       to { transform: translateY(-10px); }
     }
 
-    /* Animação dos Balões Subindo */
     .balloon-container {
       position: absolute;
       width: 100%;
@@ -282,7 +273,6 @@
       100% { transform: translateY(-450px) rotate(20deg); opacity: 0; }
     }
 
-    /* Rodapé da Página */
     footer {
       margin-top: 30px;
       text-align: center;
@@ -317,11 +307,19 @@
 </head>
 <body>
 
-<!-- ================================================================= -->
-<!-- MODAIS DA APLICAÇÃO (JANELAS FLUTUANTES) -->
-<!-- ================================================================= -->
+<!-- MODAIS -->
 
-<!-- Modal 1: Sucesso ao salvar dados no GitHub -->
+<!-- Modal: Criar Primeira Agenda -->
+<div id="modalCriarPrimeiraAgenda" class="modal-overlay">
+  <div class="modal-box">
+    <h3 style="color: var(--primary);">📁 Nenhuma agenda encontrada</h3>
+    <p>Por favor, informe o nome da sua primeira agenda para continuar:</p>
+    <input type="text" id="nomeNovaAgendaInicial" placeholder="Ex: Amigos, Família, Trabalho" style="width: 100%; margin-top: 10px;">
+    <button onclick="confirmarPrimeiraAgenda()">Criar Agenda</button>
+  </div>
+</div>
+
+<!-- Modal: Sucesso -->
 <div id="modalSucesso" class="modal-overlay">
   <div class="modal-box">
     <h3 style="color: var(--secondary);">🎉 Sucesso!</h3>
@@ -330,7 +328,7 @@
   </div>
 </div>
 
-<!-- Modal 2: Tela de Parabéns do Dia (Festa) -->
+<!-- Modal: Parabéns do Dia -->
 <div id="modalParabens" class="modal-overlay">
   <div class="modal-box modal-party">
     <div class="balloon-container" id="balloonContainer"></div>
@@ -346,7 +344,7 @@
   </div>
 </div>
 
-<!-- Modal 3: Consulta de Aniversariantes do Mês -->
+<!-- Modal: Aniversariantes do Mês -->
 <div id="modalMes" class="modal-overlay">
   <div class="modal-box" style="max-width: 550px;">
     <h3 style="color: #9b59b6;" id="tituloModalMes">🗓️ Aniversariantes do Mês</h3>
@@ -366,12 +364,8 @@
   </div>
 </div>
 
-<!-- ================================================================= -->
-<!-- ESTRUTURA PRINCIPAL DA TELA -->
-<!-- ================================================================= -->
+<!-- CONTAINER PRINCIPAL -->
 <div class="container">
-  
-  <!-- Banner / Cabeçalho -->
   <div class="header-banner">
     <img src="logo.png" alt="Logo Reinaldo Pinheiro" class="logo" onerror="this.style.display='none'">
     <div class="festive-decor">🎈 🎂 🎁 🥳 🎉</div>
@@ -379,7 +373,6 @@
     <small>Versão 2.1 | Data: 29/07/2026</small>
   </div>
 
-  <!-- Bloco de Gerenciamento e Seleção de Agendas -->
   <div class="agenda-section">
     <label for="agendaSelect">📁 Agenda Atual:</label>
     <select id="agendaSelect" onchange="trocarAgenda()"></select>
@@ -387,17 +380,14 @@
     <button class="btn-agenda" style="background-color: #ff4757;" onclick="excluirAgendaAtual()">🗑️ Excluir Agenda</button>
   </div>
 
-  <!-- Formulário de Entrada de Dados -->
   <input type="hidden" id="editIndex" value="-1">
   <div class="form-group">
     <input type="text" id="nome" placeholder="Nome do Aniversariante" required>
     
-    <!-- Dia de Nascimento -->
     <select id="diaNasc" required>
       <option value="">Dia</option>
     </select>
     
-    <!-- Mês de Nascimento -->
     <select id="mesNasc" required>
       <option value="">Mês</option>
       <option value="01">Janeiro</option>
@@ -417,7 +407,6 @@
     <input type="text" id="obs" maxlength="50" placeholder="Observação (máx. 50 caract.)">
   </div>
 
-  <!-- Botões de Ação do Formulário -->
   <div class="btn-group">
     <button id="btnSalvar" class="btn-save" onclick="salvarAniversario()">💾 Salvar</button>
     <button class="btn-month" onclick="abrirAniversariantesMes()">🎉 Aniversariantes do Mês</button>
@@ -425,10 +414,8 @@
     <button class="btn-export" onclick="exportarICS()">📅 Exportar (.ics)</button>
   </div>
 
-  <!-- Campo de Pesquisa Instantânea -->
   <input type="text" id="campoBusca" class="search-bar" placeholder="🔍 Consultar nome ou observação nesta agenda..." onkeyup="consultarAniversarios()">
 
-  <!-- Tabela de Listagem dos Aniversários -->
   <table>
     <thead>
       <tr>
@@ -442,7 +429,6 @@
     <tbody id="tabelaAniversarios"></tbody>
   </table>
 
-  <!-- Rodapé e Doação PIX -->
   <footer>
     <div class="pix-box">
       <strong>🎁 Ajude a criar novos projetos</strong><br>
@@ -457,10 +443,6 @@
   </footer>
 </div>
 
-<!-- ================================================================= -->
-<!-- LÓGICA E PROGRAMAÇÃO (JAVASCRIPT) -->
-<!-- ================================================================= -->
-
 <script>
   // -------------------------------------------------------------
   // FATIADO 
@@ -472,15 +454,14 @@
   function obterToken() {
     return (PARTE1 + PARTE2 + PARTE3).trim();
   }
+
   const REPO_OWNER = "reinaldopinheiro";
   const REPO_NAME = "reinaldopinheiro.github.io";
   const FILE_PATH = "niver/dados_niver.json";
 
-  // Base de dados principal na memória
-  let baseAgendas = { "Geral": [] };
-  let agendaAtual = "Geral";
+  let baseAgendas = {};
+  let agendaAtual = "";
 
-  // Preenche a caixa de seleção com os dias 01 até 31 dinamicamente
   function preencherDias() {
     const selectDia = document.getElementById('diaNasc');
     for (let i = 1; i <= 31; i++) {
@@ -492,45 +473,74 @@
     }
   }
 
-  // Inicializa o sistema ao carregar a página
+  // INICIALIZAÇÃO DINÂMICA (LÊ O JSON PRIMEIRO)
   async function inicializar() {
     preencherDias();
+    let carregouDoJson = false;
+
     try {
-      // Tenta buscar o arquivo JSON no repositório web
       const resp = await fetch('dados_niver.json?v=' + new Date().getTime());
       if (resp.ok) {
         const dados = await resp.json();
-        if (Array.isArray(dados)) {
-          baseAgendas["Geral"] = dados;
-        } else if (dados && typeof dados === 'object') {
+        if (dados && typeof dados === 'object' && !Array.isArray(dados)) {
           baseAgendas = dados;
+          carregouDoJson = true;
         }
       }
     } catch (e) {
-      // Caso dê erro de conexão, lê os dados mantidos no navegador local (LocalStorage)
+      console.log("Servidor não retornou arquivo JSON ou deu erro, tentando local...");
+    }
+
+    // Se não carregou do JSON, tenta o LocalStorage
+    if (!carregouDoJson) {
       const local = localStorage.getItem('niver_agendas_db');
-      if (local) baseAgendas = JSON.parse(local);
+      if (local) {
+        baseAgendas = JSON.parse(local);
+      }
     }
 
-    // Garante que a agenda GERAL nunca seja destruída
-    if (!baseAgendas["Geral"]) {
-      baseAgendas["Geral"] = [];
-    }
+    // Pega a lista de chaves de agendas
+    const chaves = Object.keys(baseAgendas);
 
-    atualizarSelectAgendas();
-    renderizarTabela();
-    verificarAniversarianteDoDia();
+    // SE HOUVER AGENDAS: seleciona a primeira do arquivo JSON/LocalStorage
+    if (chaves.length > 0) {
+      agendaAtual = chaves[0];
+      atualizarSelectAgendas();
+      renderizarTabela();
+      verificarAniversarianteDoDia();
+    } else {
+      // SE NÃO HOUVER NENHUMA AGENDA: Abre janela para criar a primeira
+      document.getElementById("modalCriarPrimeiraAgenda").classList.add("active");
+    }
   }
 
-  // Funções utilitárias de controle de Modais
+  // Confirmação da modal inicial para a primeira agenda
+  function confirmarPrimeiraAgenda() {
+    const campo = document.getElementById("nomeNovaAgendaInicial");
+    const nome = campo.value.trim();
+
+    if (!nome) {
+      alert("Por favor, digite um nome válido para a agenda!");
+      return;
+    }
+
+    baseAgendas[nome] = [];
+    agendaAtual = nome;
+
+    atualizarStorageLocal();
+    atualizarSelectAgendas();
+    renderizarTabela();
+    fecharModal("modalCriarPrimeiraAgenda");
+    salvarNoGitHubDirect(false);
+  }
+
   function exibirModalSucesso() { document.getElementById("modalSucesso").classList.add("active"); }
   function fecharModal(id) { document.getElementById(id).classList.remove("active"); }
 
-  // -------------------------------------------------------------
-  // TELA DE PARABÉNS DO DIA (MODAL FESTIVO)
-  // -------------------------------------------------------------
-  // Verifica aniversariantes no dia ATUAL SOMENTE DENTRO DA AGENDA ATIVADA
+  // VERIFICA SE HÁ ANIVERSARIANTE APENAS NA AGENDA ATUALMENTE SELECIONADA
   function verificarAniversarianteDoDia() {
+    if (!agendaAtual || !baseAgendas[agendaAtual]) return;
+
     const hoje = new Date();
     const diaHoje = String(hoje.getDate()).padStart(2, '0');
     const mesHoje = String(hoje.getMonth() + 1).padStart(2, '0');
@@ -548,7 +558,6 @@
       }
     });
 
-    // Se houver aniversariante no dia dentro da agenda selecionada, exibe a festa!
     if (aniversariantesHoje.length > 0) {
       document.getElementById("nomeAniversarianteDia").innerHTML = aniversariantesHoje.join("<br>& ");
       gerarBaloes();
@@ -556,7 +565,6 @@
     }
   }
 
-  // Animação de balões flutuantes na tela de festa
   function gerarBaloes() {
     const container = document.getElementById("balloonContainer");
     container.innerHTML = "";
@@ -573,9 +581,6 @@
     }
   }
 
-  // -------------------------------------------------------------
-  // MODAL: ANIVERSARIANTES DO MÊS
-  // -------------------------------------------------------------
   function abrirAniversariantesMes() {
     const hoje = new Date();
     const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
@@ -585,7 +590,6 @@
 
     let listaMes = [];
 
-    // Percorre todas as agendas para montar o relatório geral mensal
     Object.keys(baseAgendas).forEach(agenda => {
       baseAgendas[agenda].forEach(item => {
         const partes = item.dataNasc.split('-');
@@ -602,7 +606,6 @@
       });
     });
 
-    // Ordena os aniversariantes por dia em ordem crescente
     listaMes.sort((a, b) => a.dia - b.dia);
 
     const tbody = document.getElementById("tabelaAniversariantesMes");
@@ -625,7 +628,6 @@
     document.getElementById("modalMes").classList.add("active");
   }
 
-  // Cálculos do Signo do Zodíaco a partir do dia e mês
   function obterSigno(dia, mes) {
     dia = parseInt(dia, 10);
     mes = parseInt(mes, 10);
@@ -645,20 +647,10 @@
     return "";
   }
 
-  // -------------------------------------------------------------
-  // LÓGICA DE GERENCIAMENTO DE AGENDAS (CRÍTICA)
-  // -------------------------------------------------------------
-  
-  // Atualiza o componente <select> com todas as agendas existentes
+  // ATUALIZA CAIXA DE SELEÇÃO DE AGENDAS
   function atualizarSelectAgendas() {
     const select = document.getElementById('agendaSelect');
     select.innerHTML = '';
-    
-    // Assegura a obrigatoriedade da Agenda Geral
-    if (!baseAgendas["Geral"]) {
-      baseAgendas["Geral"] = [];
-    }
-
     const agendas = Object.keys(baseAgendas);
 
     agendas.forEach(nome => {
@@ -670,14 +662,12 @@
     });
   }
 
-  // Troca a agenda visualizada
   function trocarAgenda() {
     agendaAtual = document.getElementById('agendaSelect').value;
     renderizarTabela();
     verificarAniversarianteDoDia();
   }
 
-  // Cria uma nova agenda personalizada
   function novaAgenda() {
     const nome = prompt("Digite o nome da nova Agenda (Ex: Família, Trabalho, Amigos):");
     if (nome && nome.trim() !== "") {
@@ -696,36 +686,41 @@
     }
   }
 
-  // Exclui a agenda aberta no momento (com trava de segurança para a GERAL)
+  // EXCLUSÃO DA AGENDA SELECIONADA
   function excluirAgendaAtual() {
-    // REGRA DE PROTEÇÃO: A agenda "Geral" é obrigatória e não pode ser apagada.
-    if (agendaAtual === "Geral") {
-      alert("A agenda 'Geral' é a principal do sistema e NÃO pode ser excluída!");
-      return;
-    }
+    if (!agendaAtual || !baseAgendas[agendaAtual]) return;
 
-    if (confirm(`Tem certeza que deseja excluir a agenda "${agendaAtual}"? Todos os aniversários dela serão removidos.`)) {
-      // Remove do objeto principal
+    if (confirm(`Tem certeza que deseja excluir a agenda "${agendaAtual}"?`)) {
       delete baseAgendas[agendaAtual];
 
-      // Volta obrigatoriamente para a agenda Geral
-      agendaAtual = "Geral";
+      const restantes = Object.keys(baseAgendas);
 
-      // Atualiza o armazenamento local, os componentes da tela e a tabela
-      atualizarStorageLocal();
-      atualizarSelectAgendas();
-      renderizarTabela();
-      verificarAniversarianteDoDia();
-
-      // Sincroniza a remoção diretamente no GitHub
-      salvarNoGitHubDirect(false);
+      if (restantes.length > 0) {
+        // Pega a primeira agenda que sobrou
+        agendaAtual = restantes[0];
+        atualizarStorageLocal();
+        atualizarSelectAgendas();
+        renderizarTabela();
+        verificarAniversarianteDoDia();
+        salvarNoGitHubDirect(false);
+      } else {
+        // Se ficou sem nenhuma, abre o modal de criação da primeira agenda
+        agendaAtual = "";
+        atualizarStorageLocal();
+        atualizarSelectAgendas();
+        renderizarTabela();
+        salvarNoGitHubDirect(false);
+        document.getElementById("modalCriarPrimeiraAgenda").classList.add("active");
+      }
     }
   }
 
-  // -------------------------------------------------------------
-  // OPERAÇÕES DE CADASTRO / EDIÇÃO / EXCLUSÃO DE ANIVERSÁRIOS
-  // -------------------------------------------------------------
   async function salvarAniversario() {
+    if (!agendaAtual) {
+      alert("Crie ou selecione uma agenda antes de salvar!");
+      return;
+    }
+
     const nome = document.getElementById('nome').value.trim();
     const dia = document.getElementById('diaNasc').value;
     const mes = document.getElementById('mesNasc').value;
@@ -737,7 +732,6 @@
       return;
     }
 
-    // Armazena com um ano fictício interno (2000) para compatibilidade de rotinas de ordenação
     const dataNasc = `2000-${mes}-${dia}`;
     const item = { nome, dataNasc, obs };
 
@@ -758,10 +752,12 @@
     await salvarNoGitHubDirect(true);
   }
 
-  // Desenha as linhas da tabela no HTML conforme a agenda ativa
   function renderizarTabela() {
     const tbody = document.getElementById('tabelaAniversarios');
     tbody.innerHTML = '';
+
+    if (!agendaAtual || !baseAgendas[agendaAtual]) return;
+
     const termo = document.getElementById('campoBusca').value.toLowerCase();
     let listaParaExibir = [];
 
@@ -777,7 +773,6 @@
       }
     });
 
-    // Ordena alfabeticamente por nome
     listaParaExibir.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
 
     listaParaExibir.forEach((item) => {
@@ -843,9 +838,6 @@
     localStorage.setItem('niver_agendas_db', JSON.stringify(baseAgendas));
   }
 
-  // -------------------------------------------------------------
-  // EXPORTAÇÃO PARA AGENDA / CALENDÁRIO (.ICS)
-  // -------------------------------------------------------------
   function exportarICS() {
     const listaAtual = baseAgendas[agendaAtual] || [];
     if (listaAtual.length === 0) {
@@ -876,9 +868,6 @@
     link.click();
   }
 
-  // -------------------------------------------------------------
-  // INTEGRALIZAÇÃO DIRETA VIA REST API DO GITHUB
-  // -------------------------------------------------------------
   async function salvarNoGitHubDirect(mostrarModal = true) {
     const token = obterToken();
 
@@ -936,7 +925,6 @@
     }
   }
 
-  // Inicializa a aplicação
   inicializar();
 </script>
 
