@@ -99,10 +99,10 @@
       cursor: pointer;
     }
 
-    /* Formulário */
+    /* Formulário Ajustado para Dia e Mês */
     .form-group {
       display: grid;
-      grid-template-columns: 2fr 1fr 2fr;
+      grid-template-columns: 2fr 1fr 1fr 2fr;
       gap: 10px;
       margin-bottom: 15px;
     }
@@ -215,7 +215,6 @@
       width: 100%;
     }
 
-    /* Tela Festa de Aniversario do Dia */
     .modal-party {
       max-width: 450px;
       background: linear-gradient(135deg, #ffffff 0%, #fff0f3 100%);
@@ -282,7 +281,6 @@
       width: 100%;
     }
 
-    /* Ajuste do tamanho do QRCode do PIX */
     .pix-box {
       background: #f1f2f6;
       border: 2px dashed #2ed573;
@@ -355,7 +353,7 @@
 </div>
 
 <div class="container">
-  <!-- Cabeçalho (Com o logo do rodapé no topo) -->
+  <!-- Cabeçalho -->
   <div class="header-banner">
     <img src="logo.png" alt="Logo Reinaldo Pinheiro" class="logo" onerror="this.style.display='none'">
     <div class="festive-decor">🎈 🎂 🎁 🥳 🎉</div>
@@ -371,11 +369,31 @@
     <button class="btn-agenda" style="background-color: #ff4757;" onclick="excluirAgendaAtual()">🗑️ Excluir Agenda</button>
   </div>
 
-  <!-- Form de Cadastro -->
+  <!-- Form de Cadastro (Sem Ano) -->
   <input type="hidden" id="editIndex" value="-1">
   <div class="form-group">
     <input type="text" id="nome" placeholder="Nome do Aniversariante" required>
-    <input type="date" id="dataNasc" required>
+    
+    <select id="diaNasc" required>
+      <option value="">Dia</option>
+    </select>
+    
+    <select id="mesNasc" required>
+      <option value="">Mês</option>
+      <option value="01">Janeiro</option>
+      <option value="02">Fevereiro</option>
+      <option value="03">Março</option>
+      <option value="04">Abril</option>
+      <option value="05">Maio</option>
+      <option value="06">Junho</option>
+      <option value="07">Julho</option>
+      <option value="08">Agosto</option>
+      <option value="09">Setembro</option>
+      <option value="10">Outubro</option>
+      <option value="11">Novembro</option>
+      <option value="12">Dezembro</option>
+    </select>
+
     <input type="text" id="obs" maxlength="50" placeholder="Observação (máx. 50 caract.)">
   </div>
 
@@ -403,7 +421,7 @@
     <tbody id="tabelaAniversarios"></tbody>
   </table>
 
-  <!-- Rodapé (Sem logo) -->
+  <!-- Rodapé -->
   <footer>
     <div class="pix-box">
       <strong>🎁 Ajude a criar novos projetos</strong><br>
@@ -438,7 +456,19 @@
   let baseAgendas = { "Geral": [] };
   let agendaAtual = "Geral";
 
+  function preencherDias() {
+    const selectDia = document.getElementById('diaNasc');
+    for (let i = 1; i <= 31; i++) {
+      const opt = document.createElement('option');
+      const diaFmt = String(i).padStart(2, '0');
+      opt.value = diaFmt;
+      opt.textContent = diaFmt;
+      selectDia.appendChild(opt);
+    }
+  }
+
   async function inicializar() {
+    preencherDias();
     try {
       const resp = await fetch('dados_niver.json?v=' + new Date().getTime());
       if (resp.ok) {
@@ -472,7 +502,10 @@
     Object.keys(baseAgendas).forEach(agenda => {
       baseAgendas[agenda].forEach(item => {
         const partes = item.dataNasc.split('-');
-        if (partes[2] === diaHoje && partes[1] === mesHoje) {
+        const mes = partes.length === 3 ? partes[1] : partes[0];
+        const dia = partes.length === 3 ? partes[2] : partes[1];
+
+        if (dia === diaHoje && mes === mesHoje) {
           aniversariantesHoje.push(item.nome);
         }
       });
@@ -513,9 +546,12 @@
     Object.keys(baseAgendas).forEach(agenda => {
       baseAgendas[agenda].forEach(item => {
         const partes = item.dataNasc.split('-');
-        if (partes[1] === mesAtual) {
+        const mes = partes.length === 3 ? partes[1] : partes[0];
+        const dia = partes.length === 3 ? partes[2] : partes[1];
+
+        if (mes === mesAtual) {
           listaMes.push({
-            dia: parseInt(partes[2], 10),
+            dia: parseInt(dia, 10),
             nome: item.nome,
             agenda: agenda
           });
@@ -622,16 +658,20 @@
 
   async function salvarAniversario() {
     const nome = document.getElementById('nome').value.trim();
-    const dataNasc = document.getElementById('dataNasc').value;
+    const dia = document.getElementById('diaNasc').value;
+    const mes = document.getElementById('mesNasc').value;
     const obs = document.getElementById('obs').value.trim();
     const index = parseInt(document.getElementById('editIndex').value);
 
-    if (!nome || !dataNasc) {
-      alert('Preencha Nome e Data de Aniversário!');
+    if (!nome || !dia || !mes) {
+      alert('Preencha Nome, Dia e Mês de Aniversário!');
       return;
     }
 
+    // Salva no formato "2000-MM-DD"
+    const dataNasc = `2000-${mes}-${dia}`;
     const item = { nome, dataNasc, obs };
+
     if (!baseAgendas[agendaAtual]) baseAgendas[agendaAtual] = [];
 
     if (index === -1) {
@@ -648,7 +688,6 @@
     await salvarNoGitHubDirect(true);
   }
 
-  // Renderização e Filtro restrito à Agenda Selecionada
   function renderizarTabela() {
     const tbody = document.getElementById('tabelaAniversarios');
     tbody.innerHTML = '';
@@ -667,13 +706,13 @@
       }
     });
 
-    // Ordenação Alfabética A-Z
     listaParaExibir.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
 
     listaParaExibir.forEach((item) => {
       const partesData = item.dataNasc.split('-');
-      const dia = partesData[2];
-      const mes = partesData[1];
+      const mes = partesData.length === 3 ? partesData[1] : partesData[0];
+      const dia = partesData.length === 3 ? partesData[2] : partesData[1];
+
       const dataFormatada = `${dia}/${mes}`;
       const signo = obterSigno(dia, mes);
 
@@ -697,8 +736,13 @@
     document.getElementById('agendaSelect').value = agenda;
 
     const item = baseAgendas[agenda][index];
+    const partesData = item.dataNasc.split('-');
+    const mes = partesData.length === 3 ? partesData[1] : partesData[0];
+    const dia = partesData.length === 3 ? partesData[2] : partesData[1];
+
     document.getElementById('nome').value = item.nome;
-    document.getElementById('dataNasc').value = item.dataNasc;
+    document.getElementById('diaNasc').value = dia;
+    document.getElementById('mesNasc').value = mes;
     document.getElementById('obs').value = item.obs;
     document.getElementById('editIndex').value = index;
   }
@@ -717,7 +761,8 @@
 
   function limparFormulario() {
     document.getElementById('nome').value = '';
-    document.getElementById('dataNasc').value = '';
+    document.getElementById('diaNasc').value = '';
+    document.getElementById('mesNasc').value = '';
     document.getElementById('obs').value = '';
     document.getElementById('editIndex').value = '-1';
   }
@@ -735,8 +780,11 @@
 
     let icsData = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Reinaldo Pinheiro Consultoria//NIVER App//PT\n";
     listaAtual.forEach(item => {
-      const [ano, mes, dia] = item.dataNasc.split('-');
+      const partesData = item.dataNasc.split('-');
+      const mes = partesData.length === 3 ? partesData[1] : partesData[0];
+      const dia = partesData.length === 3 ? partesData[2] : partesData[1];
       const anoAtual = new Date().getFullYear();
+
       icsData += "BEGIN:VEVENT\n";
       icsData += `SUMMARY:🎂 Aniversário de ${item.nome} (${agendaAtual})\n`;
       icsData += `DESCRIPTION:${item.obs}\n`;
