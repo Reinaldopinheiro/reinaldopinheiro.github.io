@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NIVER v2.1 - Controle de Aniversários por Agenda</title>
+  <title>NIVER v2.2 - Controle de Aniversários por Agenda</title>
   
   <!-- ESTILOS DA APLICAÇÃO (CSS) -->
   <style>
@@ -370,7 +370,7 @@
     <img src="logo.png" alt="Logo Reinaldo Pinheiro" class="logo" onerror="this.style.display='none'">
     <div class="festive-decor">🎈 🎂 🎁 🥳 🎉</div>
     <h1>NIVER</h1>
-    <small>Versão 2.1 | Data: 29/07/2026</small>
+    <small>Versão 2.2 | Executando na pasta atual</small>
   </div>
 
   <div class="agenda-section">
@@ -455,9 +455,28 @@
     return (PARTE1 + PARTE2 + PARTE3).trim();
   }
 
+
   const REPO_OWNER = "reinaldopinheiro";
   const REPO_NAME = "reinaldopinheiro.github.io";
-  const FILE_PATH = "niver80/dados_niver.json";
+
+  // FUNÇÃO QUE OBTÉM O CAMINHO RELATIVO DA PASTA ATUAL ONDE O HTML ESTÁ EXECUÇÃO NO GITHUB
+  function obterCaminhoJsonNaPastaAtual() {
+    // Pega o caminho da URL (ex: "/NIVER/index.html" ou "/projetos/NIVER_2026/niver.html")
+    let pathname = window.location.pathname;
+    
+    // Remove o nome do arquivo no final (ex: "/NIVER/" ou "/projetos/NIVER_2026/")
+    let pastaAtual = pathname.substring(0, pathname.lastIndexOf('/') + 1);
+    
+    // Remove a barra inicial caso exista para formar o caminho do repositório no GitHub
+    if (pastaAtual.startsWith('/')) {
+      pastaAtual = pastaAtual.substring(1);
+    }
+    
+    // Retorna o caminho completo dentro do repositório
+    return pastaAtual + "dados_niver.json";
+  }
+
+  const FILE_PATH = obterCaminhoJsonNaPastaAtual();
 
   let baseAgendas = {};
   let agendaAtual = "";
@@ -473,13 +492,14 @@
     }
   }
 
-  // INICIALIZAÇÃO DINÂMICA (LÊ O JSON PRIMEIRO)
+  // INICIALIZAÇÃO: LÊ O ARQUIVO JSON NA MESMA PASTA
   async function inicializar() {
     preencherDias();
     let carregouDoJson = false;
 
     try {
-      const resp = await fetch('dados_niver.json?v=' + new Date().getTime());
+      // Busca sempre o dados_niver.json na MESMA PASTA DO HTML ("./dados_niver.json")
+      const resp = await fetch('./dados_niver.json?v=' + new Date().getTime());
       if (resp.ok) {
         const dados = await resp.json();
         if (dados && typeof dados === 'object' && !Array.isArray(dados)) {
@@ -488,10 +508,9 @@
         }
       }
     } catch (e) {
-      console.log("Servidor não retornou arquivo JSON ou deu erro, tentando local...");
+      console.log("JSON na pasta atual não foi encontrado, tentando LocalStorage...");
     }
 
-    // Se não carregou do JSON, tenta o LocalStorage
     if (!carregouDoJson) {
       const local = localStorage.getItem('niver_agendas_db');
       if (local) {
@@ -499,22 +518,18 @@
       }
     }
 
-    // Pega a lista de chaves de agendas
     const chaves = Object.keys(baseAgendas);
 
-    // SE HOUVER AGENDAS: seleciona a primeira do arquivo JSON/LocalStorage
     if (chaves.length > 0) {
       agendaAtual = chaves[0];
       atualizarSelectAgendas();
       renderizarTabela();
       verificarAniversarianteDoDia();
     } else {
-      // SE NÃO HOUVER NENHUMA AGENDA: Abre janela para criar a primeira
       document.getElementById("modalCriarPrimeiraAgenda").classList.add("active");
     }
   }
 
-  // Confirmação da modal inicial para a primeira agenda
   function confirmarPrimeiraAgenda() {
     const campo = document.getElementById("nomeNovaAgendaInicial");
     const nome = campo.value.trim();
@@ -537,7 +552,6 @@
   function exibirModalSucesso() { document.getElementById("modalSucesso").classList.add("active"); }
   function fecharModal(id) { document.getElementById(id).classList.remove("active"); }
 
-  // VERIFICA SE HÁ ANIVERSARIANTE APENAS NA AGENDA ATUALMENTE SELECIONADA
   function verificarAniversarianteDoDia() {
     if (!agendaAtual || !baseAgendas[agendaAtual]) return;
 
@@ -647,7 +661,6 @@
     return "";
   }
 
-  // ATUALIZA CAIXA DE SELEÇÃO DE AGENDAS
   function atualizarSelectAgendas() {
     const select = document.getElementById('agendaSelect');
     select.innerHTML = '';
@@ -686,7 +699,6 @@
     }
   }
 
-  // EXCLUSÃO DA AGENDA SELECIONADA
   function excluirAgendaAtual() {
     if (!agendaAtual || !baseAgendas[agendaAtual]) return;
 
@@ -696,7 +708,6 @@
       const restantes = Object.keys(baseAgendas);
 
       if (restantes.length > 0) {
-        // Pega a primeira agenda que sobrou
         agendaAtual = restantes[0];
         atualizarStorageLocal();
         atualizarSelectAgendas();
@@ -704,7 +715,6 @@
         verificarAniversarianteDoDia();
         salvarNoGitHubDirect(false);
       } else {
-        // Se ficou sem nenhuma, abre o modal de criação da primeira agenda
         agendaAtual = "";
         atualizarStorageLocal();
         atualizarSelectAgendas();
@@ -868,6 +878,7 @@
     link.click();
   }
 
+  // SALVA DIRETAMENTE NA PASTA ATUAL DO REPOSITÓRIO GITHUB
   async function salvarNoGitHubDirect(mostrarModal = true) {
     const token = obterToken();
 
@@ -880,6 +891,8 @@
     if(btn) btn.innerText = "⏳ Salvando...";
 
     const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(baseAgendas, null, 2))));
+    
+    // URL dinamicamente apontada para o caminho do arquivo na pasta do HTML
     const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
 
     try {
@@ -897,7 +910,7 @@
       }
 
       const body = {
-        message: `Atualização automática via NIVER App`,
+        message: `Atualização automática via NIVER App na pasta (${FILE_PATH})`,
         content: contentEncoded,
         sha: sha !== "" ? sha : undefined
       };
