@@ -492,6 +492,7 @@
   function exibirModalSucesso() { document.getElementById("modalSucesso").classList.add("active"); }
   function fecharModal(id) { document.getElementById(id).classList.remove("active"); }
 
+  // Verifica o aniversário do dia SOMENTE na agenda selecionada
   function verificarAniversarianteDoDia() {
     const hoje = new Date();
     const diaHoje = String(hoje.getDate()).padStart(2, '0');
@@ -499,16 +500,16 @@
 
     let aniversariantesHoje = [];
 
-    Object.keys(baseAgendas).forEach(agenda => {
-      baseAgendas[agenda].forEach(item => {
-        const partes = item.dataNasc.split('-');
-        const mes = partes.length === 3 ? partes[1] : partes[0];
-        const dia = partes.length === 3 ? partes[2] : partes[1];
+    const listaAgendaAtual = baseAgendas[agendaAtual] || [];
 
-        if (dia === diaHoje && mes === mesHoje) {
-          aniversariantesHoje.push(item.nome);
-        }
-      });
+    listaAgendaAtual.forEach(item => {
+      const partes = item.dataNasc.split('-');
+      const mes = partes.length === 3 ? partes[1] : partes[0];
+      const dia = partes.length === 3 ? partes[2] : partes[1];
+
+      if (dia === diaHoje && mes === mesHoje) {
+        aniversariantesHoje.push(item.nome);
+      }
     });
 
     if (aniversariantesHoje.length > 0) {
@@ -621,6 +622,7 @@
   function trocarAgenda() {
     agendaAtual = document.getElementById('agendaSelect').value;
     renderizarTabela();
+    verificarAniversarianteDoDia();
   }
 
   function novaAgenda() {
@@ -633,6 +635,7 @@
         atualizarStorageLocal();
         atualizarSelectAgendas();
         renderizarTabela();
+        verificarAniversarianteDoDia();
         salvarNoGitHubDirect(false);
       } else {
         alert("Já existe uma agenda com esse nome!");
@@ -652,6 +655,7 @@
       atualizarStorageLocal();
       atualizarSelectAgendas();
       renderizarTabela();
+      verificarAniversarianteDoDia();
       salvarNoGitHubDirect(false);
     }
   }
@@ -668,7 +672,6 @@
       return;
     }
 
-    // Salva no formato "2000-MM-DD"
     const dataNasc = `2000-${mes}-${dia}`;
     const item = { nome, dataNasc, obs };
 
@@ -684,6 +687,7 @@
     limparFormulario();
     atualizarSelectAgendas();
     renderizarTabela();
+    verificarAniversarianteDoDia();
 
     await salvarNoGitHubDirect(true);
   }
