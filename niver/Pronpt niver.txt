@@ -7,3 +7,8 @@ deve mostrar O logo que está na pasta niver como o nome logo.png no titulo e no
 Chave PIX: doe@reinaldopinheiro.com.br
 QRCode PIX Donate
 Aponte a câmera do seu banco para o QRCode."
+
+
+Token: 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
+
+O token foi codificado no https://www.base64encode.org/
