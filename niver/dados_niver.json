@@ -1,17 +1,5 @@
 {
-  "Geral": [
-    {
-      "nome": "CELSO ROBERTO BORGES",
-      "dataNasc": "2000-03-15",
-      "obs": "Peixe"
-    },
-    {
-      "nome": "Alessandra",
-      "dataNasc": "2000-08-28",
-      "obs": ""
-    }
-  ],
-  "Amigos da Vila": [
+ "Amigos da Vila": [
     {
       "nome": "Reinaldo",
       "dataNasc": "1967-02-27",
@@ -20,6 +8,16 @@
     {
       "nome": "Edi",
       "dataNasc": "2026-07-29",
+      "obs": ""
+    },
+	{
+      "nome": "CELSO ROBERTO BORGES",
+      "dataNasc": "2000-03-15",
+      "obs": "Peixe"
+    },
+    {
+      "nome": "Alessandra",
+      "dataNasc": "2000-08-28",
       "obs": ""
     }
   ]
