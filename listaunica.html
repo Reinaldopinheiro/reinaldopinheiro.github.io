@@ -63,17 +63,43 @@
       align-items: center;
     }
 
+    .controls-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
     .search-bar {
-      width: 100%;
+      flex: 1;
+      min-width: 250px;
       padding: 12px;
       border: 2px solid #dfe4ea;
       border-radius: 8px;
       font-size: 14px;
       outline: none;
-      margin-bottom: 15px;
     }
 
     .search-bar:focus { border-color: var(--primary); }
+
+    .btn-sort {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      font-size: 14px;
+    }
+
+    .btn-sort:active { transform: scale(0.97); }
+
+    .btn-sort.active {
+      background-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.4);
+    }
 
     table {
       width: 100%;
@@ -151,8 +177,12 @@
     <button class="btn-refresh" onclick="carregarTodasPastasNiver()">🔁 Atualizar</button>
   </div>
 
-  <!-- Campo de Pesquisa Instantânea -->
-  <input type="text" id="campoBusca" class="search-bar" placeholder="🔍 Pesquisar por nome, observação, pasta ou agenda..." onkeyup="filtrarTabela()">
+  <!-- Barra de Controle (Pesquisa e Botões de Ordenação) -->
+  <div class="controls-bar">
+    <input type="text" id="campoBusca" class="search-bar" placeholder="🔍 Pesquisar por nome, observação, pasta ou agenda..." onkeyup="filtrarETabelar()">
+    <button id="btnOrdemNome" class="btn-sort active" onclick="alterarOrdenacao('nome')">🔤 Ordem Alfabética</button>
+    <button id="btnOrdemData" class="btn-sort" onclick="alterarOrdenacao('data')">📅 Ordem de Data</button>
+  </div>
 
   <!-- Tabela Consolidada -->
   <table>
@@ -182,8 +212,9 @@
   const REPO_OWNER = "reinaldopinheiro";
   const REPO_NAME = "reinaldopinheiro.github.io";
 
-  // Lista global que armazenará todos os registros unificados
+  // Armazenamento global dos dados e estado da ordenação ('nome' ou 'data')
   let todosOsAniversarios = [];
+  let modoOrdenacaoAtual = 'nome';
 
   // 1. Função de Inicialização
   async function carregarTodasPastasNiver() {
@@ -195,7 +226,6 @@
     todosOsAniversarios = [];
 
     try {
-      // Busca o conteúdo da raiz do repositório no GitHub
       const urlRaiz = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/`;
       const respRaiz = await fetch(urlRaiz);
 
@@ -205,7 +235,7 @@
 
       const itensRaiz = await respRaiz.json();
 
-      // Filtra apenas diretórios (dir) cujo nome começa com "NIVER" (case insensitive)
+      // Filtra diretórios cujo nome começa com "NIVER"
       const pastasNiver = itensRaiz.filter(item => 
         item.type === 'dir' && item.name.toUpperCase().startsWith('NIVER')
       );
@@ -218,16 +248,13 @@
 
       statusTexto.innerText = `📁 ${pastasNiver.length} pasta(s) NIVER encontrada(s). Lendo arquivos JSON...`;
 
-      // 2. Percorre cada pasta encontrada
+      // Percorre cada pasta
       for (const pasta of pastasNiver) {
         await processarPasta(pasta.name);
       }
 
-      // Ordena por Nome em ordem alfabética na lista única
-      todosOsAniversarios.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
-
       statusTexto.innerText = `✅ Concluído! Total de ${todosOsAniversarios.length} registro(s) unificado(s).`;
-      renderizarTabela(todosOsAniversarios);
+      filtrarETabelar();
 
     } catch (erro) {
       console.error(erro);
@@ -236,7 +263,7 @@
     }
   }
 
-  // 2. Processa o conteúdo de uma pasta específica
+  // 2. Processa os arquivos JSON da pasta
   async function processarPasta(nomePasta) {
     try {
       const urlPasta = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${nomePasta}`;
@@ -245,12 +272,9 @@
       if (!respPasta.ok) return;
 
       const arquivos = await respPasta.json();
-
-      // Filtra arquivos com extensão .json
       const arquivosJson = arquivos.filter(arq => arq.type === 'file' && arq.name.endsWith('.json'));
 
       for (const arqJson of arquivosJson) {
-        // Tenta ler o conteúdo bruto do arquivo JSON via download_url ou via raw
         const respConteudo = await fetch(arqJson.download_url + '?v=' + new Date().getTime());
         if (respConteudo.ok) {
           const dadosJson = await respConteudo.json();
@@ -262,37 +286,46 @@
     }
   }
 
-  // 3. Normaliza e extrai a estrutura dos JSONs para a lista única
+  // 3. Normaliza os dados
   function extrairEUnificarRegistros(dados, pastaOrigem, arquivoOrigem) {
-    // Se a estrutura do JSON for de dicionário/múltiplas agendas: { "Trabalho": [...], "Amigos": [...] }
     if (dados && typeof dados === 'object' && !Array.isArray(dados)) {
       Object.keys(dados).forEach(nomeAgenda => {
         if (Array.isArray(dados[nomeAgenda])) {
           dados[nomeAgenda].forEach(item => {
             if (item.nome && item.dataNasc) {
+              const partes = item.dataNasc.split('-');
+              const mes = parseInt(partes.length === 3 ? partes[1] : partes[0], 10);
+              const dia = parseInt(partes.length === 3 ? partes[2] : partes[1], 10);
+
               todosOsAniversarios.push({
                 pasta: pastaOrigem,
                 arquivo: arquivoOrigem,
                 agenda: nomeAgenda,
                 nome: item.nome,
                 dataNasc: item.dataNasc,
+                mes: mes,
+                dia: dia,
                 obs: item.obs || ""
               });
             }
           });
         }
       });
-    } 
-    // Se a estrutura do JSON for uma lista simples: [ { nome, dataNasc, obs }, ... ]
-    else if (Array.isArray(dados)) {
+    } else if (Array.isArray(dados)) {
       dados.forEach(item => {
         if (item.nome && item.dataNasc) {
+          const partes = item.dataNasc.split('-');
+          const mes = parseInt(partes.length === 3 ? partes[1] : partes[0], 10);
+          const dia = parseInt(partes.length === 3 ? partes[2] : partes[1], 10);
+
           todosOsAniversarios.push({
             pasta: pastaOrigem,
             arquivo: arquivoOrigem,
             agenda: "Padrão",
             nome: item.nome,
             dataNasc: item.dataNasc,
+            mes: mes,
+            dia: dia,
             obs: item.obs || ""
           });
         }
@@ -300,23 +333,57 @@
     }
   }
 
-  // 4. Renderiza a Tabela na Tela
+  // 4. Alterna o Modo de Ordenação
+  function alterarOrdenacao(modo) {
+    modoOrdenacaoAtual = modo;
+    
+    // Atualiza visual dos botões
+    document.getElementById('btnOrdemNome').classList.toggle('active', modo === 'nome');
+    document.getElementById('btnOrdemData').classList.toggle('active', modo === 'data');
+
+    filtrarETabelar();
+  }
+
+  // 5. Filtra e Ordena os Dados antes de Exibir
+  function filtrarETabelar() {
+    const termo = document.getElementById('campoBusca').value.toLowerCase();
+    
+    // Filtro por termo
+    let resultado = todosOsAniversarios.filter(item => 
+      item.nome.toLowerCase().includes(termo) ||
+      item.obs.toLowerCase().includes(termo) ||
+      item.pasta.toLowerCase().includes(termo) ||
+      item.agenda.toLowerCase().includes(termo)
+    );
+
+    // Aplica a ordenação
+    if (modoOrdenacaoAtual === 'nome') {
+      resultado.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+    } else if (modoOrdenacaoAtual === 'data') {
+      resultado.sort((a, b) => {
+        if (a.mes !== b.mes) return a.mes - b.mes; // Ordena por mês (1 a 12)
+        return a.dia - b.dia;                     // Depois por dia (1 a 31)
+      });
+    }
+
+    renderizarTabela(resultado);
+  }
+
+  // 6. Desenha a Tabela na Tela
   function renderizarTabela(lista) {
     const tbody = document.getElementById('tabelaListaUnica');
     tbody.innerHTML = '';
 
     if (lista.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum aniversário encontrado nas pastas.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum aniversário encontrado.</td></tr>';
       return;
     }
 
     lista.forEach(item => {
-      const partes = item.dataNasc.split('-');
-      const mes = partes.length === 3 ? partes[1] : partes[0];
-      const dia = partes.length === 3 ? partes[2] : partes[1];
-
-      const dataFormatada = `${dia}/${mes}`;
-      const signo = obterSigno(dia, mes);
+      const diaFmt = String(item.dia).padStart(2, '0');
+      const mesFmt = String(item.mes).padStart(2, '0');
+      const dataFormatada = `${diaFmt}/${mesFmt}`;
+      const signo = obterSigno(item.dia, item.mes);
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -330,25 +397,8 @@
     });
   }
 
-  // 5. Filtro Instantâneo da Tabela
-  function filtrarTabela() {
-    const termo = document.getElementById('campoBusca').value.toLowerCase();
-    
-    const filtrados = todosOsAniversarios.filter(item => 
-      item.nome.toLowerCase().includes(termo) ||
-      item.obs.toLowerCase().includes(termo) ||
-      item.pasta.toLowerCase().includes(termo) ||
-      item.agenda.toLowerCase().includes(termo)
-    );
-
-    renderizarTabela(filtrados);
-  }
-
-  // Helper para Signos
+  // Helper de Signos
   function obterSigno(dia, mes) {
-    dia = parseInt(dia, 10);
-    mes = parseInt(mes, 10);
-
     if ((mes == 3 && dia >= 21) || (mes == 4 && dia <= 19)) return "♈ Áries";
     if ((mes == 4 && dia >= 20) || (mes == 5 && dia <= 20)) return "♉ Touro";
     if ((mes == 5 && dia >= 21) || (mes == 6 && dia <= 20)) return "♊ Gêmeos";
@@ -364,7 +414,7 @@
     return "";
   }
 
-  // Executa ao carregar
+  // Executa ao carregar a página
   carregarTodasPastasNiver();
 </script>
 
