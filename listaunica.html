@@ -13,6 +13,7 @@
       --card-bg: #ffffff;
       --text: #2f3542;
       --accent: #70a1ff;
+      --warning: #ffa502;
     }
 
     * { box-sizing: border-box; }
@@ -61,6 +62,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .controls-bar {
@@ -82,9 +85,7 @@
 
     .search-bar:focus { border-color: var(--primary); }
 
-    .btn-sort {
-      background-color: var(--accent);
-      color: white;
+    .btn-action {
       border: none;
       padding: 10px 15px;
       border-radius: 8px;
@@ -92,13 +93,27 @@
       cursor: pointer;
       transition: background-color 0.2s, transform 0.1s;
       font-size: 14px;
+      color: white;
     }
 
-    .btn-sort:active { transform: scale(0.97); }
+    .btn-action:active { transform: scale(0.97); }
+
+    .btn-sort {
+      background-color: var(--accent);
+    }
 
     .btn-sort.active {
       background-color: var(--primary);
       box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.4);
+    }
+
+    .btn-download {
+      background-color: var(--warning);
+    }
+
+    .btn-refresh {
+      background-color: var(--secondary);
+      padding: 8px 16px;
     }
 
     table {
@@ -143,16 +158,6 @@
       color: #747d8c;
     }
 
-    .btn-refresh {
-      background-color: var(--secondary);
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
     footer {
       margin-top: 30px;
       text-align: center;
@@ -168,20 +173,23 @@
 <div class="container">
   <div class="header-banner">
     <h1>📋 Lista Única de Aniversários</h1>
-    <p>Varredura consolidada de todas as pastas <strong>NIVER*</strong></p>
+    <p>Varredura consolidada de todas as pastas <strong>NIVER*</strong> no GitHub</p>
   </div>
 
   <!-- Barra de Status e Recarregamento -->
   <div class="status-bar">
-    <span id="statusTexto">🔄 Buscando dados...</span>
-    <button class="btn-refresh" onclick="carregarTodasPastasNiver()">🔁 Atualizar</button>
+    <span id="statusTexto">🔄 Buscando dados no GitHub...</span>
+    <div>
+      <button class="btn-action btn-download" onclick="gerarEBaixarJson()">📥 Baixar Backup (listaunica.json)</button>
+      <button class="btn-action btn-refresh" onclick="carregarTodasPastasNiver()">🔁 Atualizar</button>
+    </div>
   </div>
 
   <!-- Barra de Controle (Pesquisa e Botões de Ordenação) -->
   <div class="controls-bar">
     <input type="text" id="campoBusca" class="search-bar" placeholder="🔍 Pesquisar por nome, observação, pasta ou agenda..." onkeyup="filtrarETabelar()">
-    <button id="btnOrdemNome" class="btn-sort active" onclick="alterarOrdenacao('nome')">🔤 Ordem Alfabética</button>
-    <button id="btnOrdemData" class="btn-sort" onclick="alterarOrdenacao('data')">📅 Ordem de Data</button>
+    <button id="btnOrdemNome" class="btn-action btn-sort active" onclick="alterarOrdenacao('nome')">🔤 Ordem Alfabética</button>
+    <button id="btnOrdemData" class="btn-action btn-sort" onclick="alterarOrdenacao('data')">📅 Ordem de Data</button>
   </div>
 
   <!-- Tabela Consolidada -->
@@ -316,7 +324,7 @@
         if (item.nome && item.dataNasc) {
           const partes = item.dataNasc.split('-');
           const mes = parseInt(partes.length === 3 ? partes[1] : partes[0], 10);
-          const dia = parseInt(partes.length === 3 ? partes[2] : partes[1], 10);
+          const dia = parseInt(partes.length === 3 ? partes[1] : partes[1], 10);
 
           todosOsAniversarios.push({
             pasta: pastaOrigem,
@@ -337,7 +345,6 @@
   function alterarOrdenacao(modo) {
     modoOrdenacaoAtual = modo;
     
-    // Atualiza visual dos botões
     document.getElementById('btnOrdemNome').classList.toggle('active', modo === 'nome');
     document.getElementById('btnOrdemData').classList.toggle('active', modo === 'data');
 
@@ -348,7 +355,6 @@
   function filtrarETabelar() {
     const termo = document.getElementById('campoBusca').value.toLowerCase();
     
-    // Filtro por termo
     let resultado = todosOsAniversarios.filter(item => 
       item.nome.toLowerCase().includes(termo) ||
       item.obs.toLowerCase().includes(termo) ||
@@ -356,13 +362,12 @@
       item.agenda.toLowerCase().includes(termo)
     );
 
-    // Aplica a ordenação
     if (modoOrdenacaoAtual === 'nome') {
       resultado.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
     } else if (modoOrdenacaoAtual === 'data') {
       resultado.sort((a, b) => {
-        if (a.mes !== b.mes) return a.mes - b.mes; // Ordena por mês (1 a 12)
-        return a.dia - b.dia;                     // Depois por dia (1 a 31)
+        if (a.mes !== b.mes) return a.mes - b.mes;
+        return a.dia - b.dia;
       });
     }
 
@@ -395,6 +400,37 @@
       `;
       tbody.appendChild(tr);
     });
+  }
+
+  // 7. GERAR E BAIXAR O ARQUIVO JSON (listaunica.json)
+  function gerarEBaixarJson() {
+    if (todosOsAniversarios.length === 0) {
+      alert("Nenhum dado encontrado para exportar!");
+      return;
+    }
+
+    // Cria uma cópia limpa tirando as propriedades temporárias de ordenação (dia/mês numéricos)
+    const dadosExportacao = todosOsAniversarios.map(item => ({
+      pastaOrigem: item.pasta,
+      arquivoOrigem: item.arquivo,
+      agenda: item.agenda,
+      nome: item.nome,
+      dataNasc: item.dataNasc,
+      obs: item.obs
+    }));
+
+    const jsonString = JSON.stringify(dadosExportacao, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = "listaunica.json";
+    document.body.appendChild(link);
+    link.click();
+    
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   // Helper de Signos
