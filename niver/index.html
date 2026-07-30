@@ -176,19 +176,28 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
+      table-layout: fixed; /* Mantém a proporção exata das larguras das colunas */
     }
 
     th, td {
-      padding: 12px;
+      padding: 12px 8px;
       text-align: left;
       border-bottom: 1px solid #dfe4ea;
+      word-wrap: break-word;
     }
 
     th { background-color: #f8f9fa; color: #57606f; }
 
-    .action-btns { display: flex; gap: 5px; }
-    .btn-edit { background-color: #eccc68; padding: 6px 10px; font-size: 12px; }
-    .btn-delete { background-color: #ff4757; padding: 6px 10px; font-size: 12px; }
+    /* LARGURAS DAS COLUNAS (Ajustadas com +5% em Agenda e Data/Signo) */
+    th.col-agenda { width: 15%; }     /* +5% */
+    th.col-nome { width: 25%; }
+    th.col-data { width: 25%; }       /* +5% */
+    th.col-obs { width: 23%; }
+    th.col-acoes { width: 12%; }
+
+    .action-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+    .btn-edit { background-color: #eccc68; padding: 6px 8px; font-size: 11px; }
+    .btn-delete { background-color: #ff4757; padding: 6px 8px; font-size: 11px; }
 
     .badge-agenda {
       background-color: var(--accent);
@@ -197,6 +206,7 @@
       border-radius: 12px;
       font-size: 11px;
       font-weight: bold;
+      display: inline-block;
     }
 
     /* MODAIS */
@@ -375,7 +385,7 @@
   <div class="modal-box" style="max-width: 550px;">
     <h3 style="color: #9b59b6;" id="tituloModalMes">🗓️ Aniversariantes do Mês</h3>
     <div style="max-height: 300px; overflow-y: auto; text-align: left; margin: 15px 0;">
-      <table style="width: 100%;">
+      <table style="width: 100%; table-layout: auto;">
         <thead>
           <tr>
             <th>Dia</th>
@@ -396,7 +406,7 @@
     <img src="logo.png" alt="Logo Reinaldo Pinheiro" class="logo" onerror="this.style.display='none'">
     <div class="festive-decor">🎈 🎂 🎁 🥳 🎉</div>
     <h1>NIVER</h1>
-    <small>Versão 2.3 | Ordenação por Nome e Data</small>
+    <small>Versão 2.3 | Larguras de Coluna Ajustadas (+5%)</small>
   </div>
 
   <div class="agenda-section">
@@ -450,11 +460,11 @@
   <table>
     <thead>
       <tr>
-        <th>Agenda</th>
-        <th>Nome</th>
-        <th>Data e Signo</th>
-        <th>Observação</th>
-        <th>Ações</th>
+        <th class="col-agenda">Agenda</th>
+        <th class="col-nome">Nome</th>
+        <th class="col-data">Data e Signo</th>
+        <th class="col-obs">Observação</th>
+        <th class="col-acoes">Ações</th>
       </tr>
     </thead>
     <tbody id="tabelaAniversarios"></tbody>
@@ -485,7 +495,7 @@
   function obterToken() {
     return (PARTE1 + PARTE2 + PARTE3).trim();
   }
-  
+
   const REPO_OWNER = "reinaldopinheiro";
   const REPO_NAME = "reinaldopinheiro.github.io";
 
@@ -502,7 +512,7 @@
 
   let baseAgendas = {};
   let agendaAtual = "";
-  let modoOrdenacaoAtual = 'nome'; // Modos: 'nome' ou 'data'
+  let modoOrdenacaoAtual = 'nome';
 
   function preencherDias() {
     const selectDia = document.getElementById('diaNasc');
@@ -515,7 +525,6 @@
     }
   }
 
-  // INICIALIZAÇÃO: LÊ O ARQUIVO JSON NA MESMA PASTA
   async function inicializar() {
     preencherDias();
     let carregouDoJson = false;
@@ -784,7 +793,6 @@
     await salvarNoGitHubDirect(true);
   }
 
-  // Alterna Modo de Ordenação
   function alterarOrdenacao(modo) {
     modoOrdenacaoAtual = modo;
     
@@ -825,7 +833,6 @@
       }
     });
 
-    // Aplicação da Ordenação
     if (modoOrdenacaoAtual === 'nome') {
       listaParaExibir.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
     } else if (modoOrdenacaoAtual === 'data') {
@@ -927,7 +934,6 @@
     link.click();
   }
 
-  // SALVA DIRETAMENTE NA PASTA ATUAL DO REPOSITÓRIO GITHUB
   async function salvarNoGitHubDirect(mostrarModal = true) {
     const token = obterToken();
 
