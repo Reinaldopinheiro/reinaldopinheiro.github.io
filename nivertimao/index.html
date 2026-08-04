@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NIVER v2.2 - Controle de Aniversários por Agenda</title>
+  <title>NIVER v2.3 - Controle de Aniversários por Agenda</title>
   
-  <!-- ESTILOS DA APLICAÇÃO (CSS) -->
   <style>
     :root {
       --primary: #ff4757;
@@ -144,25 +143,61 @@
     .btn-clear { background-color: #747d8c; flex: 1; }
     .btn-month { background-color: #9b59b6; flex: 1; }
 
-    .search-bar { width: 100%; margin-bottom: 15px; }
+    /* Estilos dos Controles de Pesquisa e Ordenação */
+    .controls-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .search-bar {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .btn-sort {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-sort.active {
+      background-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.4);
+    }
 
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
+      table-layout: fixed; /* Mantém a proporção exata das larguras das colunas */
     }
 
     th, td {
-      padding: 12px;
+      padding: 12px 8px;
       text-align: left;
       border-bottom: 1px solid #dfe4ea;
+      word-wrap: break-word;
     }
 
     th { background-color: #f8f9fa; color: #57606f; }
 
-    .action-btns { display: flex; gap: 5px; }
-    .btn-edit { background-color: #eccc68; padding: 6px 10px; font-size: 12px; }
-    .btn-delete { background-color: #ff4757; padding: 6px 10px; font-size: 12px; }
+    /* LARGURAS DAS COLUNAS (Ajustadas com +5% em Agenda e Data/Signo) */
+    th.col-agenda { width: 15%; }     /* +5% */
+    th.col-nome { width: 25%; }
+    th.col-data { width: 25%; }       /* +5% */
+    th.col-obs { width: 23%; }
+    th.col-acoes { width: 12%; }
+
+    .action-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+    .btn-edit { background-color: #eccc68; padding: 6px 8px; font-size: 11px; }
+    .btn-delete { background-color: #ff4757; padding: 6px 8px; font-size: 11px; }
 
     .badge-agenda {
       background-color: var(--accent);
@@ -171,6 +206,7 @@
       border-radius: 12px;
       font-size: 11px;
       font-weight: bold;
+      display: inline-block;
     }
 
     /* MODAIS */
@@ -349,7 +385,7 @@
   <div class="modal-box" style="max-width: 550px;">
     <h3 style="color: #9b59b6;" id="tituloModalMes">🗓️ Aniversariantes do Mês</h3>
     <div style="max-height: 300px; overflow-y: auto; text-align: left; margin: 15px 0;">
-      <table style="width: 100%;">
+      <table style="width: 100%; table-layout: auto;">
         <thead>
           <tr>
             <th>Dia</th>
@@ -370,7 +406,7 @@
     <img src="logo.png" alt="Logo Reinaldo Pinheiro" class="logo" onerror="this.style.display='none'">
     <div class="festive-decor">🎈 🎂 🎁 🥳 🎉</div>
     <h1>NIVER</h1>
-    <small>Versão 2.2 | Executando na pasta atual</small>
+    <small>Versão 2.3 | Larguras de Coluna Ajustadas (+5%)</small>
   </div>
 
   <div class="agenda-section">
@@ -414,16 +450,21 @@
     <button class="btn-export" onclick="exportarICS()">📅 Exportar (.ics)</button>
   </div>
 
-  <input type="text" id="campoBusca" class="search-bar" placeholder="🔍 Consultar nome ou observação nesta agenda..." onkeyup="consultarAniversarios()">
+  <!-- Barra de Controle (Pesquisa + Botões de Ordenação) -->
+  <div class="controls-bar">
+    <input type="text" id="campoBusca" class="search-bar" placeholder="🔍 Consultar nome ou observação nesta agenda..." onkeyup="consultarAniversarios()">
+    <button id="btnOrdemNome" class="btn-sort active" onclick="alterarOrdenacao('nome')">🔤 Ordem Alfabética</button>
+    <button id="btnOrdemData" class="btn-sort" onclick="alterarOrdenacao('data')">📅 Ordem de Data</button>
+  </div>
 
   <table>
     <thead>
       <tr>
-        <th>Agenda</th>
-        <th>Nome</th>
-        <th>Data e Signo</th>
-        <th>Observação</th>
-        <th>Ações</th>
+        <th class="col-agenda">Agenda</th>
+        <th class="col-nome">Nome</th>
+        <th class="col-data">Data e Signo</th>
+        <th class="col-obs">Observação</th>
+        <th class="col-acoes">Ações</th>
       </tr>
     </thead>
     <tbody id="tabelaAniversarios"></tbody>
@@ -455,24 +496,15 @@
     return (PARTE1 + PARTE2 + PARTE3).trim();
   }
 
-
   const REPO_OWNER = "reinaldopinheiro";
   const REPO_NAME = "reinaldopinheiro.github.io";
 
-  // FUNÇÃO QUE OBTÉM O CAMINHO RELATIVO DA PASTA ATUAL ONDE O HTML ESTÁ EXECUÇÃO NO GITHUB
   function obterCaminhoJsonNaPastaAtual() {
-    // Pega o caminho da URL (ex: "/NIVER/index.html" ou "/projetos/NIVER_2026/niver.html")
     let pathname = window.location.pathname;
-    
-    // Remove o nome do arquivo no final (ex: "/NIVER/" ou "/projetos/NIVER_2026/")
     let pastaAtual = pathname.substring(0, pathname.lastIndexOf('/') + 1);
-    
-    // Remove a barra inicial caso exista para formar o caminho do repositório no GitHub
     if (pastaAtual.startsWith('/')) {
       pastaAtual = pastaAtual.substring(1);
     }
-    
-    // Retorna o caminho completo dentro do repositório
     return pastaAtual + "dados_niver.json";
   }
 
@@ -480,6 +512,7 @@
 
   let baseAgendas = {};
   let agendaAtual = "";
+  let modoOrdenacaoAtual = 'nome';
 
   function preencherDias() {
     const selectDia = document.getElementById('diaNasc');
@@ -492,13 +525,11 @@
     }
   }
 
-  // INICIALIZAÇÃO: LÊ O ARQUIVO JSON NA MESMA PASTA
   async function inicializar() {
     preencherDias();
     let carregouDoJson = false;
 
     try {
-      // Busca sempre o dados_niver.json na MESMA PASTA DO HTML ("./dados_niver.json")
       const resp = await fetch('./dados_niver.json?v=' + new Date().getTime());
       if (resp.ok) {
         const dados = await resp.json();
@@ -762,6 +793,15 @@
     await salvarNoGitHubDirect(true);
   }
 
+  function alterarOrdenacao(modo) {
+    modoOrdenacaoAtual = modo;
+    
+    document.getElementById('btnOrdemNome').classList.toggle('active', modo === 'nome');
+    document.getElementById('btnOrdemData').classList.toggle('active', modo === 'data');
+
+    renderizarTabela();
+  }
+
   function renderizarTabela() {
     const tbody = document.getElementById('tabelaAniversarios');
     tbody.innerHTML = '';
@@ -779,19 +819,35 @@
                            item.obs.toLowerCase().includes(termo);
 
       if (atendeFiltro) {
-        listaParaExibir.push({ ...item, agenda: agendaAtual, indexOriginal: index });
+        const partesData = item.dataNasc.split('-');
+        const mesInt = parseInt(partesData.length === 3 ? partesData[1] : partesData[0], 10);
+        const diaInt = parseInt(partesData.length === 3 ? partesData[2] : partesData[1], 10);
+
+        listaParaExibir.push({ 
+          ...item, 
+          agenda: agendaAtual, 
+          indexOriginal: index,
+          diaInt: diaInt,
+          mesInt: mesInt
+        });
       }
     });
 
-    listaParaExibir.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+    if (modoOrdenacaoAtual === 'nome') {
+      listaParaExibir.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+    } else if (modoOrdenacaoAtual === 'data') {
+      listaParaExibir.sort((a, b) => {
+        if (a.mesInt !== b.mesInt) return a.mesInt - b.mesInt;
+        return a.diaInt - b.diaInt;
+      });
+    }
 
     listaParaExibir.forEach((item) => {
-      const partesData = item.dataNasc.split('-');
-      const mes = partesData.length === 3 ? partesData[1] : partesData[0];
-      const dia = partesData.length === 3 ? partesData[2] : partesData[1];
+      const diaFmt = String(item.diaInt).padStart(2, '0');
+      const mesFmt = String(item.mesInt).padStart(2, '0');
 
-      const dataFormatada = `${dia}/${mes}`;
-      const signo = obterSigno(dia, mes);
+      const dataFormatada = `${diaFmt}/${mesFmt}`;
+      const signo = obterSigno(item.diaInt, item.mesInt);
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -878,7 +934,6 @@
     link.click();
   }
 
-  // SALVA DIRETAMENTE NA PASTA ATUAL DO REPOSITÓRIO GITHUB
   async function salvarNoGitHubDirect(mostrarModal = true) {
     const token = obterToken();
 
@@ -892,7 +947,6 @@
 
     const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(baseAgendas, null, 2))));
     
-    // URL dinamicamente apontada para o caminho do arquivo na pasta do HTML
     const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
 
     try {
