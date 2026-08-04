@@ -1,7 +1,7 @@
 # ================================================================================
 # NOME DO PROGRAMA: Outlook Calendar & Support Analytics App
-# VERSÃO: 1.0.7 (Filtro de datas robusto e compatível com MAPI/COM)
-# DATA DE ATUALIZAÇÃO: 21 de Julho de 2026
+# VERSÃO: 1.3.0 (Logo, Suporte PIX e QR Code)
+# DATA DE ATUALIZAÇÃO: 03 de Agosto de 2026
 # COPYRIGHT: Reinaldo Pinheiro 2026
 # ================================================================================
 
@@ -17,23 +17,25 @@ try:
     import pandas as pd
     import plotly.express as px
     import win32com.client
+    from PIL import Image, ImageTk
 except ImportError as e:
     print(f"Erro ao importar bibliotecas: {e}")
-    print("Execute: pip install pywin32 pandas plotly")
+    print("Execute: pip install pywin32 pandas plotly pillow")
 
 # --------------------------------------------------------------------------------
 # CONSTANTES DE IDENTIFICAÇÃO DO SISTEMA
 # --------------------------------------------------------------------------------
 PROGRAM_NAME = "Outlook Calendar & Support Analytics App"
-PROGRAM_VERSION = "v1.0.7"
-PROGRAM_DATE = "21/07/2026"
+PROGRAM_VERSION = "v1.3.0"
+PROGRAM_DATE = "03/08/2026"
 COPYRIGHT_TEXT = "Copyright © Reinaldo Pinheiro 2026. Todos os direitos reservados."
+PIX_MSG = "Ajude a criar mais projetos como esse, colabore! Pix: doe@reinaldopinheiro.com.br"
 
 class OutlookAnalyticsApp:
     def __init__(self, root):
         self.root = root
         self.root.title(f"{PROGRAM_NAME} - {PROGRAM_VERSION}")
-        self.root.geometry("640x540")
+        self.root.geometry("640x700")
         self.root.resizable(False, False)
         
         self.data_inicio = "01/01/2026"
@@ -54,25 +56,36 @@ class OutlookAnalyticsApp:
         self.root.configure(bg=self.bg_color)
         
         self.style.configure("TFrame", background=self.bg_color)
-        self.style.configure("Header.TLabel", font=("Segoe UI", 15, "bold"), foreground=self.primary_color, background=self.bg_color)
+        self.style.configure("Header.TLabel", font=("Segoe UI", 14, "bold"), foreground=self.primary_color, background=self.bg_color)
         self.style.configure("SubHeader.TLabel", font=("Segoe UI", 9, "italic"), foreground="#64748b", background=self.bg_color)
         self.style.configure("Info.TLabel", font=("Segoe UI", 10), foreground="#334155", background=self.bg_color)
-        self.style.configure("Copyright.TLabel", font=("Segoe UI", 8, "bold"), foreground="#64748b", background="#e2e8f0")
+        self.style.configure("Copyright.TLabel", font=("Segoe UI", 8, "bold"), foreground="#475569", background="#e2e8f0")
         
         self.style.configure("Main.TButton", font=("Segoe UI", 10, "bold"), padding=8)
 
     def create_widgets(self):
-        header_frame = ttk.Frame(self.root, padding="15 15 15 10")
+        header_frame = ttk.Frame(self.root, padding="10 10 10 5")
         header_frame.pack(fill=tk.X)
         
+        # Carregar Logo na Interface se existir
+        if os.path.exists("logo.png"):
+            try:
+                img_logo = Image.open("logo.png")
+                img_logo.thumbnail((180, 50))
+                self.logo_tk = ImageTk.PhotoImage(img_logo)
+                lbl_logo_img = ttk.Label(header_frame, image=self.logo_tk, background=self.bg_color)
+                lbl_logo_img.pack(anchor=tk.CENTER, pady=(0, 5))
+            except Exception:
+                pass
+
         ttk.Label(header_frame, text=PROGRAM_NAME, style="Header.TLabel").pack(anchor=tk.CENTER)
         
         info_version_text = f"Versão: {PROGRAM_VERSION}  |  Data de Atualização: {PROGRAM_DATE}"
-        ttk.Label(header_frame, text=info_version_text, style="SubHeader.TLabel").pack(anchor=tk.CENTER, pady=(2, 10))
+        ttk.Label(header_frame, text=info_version_text, style="SubHeader.TLabel").pack(anchor=tk.CENTER, pady=(2, 5))
 
         ttk.Separator(self.root, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=15)
 
-        status_frame = ttk.Frame(self.root, padding="15 15 15 15")
+        status_frame = ttk.Frame(self.root, padding="15 10 15 10")
         status_frame.pack(fill=tk.X)
 
         self.lbl_periodo = ttk.Label(
@@ -81,16 +94,29 @@ class OutlookAnalyticsApp:
             style="Info.TLabel",
             font=("Segoe UI", 10, "bold")
         )
-        self.lbl_periodo.pack(anchor=tk.CENTER, pady=5)
+        self.lbl_periodo.pack(anchor=tk.CENTER, pady=3)
+
+        config_frame = ttk.Frame(status_frame)
+        config_frame.pack(anchor=tk.CENTER, pady=5)
+        
+        ttk.Label(config_frame, text="📊 Agrupar por:", style="Info.TLabel").pack(side=tk.LEFT, padx=3)
+        self.combo_gran = ttk.Combobox(config_frame, values=["Ano", "Mês", "Dia"], state="readonly", width=8)
+        self.combo_gran.set("Mês")
+        self.combo_gran.pack(side=tk.LEFT, padx=5)
+
+        ttk.Label(config_frame, text="📈 Principais Ocorrências:", style="Info.TLabel").pack(side=tk.LEFT, padx=(10, 3))
+        self.combo_grafico = ttk.Combobox(config_frame, values=["Pizza", "Barras"], state="readonly", width=8)
+        self.combo_grafico.set("Pizza")
+        self.combo_grafico.pack(side=tk.LEFT, padx=5)
 
         self.lbl_status = ttk.Label(
             status_frame, 
             text="Pronto para realizar consultas na conta do Outlook Local.", 
             style="SubHeader.TLabel"
         )
-        self.lbl_status.pack(anchor=tk.CENTER)
+        self.lbl_status.pack(anchor=tk.CENTER, pady=2)
 
-        btn_container = ttk.Frame(self.root, padding="20 10 20 10")
+        btn_container = ttk.Frame(self.root, padding="20 5 20 10")
         btn_container.pack(fill=tk.BOTH, expand=True)
 
         self.btn_pedir_periodo = ttk.Button(
@@ -111,7 +137,7 @@ class OutlookAnalyticsApp:
 
         self.btn_nova_consulta = ttk.Button(
             btn_container, 
-            text="🔄 Fazer Nova Consulta e Gerar Dashboard HTML", 
+            text="🌐 Gerar Relatório HTML", 
             style="Main.TButton",
             command=self.acao_gerar_consulta
         )
@@ -119,7 +145,7 @@ class OutlookAnalyticsApp:
 
         self.btn_ver_html = ttk.Button(
             btn_container, 
-            text="🌐 Ver o HTML Gerado no Navegador", 
+            text="💻 Ver o HTML Gerado no Navegador", 
             style="Main.TButton",
             command=self.acao_ver_html
         )
@@ -133,15 +159,15 @@ class OutlookAnalyticsApp:
         )
         self.btn_sair.pack(fill=tk.X, pady=4)
 
-        footer_frame = tk.Frame(self.root, bg="#e2e8f0", height=35)
+        footer_frame = tk.Frame(self.root, bg="#e2e8f0", height=45)
         footer_frame.pack(side=tk.BOTTOM, fill=tk.X)
         
-        lbl_copy = ttk.Label(footer_frame, text=COPYRIGHT_TEXT, style="Copyright.TLabel")
-        lbl_copy.pack(expand=True, pady=8)
+        lbl_pix = ttk.Label(footer_frame, text=PIX_MSG, style="Copyright.TLabel")
+        lbl_pix.pack(anchor=tk.CENTER, pady=(6, 1))
 
-    # ----------------------------------------------------------------------------
-    # LEITURA DOS ARQUIVOS DE CONFIGURAÇÃO (.RPC)
-    # ----------------------------------------------------------------------------
+        lbl_copy = ttk.Label(footer_frame, text=COPYRIGHT_TEXT, style="Copyright.TLabel", font=("Segoe UI", 7))
+        lbl_copy.pack(anchor=tk.CENTER, pady=(0, 6))
+
     def carregar_lista_rpc(self, nome_arquivo):
         lista = []
         if os.path.exists(nome_arquivo):
@@ -155,9 +181,6 @@ class OutlookAnalyticsApp:
                 print(f"Aviso ao ler {nome_arquivo}: {e}")
         return lista
 
-    # ----------------------------------------------------------------------------
-    # EVENTOS DE BOTÃO
-    # ----------------------------------------------------------------------------
     def acao_pedir_periodo(self):
         ano = simpledialog.askstring("Pedir Período", "Digite o ano para análise (ex: 2026):", parent=self.root)
         if ano and ano.isdigit() and len(ano) == 4:
@@ -203,12 +226,15 @@ class OutlookAnalyticsApp:
                 return
 
             self.nome_conta_outlook = nome_conta
-            html_file = self.gerar_dashboard_html(df_eventos)
+            granularidade = self.combo_gran.get()
+            tipo_grafico = self.combo_grafico.get()
+            
+            html_file = self.gerar_dashboard_html(df_eventos, granularidade, tipo_grafico)
             self.ultimo_html_gerado = html_file
 
             self.lbl_status.config(text=f"✅ Relatório gerado com sucesso!")
             
-            resp = messagebox.askyesno("Consulta Concluída", f"Dashboard gerado com sucesso!\nConta: {nome_conta}\n\nDeseja abrir o relatório HTML agora?")
+            resp = messagebox.askyesno("Consulta Concluída", f"Dashboard gerado com sucesso!\nAgrupamento: {granularidade}\nGráfico: {tipo_grafico}\nConta: {nome_conta}\n\nDeseja abrir o relatório HTML agora?")
             if resp:
                 self.acao_ver_html()
 
@@ -216,11 +242,11 @@ class OutlookAnalyticsApp:
             messagebox.showerror("Erro de Integração", f"Erro ao acessar o Outlook:\n{str(e)}")
             self.lbl_status.config(text="Erro de execução.")
 
-    # ----------------------------------------------------------------------------
-    # CONEXÃO COM O OUTLOOK E PROCESSAMENTO (CORRIGIDO)
-    # ----------------------------------------------------------------------------
     def extrair_dados_outlook(self):
         palavras_ignorar = [p.lower() for p in self.carregar_lista_rpc("ignorar.rpc")]
+        if "pessoal" not in palavras_ignorar:
+            palavras_ignorar.append("pessoal")
+
         palavras_agrupar = self.carregar_lista_rpc("agrupar.rpc")
 
         try:
@@ -236,20 +262,17 @@ class OutlookAnalyticsApp:
             except Exception:
                 nome_conta = "Conta do Usuário Local"
 
-            calendar = namespace.GetDefaultFolder(9) # olFolderCalendar
+            calendar = namespace.GetDefaultFolder(9)
             items = calendar.Items
             items.IncludeRecurrences = True
             items.Sort("[Start]")
 
-            # Converte as datas de entrada em objetos datetime nativos
             dt_inicio_obj = datetime.datetime.strptime(f"{self.data_inicio} 00:00:00", "%d/%m/%Y %H:%M:%S")
             dt_fim_solicitado = datetime.datetime.strptime(f"{self.data_fim} 23:59:59", "%d/%m/%Y %H:%M:%S")
             
-            # O limite máximo do estudo é o MOMENTO ATUAL
             agora = datetime.datetime.now()
             dt_limite_final = min(dt_fim_solicitado, agora)
 
-            # Formatação de string de data legível e aceita globalmente pelo MAPI do Outlook
             str_inicio = dt_inicio_obj.strftime("%d/%m/%Y %H:%M")
             str_fim = dt_limite_final.strftime("%d/%m/%Y %H:%M")
 
@@ -258,19 +281,16 @@ class OutlookAnalyticsApp:
             try:
                 filtered_items = items.Restrict(restriction)
             except Exception:
-                # Caso o Restrict falhe por idioma do SO, usa a coleção bruta
                 filtered_items = items
 
             records = []
             for item in filtered_items:
                 try:
-                    # Garantia de acesso ao objeto do compromisso
                     if not hasattr(item, 'Start'):
                         continue
 
                     start_dt = item.Start
                     
-                    # Converte a data do item para datetime sem fuso se necessário
                     if hasattr(start_dt, 'tzinfo') and start_dt.tzinfo is not None:
                         start_dt_naive = start_dt.replace(tzinfo=None)
                     else:
@@ -279,7 +299,6 @@ class OutlookAnalyticsApp:
                             start_dt.hour, start_dt.minute, start_dt.second
                         )
 
-                    # Filtro manual extra para precisão absoluta (Ignora futuros e fora do intervalo)
                     if start_dt_naive < dt_inicio_obj or start_dt_naive > dt_limite_final:
                         continue
 
@@ -288,18 +307,15 @@ class OutlookAnalyticsApp:
                     
                     text_lower = subject.lower()
 
-                    # 1. Ignorar se estiver no ignorar.rpc
                     if any(p in text_lower for p in palavras_ignorar):
                         continue
 
-                    # 2. Verificar correspondência no agrupar.rpc
                     grupo_encontrado = "Outros"
                     for termo in palavras_agrupar:
                         if termo.lower() in text_lower:
                             grupo_encontrado = termo.title()
                             break
 
-                    # 3. Classificação de Suportes / Reuniões
                     pessoa_atendida = organizer
                     if "suporte" in text_lower or any(w in text_lower for w in ["chamado", "ticket", "incidente"]):
                         categoria = "Suporte Técnico"
@@ -316,7 +332,9 @@ class OutlookAnalyticsApp:
                     records.append({
                         "Assunto": subject,
                         "Inicio": start_dt_naive.strftime("%Y-%m-%d %H:%M"),
+                        "Ano": start_dt_naive.strftime("%Y"),
                         "Mes_Ano": start_dt_naive.strftime("%Y-%m"),
+                        "Dia_Mes_Ano": start_dt_naive.strftime("%Y-%m-%d"),
                         "Duracao_Horas": duration_h,
                         "Organizador": organizer,
                         "Pessoa_Atendida": pessoa_atendida,
@@ -326,16 +344,21 @@ class OutlookAnalyticsApp:
                 except Exception:
                     continue
 
-            print(f"Total de registros recuperados do Outlook: {len(records)}")
             return pd.DataFrame(records), nome_conta
 
         except Exception as err:
             raise err
 
-    # ----------------------------------------------------------------------------
-    # CONSTRUÇÃO DO PAINEL HTML
-    # ----------------------------------------------------------------------------
-    def gerar_dashboard_html(self, df):
+    def gerar_dashboard_html(self, df, granularidade="Mês", tipo_grafico="Pizza"):
+        coluna_tempo = "Mes_Ano"
+        titulo_tempo = "Mensal"
+        if granularidade == "Ano":
+            coluna_tempo = "Ano"
+            titulo_tempo = "Anual"
+        elif granularidade == "Dia":
+            coluna_tempo = "Dia_Mes_Ano"
+            titulo_tempo = "Diária"
+
         df_agrupar = df[df['Grupo_Agrupar'] != "Outros"]
         if df_agrupar.empty:
             df_agrupar = df
@@ -345,27 +368,45 @@ class OutlookAnalyticsApp:
             Total_Horas=('Duracao_Horas', 'sum')
         ).reset_index()
 
+        total_horas_agrupar = df_agrupar_summary['Total_Horas'].sum()
+        df_agrupar_summary['Porcentagem'] = (df_agrupar_summary['Total_Horas'] / total_horas_agrupar * 100).round(1)
+
         df_agrupar_summary['Rotulo_Legenda'] = df_agrupar_summary.apply(
             lambda r: f"{r['Grupo_Agrupar']} ({r['Qtd_Ocorrencias']}x)", axis=1
         )
 
-        fig_principais = px.pie(
-            df_agrupar_summary, 
-            names='Rotulo_Legenda', 
-            values='Total_Horas',
-            title='<b>Principais Ocorrências (agrupar.rpc)</b>', 
-            hole=0.3,
-            color_discrete_sequence=px.colors.qualitative.Pastel
-        )
-        
-        fig_principais.update_traces(
-            textinfo='percent+label',
-            hovertemplate="<b>%{label}</b><br>Horas Totais: %{value:.1f}h<br>Porcentagem: %{percent}"
-        )
-        fig_principais.update_layout(
-            font=dict(family="Segoe UI, sans-serif"),
-            legend_title_text="Ocorrência (Qtd)"
-        )
+        if tipo_grafico == "Barras":
+            df_agrupar_summary = df_agrupar_summary.sort_values(by='Total_Horas', ascending=True)
+            fig_principais = px.bar(
+                df_agrupar_summary,
+                x='Porcentagem',
+                y='Rotulo_Legenda',
+                orientation='h',
+                text=df_agrupar_summary['Porcentagem'].apply(lambda v: f"{v}%"),
+                title='<b>Principais Ocorrências (% de Atendimento)</b>',
+                labels={'Porcentagem': 'Porcentagem (%)', 'Rotulo_Legenda': 'Ocorrência (Qtd)'},
+                color_discrete_sequence=['#0056b3']
+            )
+            fig_principais.update_traces(
+                textposition='outside',
+                hovertemplate="<b>%{y}</b><br>Horas Totais: %{customdata:.1f}h<br>Porcentagem: %{x}%",
+                customdata=df_agrupar_summary['Total_Horas']
+            )
+        else:
+            fig_principais = px.pie(
+                df_agrupar_summary, 
+                names='Rotulo_Legenda', 
+                values='Total_Horas',
+                title='<b>Principais Ocorrências (% de Atendimento)</b>', 
+                hole=0.3,
+                color_discrete_sequence=px.colors.qualitative.Pastel
+            )
+            fig_principais.update_traces(
+                textinfo='percent+label',
+                hovertemplate="<b>%{label}</b><br>Horas Totais: %{value:.1f}h<br>Porcentagem: %{percent}"
+            )
+
+        fig_principais.update_layout(font=dict(family="Segoe UI, sans-serif"))
 
         fig_cat = px.pie(
             df, names='Categoria', values='Duracao_Horas',
@@ -374,13 +415,14 @@ class OutlookAnalyticsApp:
         )
         fig_cat.update_layout(font=dict(family="Segoe UI, sans-serif"))
 
-        df_mes = df.groupby(['Mes_Ano', 'Categoria'])['Duracao_Horas'].sum().reset_index()
-        fig_mes = px.bar(
-            df_mes, x='Mes_Ano', y='Duracao_Horas', color='Categoria',
-            title='<b>Evolução Mensal de Horas</b>', barmode='stack',
+        df_tempo = df.groupby([coluna_tempo, 'Categoria'])['Duracao_Horas'].sum().reset_index()
+        fig_tempo = px.bar(
+            df_tempo, x=coluna_tempo, y='Duracao_Horas', color='Categoria',
+            title=f'<b>Evolução {titulo_tempo} de Horas</b>', barmode='stack',
+            labels={coluna_tempo: f"Período ({granularidade})", "Duracao_Horas": "Horas Totais"},
             color_discrete_sequence=px.colors.qualitative.Set2
         )
-        fig_mes.update_layout(font=dict(family="Segoe UI, sans-serif"))
+        fig_tempo.update_layout(font=dict(family="Segoe UI, sans-serif"))
 
         df_suporte = df[df['Categoria'] == 'Suporte Técnico'].copy()
         df_outros = df[df['Categoria'] != 'Suporte Técnico'].copy()
@@ -411,18 +453,22 @@ class OutlookAnalyticsApp:
         total_eventos = len(df)
         total_suportes = len(df_suporte)
 
+        # IMAGENS NO HTML (LOGO E QRCODE)
+        html_logo_tag = '<img src="logo.png" alt="Logo" style="max-height: 60px; margin-bottom: 15px;">' if os.path.exists("logo.png") else ''
+        html_qrcode_tag = '<div style="margin-top: 12px;"><img src="QRCODE.png" alt="QR Code Pix" style="width: 110px; height: 110px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);"></div>' if os.path.exists("QRCODE.png") else ''
+
         html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Principais Ocorrências - {PROGRAM_NAME}</title>
+    <title>Relatório - {PROGRAM_NAME}</title>
     <style>
         body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; }}
-        .header-card {{ background: linear-gradient(135deg, #0056b3, #1e3a8a); color: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 25px; }}
+        .header-card {{ background: linear-gradient(135deg, #0056b3, #1e3a8a); color: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 25px; text-align: center; }}
         .header-card h1 {{ margin: 0 0 10px 0; font-size: 24px; }}
-        .header-meta {{ font-size: 14px; opacity: 0.95; line-height: 1.6; }}
-        .account-badge {{ display: inline-block; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-weight: bold; margin-top: 10px; }}
+        .params-box {{ background: rgba(255, 255, 255, 0.15); border-left: 4px solid #60a5fa; padding: 12px 18px; border-radius: 6px; margin-top: 15px; font-size: 14px; line-height: 1.6; text-align: left; }}
+        .account-badge {{ display: inline-block; background: rgba(255,255,255,0.25); padding: 4px 12px; border-radius: 20px; font-weight: bold; margin-top: 10px; font-size: 13px; }}
         .kpi-row {{ display: flex; gap: 15px; margin-bottom: 25px; }}
         .kpi-card {{ flex: 1; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 5px solid #0056b3; text-align: center; }}
         .kpi-card .val {{ font-size: 28px; font-weight: bold; color: #0056b3; margin-top: 5px; }}
@@ -432,23 +478,28 @@ class OutlookAnalyticsApp:
         th, td {{ padding: 10px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }}
         th {{ background-color: #f1f5f9; color: #334155; font-weight: 600; }}
         tr:hover {{ background-color: #f8fafc; }}
-        .footer {{ text-align: center; padding: 20px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; margin-top: 30px; }}
+        .footer {{ text-align: center; padding: 25px 20px; font-size: 13px; color: #475569; border-top: 1px solid #e2e8f0; margin-top: 30px; background: white; border-radius: 10px; }}
+        .pix-box {{ font-weight: bold; color: #0284c7; margin-bottom: 6px; font-size: 14px; }}
     </style>
 </head>
 <body>
 
     <div class="header-card">
-        <h1>📊 {PROGRAM_NAME}</h1>
-        <div class="header-meta">
-            <div><strong>Versão:</strong> {PROGRAM_VERSION} | <strong>Data da Versão:</strong> {PROGRAM_DATE}</div>
-            <div><strong>Período Analisado:</strong> {self.data_inicio} até {self.data_fim} (Estritamente até a Data Atual)</div>
-            <div class="account-badge">👤 Conta Outlook Conectada: {self.nome_conta_outlook}</div>
+        {html_logo_tag}
+        <h1>📊 Relatório de Atendimentos & Suporte</h1>
+        <div class="account-badge">👤 Conta Outlook: {self.nome_conta_outlook}</div>
+        
+        <div class="params-box">
+            <strong>⚙️ Parâmetros Utilizados na Consulta:</strong><br>
+            • <strong>Período de Análise:</strong> {self.data_inicio} até {self.data_fim}<br>
+            • <strong>Agrupamento Temporal:</strong> Por {granularidade}<br>
+            • <strong>Gráfico das Ocorrências:</strong> Exibição em {tipo_grafico}<br>
+            • <strong>Filtros Aplicados:</strong> Itens com a palavra 'pessoal' foram ignorados.
         </div>
     </div>
 
-    <!-- GRÁFICO DE PIZZA LOGO NO INÍCIO: PRINCIPAIS OCORRÊNCIAS -->
     <div class="chart-box" style="border-top: 4px solid #2563eb;">
-        <h2>🎯 Principais Ocorrências</h2>
+        <h2>🎯 Principais Ocorrências (% de Atendimento)</h2>
         {fig_principais.to_html(full_html=False, include_plotlyjs='cdn')}
     </div>
 
@@ -472,7 +523,7 @@ class OutlookAnalyticsApp:
     </div>
 
     <div class="chart-box">
-        {fig_mes.to_html(full_html=False, include_plotlyjs='cdn')}
+        {fig_tempo.to_html(full_html=False, include_plotlyjs='cdn')}
     </div>
 
     <div class="table-box">
@@ -526,6 +577,9 @@ class OutlookAnalyticsApp:
     </div>
 
     <div class="footer">
+        <div class="pix-box">💛 {PIX_MSG}</div>
+        {html_qrcode_tag}
+        <br>
         {COPYRIGHT_TEXT}<br>
         Relatório gerado por {PROGRAM_NAME} ({PROGRAM_VERSION}) em {datetime.datetime.now().strftime("%d/%m/%Y às %H:%M")}.
     </div>
