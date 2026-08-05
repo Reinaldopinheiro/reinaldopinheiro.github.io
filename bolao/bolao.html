@@ -1,108 +1,106 @@
-<!-- SISTEMA: Conferidor de Bolão Mega Sena | ARQUIVO: bolao.html | VERSÃO: 3.8 | AUTOR: Reinaldo Pinheiro Consultoria -->
+<!-- SISTEMA: Gestor e Conferidor de Bolão | ARQUIVO: bolao.html | VERSÃO: 4.1 | AUTOR: Reinaldo Pinheiro Consultoria -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Conferidor de Bolão v3.8 - Mega Sena</title>
+    <title>Conferidor e Gestor de Bolão v4.1 - Mega Sena</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #f0f2f5; padding: 20px; color: #333; }
-        .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         
         .header-meta { font-size: 0.85em; color: #666; text-align: right; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
         .versao-badge { background-color: #1a5276; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
         
         h2 { color: #1a5276; margin-top: 10px; text-transform: uppercase; letter-spacing: 2px; }
 
-        .progress-container { width: 100%; background-color: #ddd; border-radius: 8px; margin: 10px 0; display: none; }
-        .progress-bar { width: 0%; height: 20px; background-color: #27ae60; border-radius: 8px; text-align: center; line-height: 20px; color: white; font-size: 0.8em; transition: width 0.2s; }
+        .panel { background: #f8fbff; border: 1px solid #d1d9e6; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        .resultado-input { background: #fffde7; border: 1px solid #f9e79f; }
+        
+        .form-inline { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+        
+        input[type="text"], input[type="number"] { padding: 8px; border: 2px solid #bdc3c7; border-radius: 6px; font-weight: bold; font-size: 0.95em; outline: none; }
+        input:focus { border-color: #3498db; }
+        
+        .input-manual { width: 340px; text-align: center; font-size: 1.1em !important; }
 
-        .secao-arquivo { background: #f8fbff; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 2px dashed #3498db; }
-        .resultado-input { background: #fffde7; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #f9e79f; }
-        
-        .opcao-bloco { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #f0c36d; }
+        .opcao-bloco { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #f0c36d; }
         .opcao-bloco:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        
-        input[type="number"] { width: 50px; padding: 8px; margin: 2px; text-align: center; border: 2px solid #bdc3c7; font-weight: bold; border-radius: 6px; font-size: 1em; }
-        input[type="text"].input-manual { width: 320px; padding: 8px; border: 2px solid #bdc3c7; border-radius: 6px; font-weight: bold; text-align: center; font-size: 1em; }
-        
-        button { padding: 10px 18px; cursor: pointer; font-weight: bold; border-radius: 6px; border: none; margin: 3px; transition: all 0.3s ease; text-transform: uppercase; }
+
+        button { padding: 10px 16px; cursor: pointer; font-weight: bold; border-radius: 6px; border: none; margin: 3px; transition: all 0.3s ease; text-transform: uppercase; font-size: 0.85em; }
+        .btn-add { background-color: #27ae60; color: white; }
         .btn-busca { background-color: #3498db; color: white; }
         .btn-limpar { background-color: #e67e22; color: white; }
-        .btn-conferir { background-color: #27ae60; color: white; width: 100%; max-width: 350px; margin-top: 15px; }
-        .btn-danger { background-color: #c0392b; color: white; font-size: 0.8em; padding: 8px 15px; }
+        .btn-save { background-color: #2980b9; color: white; }
+        .btn-backup { background-color: #8e44ad; color: white; }
+        .btn-conferir { background-color: #27ae60; color: white; width: 100%; max-width: 350px; margin-top: 10px; }
+        .btn-del { background-color: #c0392b; color: white; padding: 4px 8px; font-size: 0.8em; }
         
         button:hover { opacity: 0.9; transform: translateY(-1px); }
-        
-        /* Ajuste da Tabela */
+
+        /* Tabela Ajustada */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 8px; overflow: hidden; table-layout: auto; }
         th { background-color: #2c3e50; color: white; padding: 10px; font-size: 0.9em; }
         td { border: 1px solid #ecf0f1; padding: 8px; text-align: center; }
         
         .col-id { width: 40px; }
-        .col-nome { text-align: left !important; white-space: nowrap; width: 1%; padding-right: 15px !important; font-weight: bold; }
+        .col-nome { text-align: left !important; white-space: nowrap; width: 1%; padding-right: 15px !important; font-weight: bold; cursor: pointer; }
+        .col-nome:hover { background-color: #fffde7; }
         .col-num { width: 45px; }
         .col-pontos { width: 60px; font-weight: bold; color: #e74c3c; font-size: 1.1em; }
         
         .acerto { background-color: #27ae60 !important; color: white !important; font-weight: bold; border-radius: 50%; }
         
-        footer { margin-top: 50px; padding: 15px; border-top: 1px solid #eee; color: #444; text-align: center; }
+        footer { margin-top: 40px; padding: 15px; border-top: 1px solid #eee; color: #444; text-align: center; }
         .copyright { font-size: 0.8em; color: #666; margin-bottom: 4px; }
         .pix-area { font-size: 0.8em; color: #555; }
-        #status-arquivo { font-weight: bold; margin-top: 8px; color: #2980b9; }
-        #info-concurso { font-weight: bold; color: #2c3e50; margin: 15px 0; min-height: 24px; }
+        #info-concurso { font-weight: bold; color: #2c3e50; margin: 10px 0; min-height: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-meta">
-        <span class="versao-badge">Versão 3.8</span> | Reinaldo Pinheiro Consultoria
+        <span class="versao-badge">Versão 4.1</span> | Reinaldo Pinheiro Consultoria
     </div>
     
-    <h2>CONFERIDOR DE BOLÃO - MEGA SENA</h2>
-    <p style="color: #7f8c8d; margin-top: -10px;">Consulta e Conferência de Resultados</p>
+    <h2>GESTOR E CONFERIDOR DE BOLÃO</h2>
+    <p style="color: #7f8c8d; margin-top: -10px;">Mega Sena - Cadastro, Edição e Resultados</p>
 
-    <!-- 1. Carregar Arquivo -->
-    <div class="secao-arquivo">
-        <strong>1. CARREGAR APOSTAS (.RPC)</strong><br><br>
-        <input type="file" id="arquivoRpc" accept=".rpc,.txt">
-        <button class="btn-danger" onclick="limparTabela()">LIMPAR JOGOS</button>
+    <!-- PAINEL 1: CADASTRO E GERENCIAMENTO DE APOSTAS -->
+    <div class="panel">
+        <strong>1. CADASTRAR / GERENCIAR APOSTAS</strong><br><br>
         
-        <div class="progress-container" id="pContainer">
-            <div class="progress-bar" id="pBar">0%</div>
+        <div class="form-inline">
+            <input type="text" id="novoNome" placeholder="Nome do Jogador" style="width: 220px;">
+            <input type="text" id="novosNums" placeholder="Dezenas ex: 05, 12, 23, 34, 45, 56" style="width: 280px;">
+            <button class="btn-add" onclick="adicionarAposta()">+ Incluir Aposta</button>
         </div>
-        <div id="status-arquivo">Aguardando importação...</div>
+
+        <div style="border-top: 1px solid #d1d9e6; padding-top: 12px; margin-top: 10px;">
+            <input type="file" id="inputRpc" accept=".rpc,.txt" style="display:none" onchange="importarArquivo(this)">
+            <button style="background:#bdc3c7; color:#333;" onclick="document.getElementById('inputRpc').click()">📂 Carregar apostas.rpc</button>
+            <button class="btn-save" onclick="exportarArquivo('apostas.rpc')">💾 Salvar Principal (apostas.rpc)</button>
+            <button class="btn-backup" onclick="salvarBackup()">📥 Salvar Cópia (apostaXXXX.rpc)</button>
+            <button class="btn-limpar" onclick="limparTabela()">🗑️ Limpar Jogos</button>
+        </div>
     </div>
 
-    <!-- 2. Painel Unificado de Conferência -->
-    <div class="resultado-input">
-        <strong>2. OPÇÕES DE CONFERÊNCIA DO SORTEIO</strong><br><br>
+    <!-- PAINEL 2: CONFERÊNCIA DO SORTEIO -->
+    <div class="panel resultado-input">
+        <strong>2. CONFERÊNCIA DO RESULTADO</strong><br><br>
         
-        <!-- Opção A: Por Número do Concurso (API Caixa) -->
+        <!-- Opção A: Por Concurso da Caixa -->
         <div class="opcao-bloco">
             <span style="font-size:0.85em; font-weight:bold; color:#555;">BUSCAR POR CONCURSO (CAIXA):</span><br>
             <input type="number" id="cID" placeholder="Nº Concurso" style="width: 120px;">
             <button class="btn-busca" onclick="buscarResultado()">Buscar na Caixa</button>
-            <button class="btn-limpar" onclick="limparResultados()">Limpar Dados</button>
+            <button class="btn-limpar" onclick="limparResultados()">Limpar Dezenas</button>
         </div>
 
         <!-- Opção B: Digitação das 6 Dezenas em Campo Único -->
         <div class="opcao-bloco">
-            <span style="font-size:0.85em; font-weight:bold; color:#555;">DIGITAR AS 6 DEZENAS (OU COLAR):</span><br>
+            <span style="font-size:0.85em; font-weight:bold; color:#555;">DIGITAR AS 6 DEZENAS SORTEADAS:</span><br>
             <input type="text" id="inputManualDezenas" class="input-manual" placeholder="Ex: 05, 12, 23, 34, 45, 56" oninput="processarEntradaManual(this.value)">
-        </div>
-
-        <!-- Opção C: Digitação Individual por Caixas de Números -->
-        <div class="opcao-bloco">
-            <span style="font-size:0.85em; font-weight:bold; color:#555;">DEZENAS SORTEADAS (INDIVIDUAL):</span><br>
-            <div id="inputs-resultado">
-                <input type="number" class="res-num" min="1" max="60" placeholder="01" oninput="sincronizarCamposParaTexto()">
-                <input type="number" class="res-num" min="1" max="60" placeholder="02" oninput="sincronizarCamposParaTexto()">
-                <input type="number" class="res-num" min="1" max="60" placeholder="03" oninput="sincronizarCamposParaTexto()">
-                <input type="number" class="res-num" min="1" max="60" placeholder="04" oninput="sincronizarCamposParaTexto()">
-                <input type="number" class="res-num" min="1" max="60" placeholder="05" oninput="sincronizarCamposParaTexto()">
-                <input type="number" class="res-num" min="1" max="60" placeholder="06" oninput="sincronizarCamposParaTexto()">
-            </div>
         </div>
 
         <button class="btn-conferir" onclick="conferir()">REPROCESSAR ACERTOS</button>
@@ -110,23 +108,24 @@
 
     <div id="info-concurso"></div>
 
-    <!-- Tabela de Jogos -->
+    <!-- TABELA PRINCIPAL -->
     <table>
         <thead>
             <tr>
                 <th class="col-id">ID</th>
-                <th class="col-nome">Participante</th>
+                <th class="col-nome">Participante (Clique p/ editar)</th>
                 <th colspan="6">Dezenas Apostadas</th>
                 <th class="col-pontos">Acertos</th>
+                <th style="width: 50px;">Ação</th>
             </tr>
         </thead>
         <tbody id="tabela-corpo">
-            <tr><td colspan="9" style="color:#999; padding: 40px;">Nenhum jogo carregado. Importe o arquivo apostas.rpc acima.</td></tr>
+            <tr><td colspan="10" style="color:#999; padding: 30px;">Base de dados vazia. Cadastre participantes acima ou carregue um arquivo apostas.rpc.</td></tr>
         </tbody>
     </table>
 
     <footer>
-        <div class="copyright">&copy; 2026 Reinaldo Pinheiro Consultoria (v3.8)</div>
+        <div class="copyright">&copy; 2026 Reinaldo Pinheiro Consultoria (v4.1)</div>
         <div class="pix-area">
             Gostou? Faça uma doação (qualquer valor) para o desenvolvedor, pix: doe@reinaldopinheiro.com.br
         </div>
@@ -134,35 +133,125 @@
 </div>
 
 <script>
-    let apostas = [];
+    let db_apostas = [];
+    let dezenasConferência = [];
 
-    // Processa a digitação direta do campo único de texto
-    function processarEntradaManual(texto) {
-        const numeros = texto.split(/[\s,-]+/)
-                             .map(n => parseInt(n.trim()))
-                             .filter(n => !isNaN(n) && n >= 1 && n <= 60);
-        
-        const inputs = document.querySelectorAll('.res-num');
-        inputs.forEach((input, i) => {
-            input.value = numeros[i] !== undefined ? numeros[i] : "";
+    // --- 1. GESTÃO DE APOSTAS ---
+    function adicionarAposta() {
+        const nome = document.getElementById('novoNome').value.trim();
+        const numsRaw = document.getElementById('novosNums').value;
+        const dezenas = numsRaw.split(/[\s,-]+/).map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 60);
+
+        if(nome === "" || dezenas.length !== 6) {
+            alert("Erro: Informe o nome do jogador e exatamente 6 dezenas válidas (de 1 a 60).");
+            return;
+        }
+
+        db_apostas.push({ nome, dezenas });
+        document.getElementById('novoNome').value = "";
+        document.getElementById('novosNums').value = "";
+        renderizarTabela();
+        conferir();
+    }
+
+    function editarNome(index, el) {
+        const novoNome = el.innerText.trim();
+        if(novoNome !== "") {
+            db_apostas[index].nome = novoNome;
+        } else {
+            renderizarTabela();
+        }
+    }
+
+    function excluirAposta(index) {
+        if(confirm("Deseja excluir este jogo? Os IDs serão reclassificados.")) {
+            db_apostas.splice(index, 1);
+            renderizarTabela();
+            conferir();
+        }
+    }
+
+    // --- 2. RENDERIZAÇÃO DA TABELA ---
+    function renderizarTabela() {
+        const corpo = document.getElementById('tabela-corpo');
+        if (db_apostas.length === 0) {
+            corpo.innerHTML = '<tr><td colspan="10" style="color:#999; padding: 30px;">Base de dados vazia.</td></tr>';
+            return;
+        }
+
+        corpo.innerHTML = db_apostas.map((ap, idx) => `
+            <tr>
+                <td class="col-id" style="color:#7f8c8d; font-weight:bold;">${idx + 1}</td>
+                <td class="col-nome" contenteditable="true" onblur="editarNome(${idx}, this)">${ap.nome}</td>
+                ${ap.dezenas.map(n => `<td class="col-num celula-num" data-num="${n}">${n < 10 ? '0'+n : n}</td>`).join('')}
+                <td class="col-pontos" id="pontos-${idx}">0</td>
+                <td><button class="btn-del" onclick="excluirAposta(${idx})">🗑️</button></td>
+            </tr>
+        `).join('');
+    }
+
+    // --- 3. IMPORTAÇÃO E EXPORTAÇÃO ---
+    function importarArquivo(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const linhas = e.target.result.split('\n');
+            db_apostas = [];
+            linhas.forEach((linha, idx) => {
+                if(idx === 0 || !linha.includes(':')) return;
+                const [info, nums] = linha.split(':');
+                const nome = info.includes('-') ? info.split('-')[1].trim() : info.trim();
+                const dezenas = nums.split(/[\s,-]+/).map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+                if(dezenas.length === 6) {
+                    db_apostas.push({ nome, dezenas });
+                }
+            });
+            renderizarTabela();
+            conferir();
+        };
+        reader.readAsText(file);
+    }
+
+    function exportarArquivo(nomeFinal) {
+        if(db_apostas.length === 0) return alert("Não há jogos para exportar.");
+        let txt = `BOLÃO REINALDO PINHEIRO - BASE DE DADOS\n`;
+        db_apostas.forEach((item, idx) => {
+            txt += `${idx + 1} - ${item.nome}: ${item.dezenas.map(n => n < 10 ? '0'+n : n).join(', ')}\n`;
         });
+        const blob = new Blob([txt], { type: 'application/octet-stream' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = nomeFinal;
+        link.click();
+    }
 
+    function salvarBackup() {
+        const nConcurso = document.getElementById('cID').value || "GERAL";
+        exportarArquivo(`aposta${nConcurso}.rpc`);
+    }
+
+    function limparTabela() {
+        if(confirm("Deseja apagar todas as apostas da tela?")) {
+            db_apostas = [];
+            renderizarTabela();
+            document.getElementById('inputRpc').value = "";
+        }
+    }
+
+    // --- 4. ROTINAS DE CONFERÊNCIA ---
+    function processarEntradaManual(texto) {
+        dezenasConferência = texto.split(/[\s,-]+/)
+                                 .map(n => parseInt(n.trim()))
+                                 .filter(n => !isNaN(n) && n >= 1 && n <= 60);
         conferir();
     }
 
-    // Sincroniza a digitação dos campos individuais para o campo único
-    function sincronizarCamposParaTexto() {
-        const inputs = document.querySelectorAll('.res-num');
-        const nums = Array.from(inputs).map(i => parseInt(i.value)).filter(n => !isNaN(n));
-        document.getElementById('inputManualDezenas').value = nums.map(n => n < 10 ? '0'+n : n).join(', ');
-        conferir();
-    }
-
-    // Busca automática via API da Caixa Econômica
     async function buscarResultado() {
         const concurso = document.getElementById('cID').value;
         const infoDiv = document.getElementById('info-concurso');
-        infoDiv.innerHTML = "Consultando base de dados oficial...";
+        infoDiv.innerHTML = "Consultando Caixa Econômica...";
 
         const url = concurso 
             ? `https://loteriascaixa-api.herokuapp.com/api/megasena/${concurso}`
@@ -173,75 +262,17 @@
             if (!response.ok) throw new Error();
             const data = await response.json();
             
-            const dezenas = data.dezenas;
-            const inputs = document.querySelectorAll('.res-num');
+            dezenasConferência = data.dezenas.map(n => parseInt(n));
+            document.getElementById('inputManualDezenas').value = dezenasConferência.map(n => n < 10 ? '0'+n : n).join(', ');
             
-            dezenas.forEach((num, i) => {
-                if(inputs[i]) inputs[i].value = parseInt(num);
-            });
-            
-            sincronizarCamposParaTexto();
             infoDiv.innerHTML = `CONCURSO: ${data.concurso} | DATA: ${data.data}`;
             conferir();
         } catch (e) {
-            infoDiv.innerHTML = "<span style='color:#e67e22;'>Servidor instável. Por favor, preencha manualmente ou tente em instantes.</span>";
+            infoDiv.innerHTML = "<span style='color:#e67e22;'>Servidor instável. Preencha manualmente no campo abaixo.</span>";
         }
-    }
-
-    // Leitura do Arquivo .RPC
-    document.getElementById('arquivoRpc').addEventListener('change', function(e) {
-        const arquivo = e.target.files[0];
-        if (!arquivo) return;
-
-        const pBar = document.getElementById('pBar');
-        document.getElementById('pContainer').style.display = 'block';
-
-        const leitor = new FileReader();
-        leitor.onprogress = (data) => {
-            if (data.lengthComputable) {
-                const prog = Math.round((data.loaded / data.total) * 100);
-                pBar.style.width = prog + '%';
-                pBar.innerHTML = prog + '%';
-            }
-        };
-
-        leitor.onload = (e) => {
-            const linhas = e.target.result.split('\n');
-            apostas = [];
-            for (let i = 1; i < linhas.length; i++) {
-                const linha = linhas[i].trim();
-                if (linha === "" || !linha.includes(':')) continue;
-                const partes = linha.split(':');
-                const nomeRaw = partes[0].trim();
-                const nome = nomeRaw.includes('-') ? nomeRaw.split('-')[1].trim() : nomeRaw;
-                const numeros = partes[1].split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
-                apostas.push({ nome: nome, num: numeros });
-            }
-            document.getElementById('status-arquivo').innerHTML = `✅ ${apostas.length} Jogos Carregados!`;
-            renderizarTabela();
-        };
-        leitor.readAsText(arquivo);
-    });
-
-    function renderizarTabela() {
-        const corpo = document.getElementById('tabela-corpo');
-        if (apostas.length === 0) {
-            corpo.innerHTML = '<tr><td colspan="9" style="color:#999; padding: 40px;">Nenhum jogo carregado. Importe o arquivo apostas.rpc acima.</td></tr>';
-            return;
-        }
-        corpo.innerHTML = apostas.map((ap, idx) => `
-            <tr>
-                <td class="col-id" style="color:#7f8c8d; font-weight:bold;">${idx + 1}</td>
-                <td class="col-nome">${ap.nome}</td>
-                ${ap.num.map(n => `<td class="col-num celula-num" data-num="${n}">${n < 10 ? '0'+n : n}</td>`).join('')}
-                <td class="col-pontos" id="pontos-${idx}">0</td>
-            </tr>
-        `).join('');
     }
 
     function conferir() {
-        const res = Array.from(document.querySelectorAll('.res-num')).map(i => parseInt(i.value)).filter(n => !isNaN(n));
-        
         document.querySelectorAll('#tabela-corpo tr').forEach((linha, idx) => {
             let acertos = 0;
             const celulas = linha.querySelectorAll('.celula-num');
@@ -249,7 +280,7 @@
 
             celulas.forEach(cel => {
                 const n = parseInt(cel.dataset.num);
-                if (res.includes(n)) { 
+                if (dezenasConferência.includes(n)) { 
                     cel.classList.add('acerto'); 
                     acertos++; 
                 } else { 
@@ -261,18 +292,8 @@
         });
     }
 
-    function limparTabela() {
-        if(confirm("Deseja apagar todos os jogos carregados?")) {
-            apostas = [];
-            renderizarTabela();
-            document.getElementById('arquivoRpc').value = "";
-            document.getElementById('status-arquivo').innerHTML = "Aguardando importação...";
-            document.getElementById('pContainer').style.display = 'none';
-        }
-    }
-
     function limparResultados() {
-        document.querySelectorAll('.res-num').forEach(i => i.value = "");
+        dezenasConferência = [];
         document.getElementById('inputManualDezenas').value = "";
         document.getElementById('info-concurso').innerHTML = "";
         document.getElementById('cID').value = "";
