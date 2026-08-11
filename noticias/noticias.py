@@ -6,10 +6,10 @@ from datetime import datetime, timedelta, timezone
 
 # ==============================================================================
 # PROGRAMA: NOTICIAS RPC
-# VERSÃO: 5.4
-# DATA DA VERSÃO: 18/06/2026
+# VERSÃO: 5.5
+# DATA DA VERSÃO: 11/08/2026
 # DESENVOLVEDORES: Reinaldo Pinheiro Consultoria com Gemini
-# DESCRIÇÃO: Fuso GMT-3 corrigido + Auto-refresh HTML a cada 2 minutos.
+# DESCRIÇÃO: Tratamento de exceções reforçado para estabilidade no GitHub Actions.
 # ==============================================================================
 
 # Supressão dos avisos de requisições inseguras
@@ -33,13 +33,24 @@ def get_headlines(links):
     for url in links:
         try:
             headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-            response = requests.get(url, headers=headers, verify=False, timeout=15)
-            soup = BeautifulSoup(response.content, 'xml')
-            site_name = url.split('/')[2]
-            news_items = soup.find_all('item', limit=5)
-            headlines_by_site[site_name] = [(item.title.text, item.link.text) for item in news_items]
+            # Timeout curto de 8 segundos para evitar estouro de tempo no GitHub Actions
+            response = requests.get(url, headers=headers, verify=False, timeout=8)
+            
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.content, 'xml')
+                site_name = url.split('/')[2]
+                news_items = soup.find_all('item', limit=5)
+                
+                # Se encontrou notícias no feed, adiciona ao dicionário
+                if news_items:
+                    headlines_by_site[site_name] = [(item.title.text, item.link.text) for item in news_items if item.title and item.link]
+            else:
+                print(f"Aviso: O site {url} respondeu com status {response.status_code}")
+        
         except Exception as e:
-            print(f"Erro ao obter manchetes do site {url}: {e}")
+            # Em caso de queda ou erro em um portal específico, exibe o aviso no log e continua para os outros
+            print(f"Falha temporária ao acessar {url}: {e}")
+            continue
 
     return headlines_by_site
 
@@ -58,10 +69,7 @@ def create_html():
     try:
         with open('noticias.html', 'w', encoding='utf-8') as f:
             f.write('<html><head><title>NOTICIAS RPC</title><meta charset="UTF-8">\n')
-            
-            # --- ADICIONADO AQUI: Recarrega a página no navegador do usuário a cada 120 segundos (2 minutos) ---
             f.write('<meta http-equiv="refresh" content="120">\n')
-            
             f.write('<style>\n')
             f.write('  body { font-family: Helvetica, Arial, sans-serif; margin: 40px; color: #333; background-color: #f9f9f9; }\n')
             f.write('  h1 { color: #111; border-bottom: 2px solid #333; padding-bottom: 10px; }\n')
@@ -85,7 +93,7 @@ def create_html():
                 f.write('</div>\n')
 
             f.write('<footer>\n')
-            f.write('  <p>© 2026 Copyright Reinaldo Pinheiro Consultoria com Gemini - Versão 5.4 (Script Automático)</p>\n')
+            f.write('  <p>© 2026 Copyright Reinaldo Pinheiro Consultoria com Gemini - Versão 5.5 (Script Automático)</p>\n')
             f.write('  <div class="donate-box">\n')
             f.write(f'    <strong>🎁 Ajude a criar novos projetos</strong><br>\n')
             f.write(f'    Chave PIX: <code>{pix_key}</code><br>\n')
