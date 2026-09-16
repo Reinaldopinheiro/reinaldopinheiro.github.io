@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diversos</title>
-    <!-- Bibliotecas de ícones Font Awesome -->
+    <!-- Biblioteca de ícones Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
@@ -15,7 +15,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px 0;
+            padding: 30px 0;
         }
         .container {
             background-color: #ffffff;
@@ -23,7 +23,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             text-align: center;
-            max-width: 400px;
+            max-width: 420px;
             width: 90%;
         }
         .logo {
@@ -34,12 +34,21 @@
         h1 {
             color: #333333;
             font-size: 24px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+        }
+        .subtitle {
+            color: #666666;
+            font-size: 14px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-style: italic;
+            border-top: 1px solid #eeeeee;
+            padding-top: 15px;
         }
         .links-list {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
         .link-btn {
             display: flex;
@@ -64,13 +73,18 @@
             width: 25px;
             text-align: center;
         }
-        /* Estilo específico para o botão do WhatsApp */
-        .link-btn.whatsapp {
-            background-color: #25d366;
-        }
-        .link-btn.whatsapp:hover {
-            background-color: #1ebc57;
-        }
+        /* Estilos de cores específicas para cada botão */
+        .link-btn.whatsapp { background-color: #25d366; }
+        .link-btn.whatsapp:hover { background-color: #1ebc57; }
+
+        .link-btn.copa { background-color: #d9534f; }
+        .link-btn.copa:hover { background-color: #c9302c; }
+
+        .link-btn.bolao { background-color: #28a745; }
+        .link-btn.bolao:hover { background-color: #218838; }
+
+        .link-btn.lotofacil { background-color: #9333ea; }
+        .link-btn.lotofacil:hover { background-color: #7e22ce; }
     </style>
 </head>
 <body>
@@ -82,7 +96,7 @@
         <!-- Título -->
         <h1>Diversos</h1>
 
-        <!-- Lista de Links com Ícones -->
+        <!-- Lista Principal de Links -->
         <div class="links-list">
             <a href="livro.html" class="link-btn">
                 <i class="fa-solid fa-book"></i> Livro
@@ -98,6 +112,24 @@
 
             <a href="canalwhatsapp.html" class="link-btn whatsapp">
                 <i class="fa-brands fa-whatsapp"></i> Canal do WhatsApp
+            </a>
+
+            <a href="copa/copa26.html" class="link-btn copa">
+                <i class="fa-solid fa-trophy"></i> Copa 2026
+            </a>
+        </div>
+
+        <!-- Subtítulo dos Bolões -->
+        <p class="subtitle">Faça bolão com os amigos e "use o conferidor"</p>
+
+        <!-- Links dos Bolões -->
+        <div class="links-list">
+            <a href="bolao/bolao.html" class="link-btn bolao">
+                <i class="fa-solid fa-clover"></i> Bolão Mega-Sena
+            </a>
+
+            <a href="bolao/lotofacil.html" class="link-btn lotofacil">
+                <i class="fa-solid fa-ticket"></i> Bolão Lotofácil
             </a>
         </div>
     </div>
