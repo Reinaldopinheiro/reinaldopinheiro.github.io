@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diversos</title>
+    <!-- Bibliotecas de ícones Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        .logo {
+            max-width: 120px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        h1 {
+            color: #333333;
+            font-size: 24px;
+            margin-bottom: 25px;
+        }
+        .links-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .link-btn {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .link-btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        .link-btn i {
+            font-size: 20px;
+            margin-right: 15px;
+            width: 25px;
+            text-align: center;
+        }
+        /* Estilo específico para o botão do WhatsApp */
+        .link-btn.whatsapp {
+            background-color: #25d366;
+        }
+        .link-btn.whatsapp:hover {
+            background-color: #1ebc57;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Logo na raiz do site -->
+        <img src="logo.png" alt="Logo" class="logo">
+        
+        <!-- Título -->
+        <h1>Diversos</h1>
+
+        <!-- Lista de Links com Ícones -->
+        <div class="links-list">
+            <a href="livro.html" class="link-btn">
+                <i class="fa-solid fa-book"></i> Livro
+            </a>
+
+            <a href="boletim.html" class="link-btn">
+                <i class="fa-solid fa-newspaper"></i> Boletim
+            </a>
+
+            <a href="noticias.html" class="link-btn">
+                <i class="fa-solid fa-bullhorn"></i> Notícias
+            </a>
+
+            <a href="canalwhatsapp.html" class="link-btn whatsapp">
+                <i class="fa-brands fa-whatsapp"></i> Canal do WhatsApp
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
